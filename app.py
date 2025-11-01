@@ -55,15 +55,45 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
+    'pool_recycle': 300,
     'connect_args': {'connect_timeout': 10}
 }
-db = SQLAlchemy(app)
+# Don't fail on database connection errors during initialization
+try:
+    db = SQLAlchemy(app)
+except Exception as e:
+    app.logger.error(f"Database initialization error: {e}")
+    db = SQLAlchemy(app)  # Still create it, but it will fail on use
 
 # Error handler for database connection issues
 @app.errorhandler(500)
 def handle_500_error(e):
     """Handle 500 errors gracefully"""
-    return f"<h1>Database Connection Error</h1><p>Please check your DATABASE_URL environment variable in Vercel settings.</p><p>Error: {str(e)}</p>", 500
+    error_msg = str(e) if e else "Unknown error"
+    return f"""
+    <html>
+    <head><title>Error - UMUHUZA</title></head>
+    <body style="font-family: Arial, sans-serif; padding: 20px;">
+        <h1>⚠️ Application Error</h1>
+        <p><strong>Error:</strong> {error_msg}</p>
+        <hr>
+        <h2>Common Solutions:</h2>
+        <ul>
+            <li>Check that DATABASE_URL is set in Vercel environment variables</li>
+            <li>Verify your database connection string is correct</li>
+            <li>Check Vercel function logs for detailed error information</li>
+        </ul>
+        <p><a href="/test">Try Test Route</a></p>
+    </body>
+    </html>
+    """, 500
+
+# Handle database connection errors globally
+@app.before_request
+def before_request():
+    """Handle any pre-request setup"""
+    # Don't test database here - let routes handle their own errors
+    pass
 
 # ---------------- Email Config ----------------
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
@@ -177,7 +207,12 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    """Load user with error handling"""
+    try:
+        return User.query.get(int(user_id))
+    except Exception as e:
+        app.logger.error(f"Error loading user {user_id}: {e}")
+        return None
 
 # ====================================================
 # Token Serializer for Password Reset
@@ -210,23 +245,58 @@ def index():
 # Test route that doesn't require database
 @app.route('/test')
 def test():
-    return """
+    """Test route to verify app is working"""
+    db_status = "❌ Not Connected"
+    try:
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
+        db.session.commit()
+        db_status = "✅ Connected"
+    except Exception as e:
+        db_status = f"❌ Error: {str(e)[:100]}"
+    
+    return f"""
     <html>
-    <head><title>Test Route</title></head>
+    <head>
+        <title>Test Route - UMUHUZA</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }}
+            .container {{ max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+            h1 {{ color: #28a745; }}
+            .status {{ padding: 10px; margin: 10px 0; border-radius: 4px; }}
+            .success {{ background: #d4edda; color: #155724; }}
+            .error {{ background: #f8d7da; color: #721c24; }}
+            code {{ background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }}
+        </style>
+    </head>
     <body>
-        <h1>✅ Flask App is Working!</h1>
-        <p>If you see this, your Flask app deployed successfully.</p>
-        <p><a href="/">Go to Home</a></p>
-        <hr>
-        <h2>Diagnostics:</h2>
-        <ul>
-            <li>Flask Version: Working</li>
-            <li>Database URL: {}
-            <li>Secret Key: Set</li>
-        </ul>
+        <div class="container">
+            <h1>✅ Flask App is Working!</h1>
+            <p>If you see this, your Flask app deployed successfully on Vercel.</p>
+            <hr>
+            <h2>System Diagnostics:</h2>
+            <div class="status {'success' if 'Connected' in db_status else 'error'}">
+                <strong>Database Status:</strong> {db_status}
+            </div>
+            <ul>
+                <li><strong>Flask:</strong> ✅ Running</li>
+                <li><strong>Database URL:</strong> <code>{os.environ.get('DATABASE_URL', 'NOT SET')[:50]}...</code></li>
+                <li><strong>Secret Key:</strong> {'✅ Set' if os.environ.get('SECRET_KEY') else '❌ NOT SET'}</li>
+                <li><strong>Environment:</strong> {os.environ.get('FLASK_ENV', 'Not set')}</li>
+            </ul>
+            <hr>
+            <h2>Next Steps:</h2>
+            <ol>
+                <li>If Database is NOT SET, go to Vercel → Settings → Environment Variables</li>
+                <li>Add <code>DATABASE_URL</code> with your cloud database connection string</li>
+                <li>Add <code>SECRET_KEY</code> (generate a random string)</li>
+                <li>Redeploy your application</li>
+            </ol>
+            <p><a href="/">← Go to Home</a></p>
+        </div>
     </body>
     </html>
-    """.format(os.environ.get('DATABASE_URL', 'NOT SET - Please configure in Vercel'))
+    """
 
 @app.route('/about-us')
 def about_us():
