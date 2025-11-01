@@ -1,0 +1,100 @@
+/* General Body Styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: rgb(18, 46, 43); /* Dark green background */
+    color: #333;
+}
+
+header {
+    background-color: #4CAF50; /* Green header */
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2.5em;
+}
+
+section {
+    padding: 20px;
+    margin: 10px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.service-photo {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.video-section video {
+    margin: 20px 0;
+    border-radius: 10px;
+}
+
+/* Footer Styling */
+footer {
+    background-color: #333; /* Dark background color */
+    color: #fff; /* White text color */
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+}
+
+footer h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Social Media Icons */
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Space between icons */
+}
+
+.social-icons a {
+    color: #fff; /* White color for icons */
+    font-size: 24px;
+    text-decoration: none;
+    transition: color 0.3s ease-in-out;
+}
+
+.social-icons i {
+    transition: color 0.3s ease-in-out;
+}
+
+/* Hover effects for social media icons */
+.social-icons a#facebook:hover {
+    color: #3b5998; /* Facebook Blue */
+}
+
+.social-icons a#twitter:hover {
+    color: #1da1f2; /* Twitter Blue */
+}
+
+.social-icons a#instagram:hover {
+    color: #e1306c; /* Instagram Pink */
+}
+
+.social-icons a#linkedin:hover {
+    color: #0077b5; /* LinkedIn Blue */
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 600px) {
+    footer h3 {
+        font-size: 20px;
+    }
+
+    .social-icons a {
+        font-size: 20px;
+    }
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Promoter Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #eef9f7; margin: 0; padding: 0; }
+    header { background: #1c7c68; color: white; padding: 15px; text-align: center; }
+    .container { padding: 20px; }
+    .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    h2 { color: #1c7c68; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome, {{ user.full_name }} (Farmer Promoter)</h1>
+  </header>
+  <div class="container">
+    <div class="card">
+      <h2>📋 Assigned Tasks</h2>
+      <p>Train 20 farmers on improved irrigation methods.</p>
+    </div>
+    <div class="card">
+      <h2>👩‍🌾 Farmers Under Supervision</h2>
+      <ul><li>Farmer A - Beans</li><li>Farmer B - Maize</li></ul>
+    </div>
+    <div class="card">
+      <h2>📝 Reports</h2>
+      <p>Submit monthly productivity report before 30th.</p>
+    </div>
+  </div>
+</body>
+</html>

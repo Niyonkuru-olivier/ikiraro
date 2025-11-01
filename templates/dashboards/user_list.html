@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ role }} List</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+    header { background: #263238; color: white; padding: 15px; text-align: center; }
+    .container { padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background: #263238; color: white; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    a { text-decoration: none; color: #e65100; }
+    .back-btn { display: inline-block; margin-top: 15px; padding: 8px 12px; background: #e65100; color: white; border-radius: 5px; }
+    .export-btns { margin-top: 15px; }
+    .export-btns a { margin-right: 10px; padding: 8px 12px; background: #388e3c; color: white; border-radius: 5px; }
+    .export-btns a:hover { background: #2e7d32; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{ role }}s List</h1>
+  </header>
+  <div class="container">
+    {% if users %}
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Full Name</th>
+        <th>Phone</th>
+        <th>Email</th>
+      </tr>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.full_name }}</td>
+        <td>{{ user.phone }}</td>
+        <td>{{ user.email }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <div class="export-btns">
+      <a href="{{ url_for('export_users', role=role.lower(), filetype='excel') }}">⬇ Export to Excel</a>
+      <a href="{{ url_for('export_users', role=role.lower(), filetype='pdf') }}">⬇ Export to PDF</a>
+    </div>
+
+    {% else %}
+      <p>No {{ role }}s registered yet.</p>
+    {% endif %}
+
+    <a href="{{ url_for('dashboard') }}" class="back-btn">⬅ Back to Dashboard</a>
+  </div>
+</body>
+</html>

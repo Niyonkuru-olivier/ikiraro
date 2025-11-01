@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Agro-Dealer Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+    header { background: #022b16; color: white; padding: 15px; text-align: center; }
+    .wrap { max-width: 1100px; margin: 20px auto; padding: 10px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; 
+      gap: 16px; align-items: start; }
+    .card { background: white; padding: 16px; 
+      border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    h2 { margin: 0 0 12px; color: #022b16; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 6px; border: 1px solid #e0e0e0; text-align: left; font-size: 14px; }
+    th { background: #e8f5e9; color: #022b16; }
+    .btn { padding: 8px 10px; border: none; background: #022b16; 
+      color: white; border-radius: 4px; cursor: pointer; }
+    .btn.secondary { background: #777; }
+    .small-form input { width: 70px; padding: 6px; margin-right: 6px; }
+    .subsidy { margin-top: 8px; padding: 10px; background:#f1f8e9; border-radius:6px; }
+    .muted { color:#666; font-size: 13px; }
+    .actions form { display:inline-block; margin-right:6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome, {{ user.full_name }} (Agro-Dealer)</h1>
+  </header>
+
+  <div class="wrap">
+    <div class="grid">
+      <!-- Inventory -->
+      <div class="card">
+        <h2>📦 Inventory</h2>
+        <form method="post" action="{{ url_for('dealer_inventory_create') }}" style="margin:0 0 12px 0; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <input type="text" name="product_name" placeholder="Product name" required style="flex:2; padding:8px;" />
+          <input type="number" name="stock" placeholder="Stock" min="0" value="0" style="width:110px; padding:8px;" />
+          <input type="text" name="unit" placeholder="Unit (e.g., kg)" value="kg" style="width:120px; padding:8px;" />
+          <input type="text" name="price" placeholder="Price (optional)" style="width:140px; padding:8px;" />
+          <button class="btn" type="submit">Add Item</button>
+        </form>
+        {% if inventory %}
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Product</th><th>Stock</th><th>Unit</th><th>Price</th><th>Last Updated</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              {% for item in inventory %}
+              <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.product_name }}</td>
+                <td>{{ item.stock }}</td>
+                <td>{{ item.unit }}</td>
+                <td>{{ item.price if item.price is not none else '-' }}</td>
+                <td>{{ item.last_updated.strftime('%Y-%m-%d %H:%M') if item.last_updated else '-' }}</td>
+                <td class="actions">
+                  <form class="small-form" method="post" action="{{ url_for('dealer_inventory_update', inv_id=item.id) }}">
+                    <input type="number" name="stock" value="{{ item.stock }}" min="0" />
+                    <input type="text" name="price" placeholder="price" value="{{ item.price if item.price is not none else '' }}" />
+                    <button class="btn" type="submit">Update</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="muted">No inventory items yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Orders -->
+      <div class="card">
+        <h2>🛒 New Orders</h2>
+        {% if orders %}
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Farmer ID</th><th>Product</th><th>Qty</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              {% for o in orders %}
+              <tr>
+                <td>{{ o.id }}</td>
+                <td>{{ o.farmer_id }}</td>
+                <td>{{ o.product_name }}</td>
+                <td>{{ o.quantity }} {{ o.unit }}</td>
+                <td>{{ o.status }}</td>
+                <td>{{ o.created_at.strftime('%Y-%m-%d %H:%M') if o.created_at else '-' }}</td>
+                <td>
+                  {% if o.status == 'pending' %}
+                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}">
+                      <input type="hidden" name="action" value="approve" />
+                      <button class="btn" type="submit">Approve</button>
+                    </form>
+                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}">
+                      <input type="hidden" name="action" value="reject" />
+                      <button class="btn secondary" type="submit">Reject</button>
+                    </form>
+                  {% elif o.status == 'approved' %}
+                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}">
+                      <input type="hidden" name="action" value="deliver" />
+                      <button class="btn" type="submit">Mark Delivered</button>
+                    </form>
+                  {% else %}
+                    <span class="muted">{{ o.status }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="muted">No orders found.</p>
+        {% endif %}
+      </div>
+
+      <!-- Subsidies (full width row below grid) -->
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h2>📢 Subsidies & Programs</h2>
+      {% if subsidies %}
+        {% for s in subsidies %}
+          <div class="subsidy">
+            <strong>{{ s.title }}</strong> — <span class="muted">{{ s.commodity or 'All' }}</span><br/>
+            <small>{{ s.description or '' }}</small><br/>
+            <small>Discount: {{ s.discount_percent }}% |
+              Valid: {{ s.valid_from if s.valid_from else 'N/A'}} to {{ s.valid_to if s.valid_to else 'N/A' }} |
+              Active: {{ 'Yes' if s.active else 'No' }}</small>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="muted">No active subsidies.</p>
+      {% endif %}
+
+      <hr style="margin:12px 0"/>
+
+      <h3>Propose Subsidy (optional)</h3>
+      <form method="post" action="{{ url_for('dealer_create_subsidy') }}">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input type="text" name="title" placeholder="Title" required style="flex:2; padding:8px" />
+          <input type="text" name="commodity" placeholder="Commodity (optional)" style="flex:1; padding:8px" />
+          <input type="number" name="discount_percent" placeholder="Discount (%)" min="0" max="100" style="width:120px; padding:8px" />
+        </div>
+        <div style="margin-top:8px; display:flex; gap:8px;">
+          <input type="date" name="valid_from" />
+          <input type="date" name="valid_to" />
+          <button class="btn" type="submit">Create Proposal</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+  <script>
+    function showToast(msg){
+      var t=document.createElement('div');
+      t.style.position='fixed';t.style.right='20px';t.style.bottom='20px';t.style.background='rgba(0,0,0,0.85)';
+      t.style.color='#fff';t.style.padding='10px 14px';t.style.borderRadius='6px';t.style.fontSize='14px';
+      t.style.boxShadow='0 2px 6px rgba(0,0,0,0.2)';t.style.opacity='0';t.style.transform='translateY(10px)';
+      t.style.transition='opacity .25s ease, transform .25s ease';t.textContent=msg;document.body.appendChild(t);
+      requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateY(0)';});
+      setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(10px)'; setTimeout(function(){t.remove();},250);},2500);
+    }
+    // Hook simple form submits to show a toast (client-only)
+    document.querySelectorAll('form').forEach(function(f){
+      f.addEventListener('submit', function(){
+        var btn = f.querySelector('button[type="submit"]');
+        var txt = btn ? (btn.textContent || 'Submitted') : 'Submitted';
+        showToast('Action: ' + txt);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Information - IKIRARO</title>
+    <link rel="stylesheet" href="market1.css">
+</head>
+<body>
+
+    <header>
+        <h1>Market Information: Maize (2020-2024)</h1>
+    </header>
+
+    <section id="prices">
+        <h2>Crop Price (Maize)</h2>
+        <canvas id="priceChart"></canvas>
+    </section>
+
+    <section id="demand">
+        <h2>Demand for Maize</h2>
+        <canvas id="demandChart"></canvas>
+    </section>
+
+    <section id="market-trends">
+        <h2>Market Trends</h2>
+        <canvas id="trendsChart"></canvas>
+    </section>
+
+    <section id="search-database">
+        <h2>Searchable Database of Local Prices</h2>
+        <label for="region">Select Region:</label>
+        <select id="region" name="region">
+            <option value="kigali">Kigali</option>
+            <option value="nyagatare">Nyagatare</option>
+            <option value="musanze">Musanze</option>
+        </select>
+        
+        <h3>Choose Year Range</h3>
+        <label for="startYear">Start Year:</label>
+        <select id="startYear">
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+        </select>
+
+        <label for="endYear">End Year:</label>
+        <select id="endYear">
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+        </select>
+
+        <button onclick="drawPriceChange()">Show Price Data</button>
+        <div id="price-result"></div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="market1.js"></script>
+</body>
+</html>

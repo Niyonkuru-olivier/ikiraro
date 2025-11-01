@@ -1,0 +1,40 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f8f8f8;
+}
+
+header {
+    text-align: center;
+    padding: 20px;
+    background-color: #4CAF50;
+    color: white;
+}
+
+section {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+}
+
+h2 {
+    color: #4CAF50;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#price-result {
+    margin-top: 20px;
+    font-weight: bold;
+}

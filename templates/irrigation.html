@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMUHUZA - Agricultural Technology and Irrigation</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='irrigation.css')}}">
+    <!-- Font Awesome for Social Media Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for graph rendering -->
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>UMUHUZA: Revolutionizing Agriculture - Irrigation Systems</h1>
+        <marquee><h1>Irrigation Technology</h1></marquee>
+        <p>Exploring modern irrigation technology to boost maize productivity in Rwanda.</p>
+    </header>
+
+    <!-- Purpose Section -->
+    <section id="purpose">
+        <h2>Purpose</h2>
+        <p>
+            In maize farming, irrigation plays a critical role in ensuring crop growth, especially in regions where rainfall is inconsistent. This section explores the irrigation process for maize farming in Rwanda, highlighting the systems used, the challenges farmers face, and the solutions provided to increase productivity.
+        </p>
+
+        <!-- Irrigation Process and Systems in Rwanda -->
+        <div class="irrigation-process">
+            <h3>Irrigation Process for Maize in Rwanda</h3>
+            <p>
+                In Rwanda, irrigation involves the controlled application of water to crops, primarily through surface, drip, or sprinkler irrigation systems. Drip irrigation has gained popularity in the maize farming sector due to its water efficiency and ability to deliver water directly to the plant roots.
+            </p>
+
+            <p>
+                However, farmers face challenges like limited access to affordable irrigation 
+                equipment, lack of technical knowledge, and water scarcity 
+                in some regions. UMUHUZA provides solutions by partnering 
+                with organizations to offer affordable irrigation tools and 
+                conducting training programs for farmers.
+            </p>
+        </div>
+
+        <!-- Problems and Solutions -->
+        <div class="problems-solutions">
+            <h4>Problems Facing Irrigation Systems</h4>
+            <ul>
+                <li type="none"><strong>1. Limited access to affordable irrigation tools</strong></li>
+                <li type="none"><strong>2. Inconsistent water supply</strong></li>
+                <li type="none"><strong>3. Lack of knowledge about effective irrigation techniques</strong></li>
+            </ul>
+
+            <h4>Solutions</h4>
+            <ul>
+                <li type="none"><strong>1. Providing affordable drip and sprinkler irrigation systems</strong></li>
+                <li type="none"><strong>2. Training farmers on water management and irrigation techniques</strong></li>
+                <li type="none"><strong>3. Collaborating with water management authorities to ensure a steady water supply</strong></li>
+            </ul>
+        </div>
+
+        <!-- Graph Section -->
+        <div class="graph-section">
+            <h3>Irrigation Impact on Maize Productivity</h3>
+            <canvas id="irrigationProductivityChart"></canvas>
+            <p>The graph above illustrates how irrigation systems have positively impacted maize productivity over the past few years in Rwanda.</p>
+        </div>
+    </section>
+
+    <!-- Components Section -->
+    <section id="components">
+        <h2>Components of Agricultural Technology</h2>
+
+        <!-- I. Agricultural Tools/Technologies -->
+        <div class="agri-tools">
+            <h3>Agricultural Tools and Technologies</h3>
+            <p>
+                To improve maize productivity, various agricultural technologies are employed. These include:
+            </p>
+            <ul>
+                <li>Drip irrigation systems to ensure efficient water use</li>
+                <li>Fertilization tools for balanced nutrient supply</li>
+                <li>Soil sensors to monitor moisture and nutrient levels</li>
+            </ul>
+            <center><img src="{{url_for('static', filename='irrigation.jpeg')}}" alt="Ikiraro logo" class="logo" style="width: 100%;"> <!-- Replace with actual image --></center>
+        </div>
+
+        <!-- II. Sustainable Farming Practices -->
+        <div class="sustainable-farming">
+            <h3>Sustainable Farming Practices</h3>
+            <p>
+                Sustainable farming is at the core of our agricultural initiatives. We promote the use of organic fertilizers and efficient irrigation techniques to conserve resources and improve soil health. Sustainable practices ensure that the agricultural sector thrives without depleting the natural environment.
+            </p>
+            <video controls width="600">
+                
+                <source src="videos/sustainable-farming.mp4" type="video/mp4"> <!-- Replace with actual video --> 
+                               Your browser does not support the video tag.
+            </video>
+        </div>
+    </section>
+    <div>
+        <center>
+            <a href="{{url_for('index')}}"><button type="submit" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">Back</button></a>
+        </center>
+    </div>
+    <!-- Social Media Section -->
+    <section id="social-media" style="background-color: rgb(38, 72, 3); color:beige;">
+        <h3 style="color:beige;">Follow Us on Social Media</h3>
+       
+        <div class="social-icons">
+            <a href="https://facebook.com/ikiraro" target="_blank" title="Facebook" id="facebook" style="color:beige;">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://x.com/ProjectIkiraro" target="_blank" title="Twitter" id="twitter" style="color:beige;">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://instagram.com/ikiraro" target="_blank" title="Instagram" id="instagram" style="color:beige;">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://www.linkedin.com/company/project-ikiraro-platform/" target="_blank" title="LinkedIn" id="linkedin" style="color:beige;">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+           
+        </div>
+    </section>
+    <center><h3 style="color:white">© 2025 UMUHUZA. All rights reserved.</h3></center>
+    <script src="{{url_for('static', filename='irrigation.js')}}"></script> <!-- JavaScript for charts -->
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMUHUZA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    
+</head>
+<body>
+    
+    <header>
+        <div class="header-content">
+            <!-- Insert your image here -->
+            <img src="{{ url_for('static', filename='ikiraro.png') }}" alt="Ikiraro logo" class="logo">
+            <div>
+                
+        <h1 style="text-align:center;">UMUHUZA</h1>
+<p style="font-size: 12px; line-height: 0.3em;text-align: center;" class="tagline">
+  REVOLUTIONIliZING AGRICULTURE THROUGH COLLABORATIVE Artificial INTELLIGENCE
+</p>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('about_us') }}">About</a></li>
+               <!-- <li><a href="#login">login-User</a>
+                    <a href="#login">login-User</a>
+                    <a href="#login">login-User</a>
+                </li>-->
+                <li><a href="{{url_for('dash')}}">Dashboard</a></li>
+                <li class="dropdown">
+                    <a href="{{url_for('login')}}" class="login-user">Login-User</a>
+                
+                </li>
+                <!--<li><a href="#account">Create Account</a></li>-->
+                <li class="dropdown">
+                    <a href="{{url_for('create_account')}}" class="login-user">Create Account</a>
+                   
+                </li>
+                <li class="dropdown">
+                    <a href="#login" class="login-user">Services</a>
+                    <div class="dropdown-content">
+                        <a href="{{url_for('service')}}">Extension Services</a>
+                        <a href="{{url_for('irrigation')}}">Irrigation Technology</a>
+                        <a href="{{url_for('weather')}}"> Weather Forecasting </a>
+                        <a href="{{url_for('market')}}">Market Price</a>
+                        <a href="{{ url_for('input_page')}}"> Input Information</a>
+                    </div>
+                </li>
+              
+                <!--<li><a href="#faq">Frequently Asked Questions</a></li>-->
+                <li><a href="{{url_for('contact')}}">Contact-Us</a></li>
+               
+            </ul>
+        </nav>
+    
+    </header>
+    <br><br>
+
+    <main>
+        <div class="farmer">
+        <!--<div class="big-letter"><p> Building Bridges</p> <p>Across the Food Chain</p> </div>
+        <div class="short-letter"><p>Empowering Farmers, Connecting the Markets</p></div>
+        <a href="@farmer">Farmer Registration</a><a href="@subscription">Subscription</a>
+        <img src="bridge.jpeg" alt="farmer">-->
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 50%; vertical-align: top;">
+                    <div class="big-letter">
+                        <p>Building Bridges</p>
+                        <p>Across the Food Chain</p>
+                    </div>
+                    <div class="short-letter">
+                        <p>Empowering Farmers, Connecting the Markets</p>
+                    </div>
+                    <a href="{{ url_for('create_account')}}">Farmer Registration</a>
+                    <a href="@subscription">Subscription</a>
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+                    <img src="{{url_for('static', filename='bridge.jpeg')}}" alt="farmer" style="width: 100%; height: auto;"/> <!-- Adjust size as needed -->
+                </td>
+            </tr>
+        </table>
+    </div>
+    </main>
+    
+
+    <main>
+        <section id="about">
+            <h2>About Us</h2>
+            <p><strong>Our Mission:</strong> UMUHUZA is a revolutionary web and mobile application that bridges the gap in Rwanda's food chain. We empower farmers with vital information, connect them to essential players like agro-dealers and processors, and create a more efficient and transparent market system.</p>
+            <p><strong>Why we exist:</strong> Rwanda's agricultural sector is fragmented, leading to information asymmetry and unreliable access to markets. Farmers struggle to get fair prices, while consumers and businesses face challenges finding consistent, high-quality produce.</p>
+            <p><strong>The good news:</strong> UMUHUZA's user-friendly web and mobile app provides farmers with:</p>
+            <ol>
+                <li><strong>Information access:</strong> Best practices, weather forecasts, and market data.</li>
+                <li><strong>Market access:</strong> Connect directly with agro-dealers, processors, and consumers.</li>
+                <li><strong>Improved pricing:</strong> Gain market transparency and fairer deals for their crops.</li>
+            </ol>
+        </section>
+
+        <section id="services">
+            <h2>Our Services</h2>
+            <ul>
+               
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 20%; vertical-align: top;">
+                            <img src="{{url_for('static', filename='farmer1.jpeg')}}" alt="Farmer registration" height="267px">
+                            <p>Farmer Registration</p> 
+                            <a href="{{url_for('create_account')}}">More info</a>  
+                        </td>
+                        <td style="width: 20%; vertical-align: top;"> 
+                            <img src="{{url_for('static', filename='extension.jpeg')}}" alt="Extensions service ">
+                            <p>Extension Services</p>
+                            <a href="{{url_for('service')}}">More info</a> 
+                        </td>
+                        <td style="width: 20%; vertical-align: top;"> 
+                            <img src="{{url_for('static', filename='input.jpeg')}}" alt="input information ">
+                            <p>Input Information</p>
+                            <a href="{{url_for('input_page')}}">More info</a>
+                        </td>
+                        
+                    </tr>
+                    <tr> 
+                        </td>
+                        <td style="width: 33.3%; vertical-align: top;"> 
+                            <img src="{{url_for('static', filename='weather.jpeg')}}" alt="weather forecasting " height="287px">
+                            <p>Weather Forecasting</p>
+                            <a href="{{url_for('weather')}}">More info</a> 
+                        </td>
+                        <td style="width: 33.3%; vertical-align: top;"> 
+                            <img src="{{url_for('static', filename='market.jpeg')}}" alt="market connections ">
+                            <p>Market Price</p>
+                            <a href="{{url_for('market')}}">More info</a>  
+                        </td>
+                        
+                        </td>
+                        <td style="width: 33.4%; vertical-align: top;">
+                            <img src="{{url_for('static', filename='irrigation.jpeg')}}" alt="supply sourcing "  height="290px">
+                            <p>Irrigation Technology</p>
+                            <a href="{{url_for('irrigation')}}">More info</a>
+                        </td>
+                    </tr>
+                </table>
+                
+            </ul>
+        </section>
+
+<!--dashboard code-->
+
+
+
+
+<script src="https://cdn.botpress.cloud/webchat/v0/inject.js"></script>
+<script>
+window.botpressWebChat.init({
+"botId":"f5a1ef00-3dd2-4a3e-b8b9-0ba70c5f6d37",
+"hostUrl":"https://cdn.botpress.cloud/webchat/v0",
+"messagingUrl":"https://messaging.botpress.cloud",
+"clientId":"f5a1ef00-3dd2-4a3e-b8b9-0ba70c5f6d37",
+"botName":"Botpress Webchat"
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <section id="testimonial">
+            <h2>Testimonial</h2>
+            <!--<blockquote>
+                <p>As an agro-dealer, I have never felt relaxed. Since Ikiraro came to us, we have no problem getting clients. They register, and I can see who has ordered what on time, and I can procure enough stock that farmers will consume with no extra. It is easy and simple. Thank you, Ikiraro!</p>
+                <footer>- Nyamaswa, Kirehe Agrodealer</footer>
+
+            </blockquote>-->
+
+            <div class="testimonie" style="overflow: hidden; width: 500px; height: 200px; position: relative;
+            margin: 0; font-family: Arial, sans-serif; background-color: rgb(18, 46, 43); display: flex; justify-content: center; align-items: center; height: 100vh;">
+                <blockquote style="position: absolute; left: 50%; transform: translateX(-50%); opacity: 1; transition: opacity 0.5s ease, transform 0.5s ease;">
+                    <p>UMUHUZA is a game-changer for processors! The platform connects us to farmers/cooperatives who have the products that we want (in our case Maize ) and we can negotiate beforehand. This has eased our pain to work with middlemen!</p>
+                    <footer>- Fred Mugisha, from MINIMEX</footer>
+                </blockquote>
+                <blockquote style="position: absolute; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.5s ease, transform 0.5s ease;">
+                    <p>As an agro-dealer, I have never felt relaxed. Since UMUHUZA came to us, we have no problem getting clients. They register, and I can see who has ordered what on time, and I can procure enough stock that farmers will consume with no extra. It is easy and simple. Thank you, Ikiraro!</p>
+                    <footer>- James Rutanga, Kirehe Agrodealer</footer>
+                </blockquote>
+                <blockquote style="position: absolute; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.5s ease, transform 0.5s ease;">
+                    <p>UMUHUZA is a game-changer for farmers in Nyamagabe! This platform connects us to the nearest agro-dealer to get inputs such as seeds, fertilizers, and pesticides, extension services, and weather forecasts. It's incredibly user-friendly and has boosted our productivity immensely. Thank you, UMUHUZA! We love you.</p>
+                    <footer>- Mukakigeri Donatile</footer>
+                </blockquote>
+            </div>
+        <br>
+            <script>
+                const testimonies = document.querySelectorAll('.testimonie blockquote');
+                let currentIndex = 0;
+        
+                function showNextTestimony() {
+                    testimonies[currentIndex].style.opacity = 0; // Fade out the current testimony
+                    currentIndex = (currentIndex + 1) % testimonies.length; // Move to the next index
+                    testimonies[currentIndex].style.opacity = 1; // Fade in the next testimony
+                }
+        
+                // Show the first testimony immediately
+                testimonies[currentIndex].style.opacity = 1;
+        
+                // Change testimony every 5 seconds
+                setInterval(showNextTestimony, 5000);
+            </script>
+        </section>
+<br><br><br>
+        <section id="founder">
+            <h2>Meet Our Team</h2>
+            <table>
+                <tr>
+         
+        <td>
+            <div class="team-member">
+                <img src="{{url_for('static', filename='Olivier.jpg')}}" alt="Team Member 2">
+                <h3>Olivier Niyonkuru</h3>
+                <p>Software Engineer</p>
+                <p> 4th year student at the University of Rwanda (Computer and Software Engineering), 
+                    He is a Software Engineer with 3 years of experience in software development. He is currently studying Computer and Software Engineering at the University of Rwanda. He previously worked as a Junior Software Developer at MININFRA on the Kwubaka project, a government platform for construction permits and land services. 
+                    He also holds a Software Engineering certificate awarded by Power Learn Project (PLP-Kenya).
+                 </p>
+            </div>
+        </td>
+        <td>
+            <div class="team-member">
+                <img src="{{url_for('static', filename='Ashula.jpg')}}" alt="Team Member 3">
+                <h3>Ashulah Ishimwe</h3>
+                <p>Data analyst</p>
+                <p>4th year student at the University of Rwanda (Information system.), 
+                    She is a Data Analyst with 2 years of experience and a certified Data Analyst from KLab Rwanda, 
+                    brings strong analytical expertise. Together, we focus on impactful 
+                    agriculture solutions aligned with Rwanda’s development goals </p>
+                     </div>
+                    </td>
+                    </tr>
+                    </table>
+        </section>
+
+        <!--<section id="contact">
+            <h2>Contact Us Today</h2>
+            <p>Reach out to us with your queries. We connect farmers to resources, information, and markets. Your questions help us serve you better.</p>
+            <form id="contact-form">
+                <label for="name">Name</label>
+                <input type="text" id="name" required>
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+                <label for="message">Message</label>
+                <textarea id="message" required></textarea>
+                <button type="submit">Submit</button>
+            </form>
+        </section>
+<br><br>
+        <section id="contact" style="background-color: #f8f8f8; padding: 40px 20px; text-align: center; max-width: 800px; margin: 0 auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <h2 style="font-size: 2rem; margin-bottom: 20px; color: #333;">Contact Us Today</h2>
+            <p style="font-size: 1rem; color: #555; margin-bottom: 30px; line-height: 1.6;">Reach out to us with your queries. We connect farmers to resources, information, and markets. Your questions help us serve you better.</p>
+            
+            <form id="contact-form" style="display: flex; flex-direction: column; align-items: center;" onsubmit="return validateForm()">
+                <label for="name" style="font-weight: bold; margin-bottom: 5px; font-size: 1rem; color: #333; width: 100%;">Name</label>
+                <input type="text" id="name" required style="width: 100%; max-width: 600px; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem;">
+                
+                <label for="email" style="font-weight: bold; margin-bottom: 5px; font-size: 1rem; color: #333; width: 100%;">Email</label>
+                <input type="email" id="email" required style="width: 100%; max-width: 600px; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem;">
+                
+                <label for="message" style="font-weight: bold; margin-bottom: 5px; font-size: 1rem; color: #333; width: 100%;">Message</label>
+                <textarea id="message" required style="width: 100%; max-width: 600px; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; min-height: 150px;"></textarea>
+                
+<button type="submit" style="padding: 10px 20px; background-color: #4CAF50; color: #fff; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer;">Submit</button>
+            </form>
+            
+            <script>
+                function validateEmail(email) {
+                    // Regular expression for validating email format
+                    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                    return emailPattern.test(email);
+                }
+                
+                function validateForm() {
+                    const email = document.getElementById('email').value;
+                    const message = document.getElementById('message').value.toLowerCase();
+                    
+                    // Check if email is valid
+                    if (!validateEmail(email)) {
+                        alert('Please enter a valid email address.');
+                        return false; // Prevent form submission
+                    }
+                    
+                    // Check if message contains "unknown"
+                    if (message.includes('unknown')) {
+                        alert('Message contains forbidden content: "unknown". Please revise your message.');
+                        return false; // Prevent form submission
+                    }
+                    
+                    // If both checks pass, allow form submission
+                    return true;
+
+                    setTimeout(function() {
+            window.location.href = 'contact-appreciate.html'; // Redirect to appreciation page
+        }, 1500);
+                }
+            </script>
+        </section>-->
+        
+    </main>
+    <footer style="background-color: rgb(103, 194, 12);">
+    <!-- Social Media Section-->
+    <section id="social-media">
+        <h3>Follow Us on Social Media</h3>
+        <div class="social-icons">
+            <a href="mailto:project.ikiraro@gmail.com" target="_blank" title="email">
+                <i class="fa-regular fa-envelope"></i>
+            </a>
+            
+            <a href=" https://x.com/ProjectIkiraro " target="_blank" title="Twitter">
+                <i class="fa-solid fa-x"></i>
+            </a>
+            <a href="https://www.youtube.com/@ProjectIkiraro" target="_blank" title="YouTube">
+                <i class="fa-brands fa-youtube"></i>
+            </a>
+            
+            </a>
+            <a href=" https://www.linkedin.com/company/project-ikiraro-platform/
+            " target="_blank" title="LinkedIn">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+        </div>
+    </section>
+
+        <p>&copy; 2025 UMUHUZA. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+
+</body>
+</html>

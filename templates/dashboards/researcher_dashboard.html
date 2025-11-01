@@ -1,0 +1,256 @@
+<!-- templates/dashboards/researcher_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Researcher Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #eef2fb; margin: 0; padding: 0; }
+    header { background: #022b16; color: white; padding: 15px; text-align: center; }
+    .container { padding: 20px; max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 15px; }
+
+    .accordion { background-color: #022b16; color: white; cursor: pointer; 
+      padding: 20px; text-align: center;
+                 font-size: 18px; border: none; outline: none; transition: 0.4s; border-radius: 8px;
+                 box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .accordion.active, .accordion:hover { background-color: #022b16; }
+    .panel { padding: 15px; display: none; background-color: white; border-radius: 8px;
+             box-shadow: 0 2px 5px rgba(0,0,0,0.1); animation: fadeIn 0.3s ease-in-out; 
+             overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #022b16; color: white; }
+    a.download-btn { display: inline-block; margin-top: 10px; padding: 10px 15px; 
+      background: #022b16; color: white; text-decoration: none; border-radius: 5px; }
+    a.download-btn:hover { background: #022b16; }
+
+    .chart-container { margin-top: 20px; }
+    canvas { width: 100% !important; height: 350px !important; }
+
+    .nisr-title { background:#fff3e0; padding:12px; border-radius:6px; 
+      color:#6b4226; font-weight:600; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to
+     { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome, {{ user.full_name }} (Researcher)</h1>
+  </header>
+
+  <div class="container">
+
+    <!-- Market Prices (DB) -->
+    <button class="accordion">📊 Market Price Data </button>
+    <div class="panel">
+      <p>The Market price data provides insights into the pricing trends of various commodities Over
+      time especially in 2025. This dataset is crucial for researchers analyzing market dynamics, price fluctuations,
+      and economic factors affecting agricuture in Rwanda. in This Dataset we take the example onn th
+commodity of Beans, Maize and Cassava      </p>
+      <h2>Market Price Dataset</h2>
+      <a href="{{ url_for('download_market_prices') }}" class="download-btn">⬇ Download Full Dataset (CSV)</a>
+
+      {% if chart_data %}
+      <div class="chart-container"><h3>📈 Price Trends Over Time</h3><canvas id="lineChart"></canvas></div>
+      <div class="chart-container"><h3>📊 Average Price by Commodity</h3><canvas id="barChart"></canvas></div>
+      <div class="chart-container"><h3>🥧 Average Price Share by Commodity</h3><canvas id="dbPieChart"></canvas></div>
+      {% else %}
+      <p>No market price chart data available.</p>
+      {% endif %}
+    </div>
+
+    <!-- NISR Dataset: only show title + charts (no data table) -->
+    <button class="accordion">📑 NISR Dataset</button>
+    <div class="panel">
+      <p>This Dataset provides insights into the agricultural practices and outputs in Rwanda, with
+        focusing on crop Production, yields, and related metrics for the year 2025. It is essential 
+        for researchers studying agricultural trends, food security, and rural development in Rwanda.
+      </p>
+      <div class="nisr-title">This is the NISR dataset for crops (2025 Season A).</div>
+      <p style="margin-top:10px;">You can download the full NISR XLSX and view the summary charts below.</p>
+      <a href="{{ url_for('download_nisr_dataset') }}" class="download-btn">⬇ Download NISR Dataset (XLSX)</a>
+
+      {% if nisr_chart_data %}
+        <div class="chart-container"><h3>📊 NISR Average Prices by Commodity</h3><canvas id="nisrBarChart"></canvas></div>
+        <div class="chart-container"><h3>📈 NISR Price Distribution (Histogram)</h3><canvas id="nisrHistChart"></canvas></div>
+      {% else %}
+        <p style="margin-top:12px;">NISR dataset charts are not available (file missing or incorrect format).</p>
+      {% endif %}
+
+      <hr style="margin:24px 0; border: none; border-top:1px solid #eee;"/>
+      <div class="nisr-title">Rwanda Maize Production (2025 vs 2024) by Province</div>
+      <p style="margin-top:10px;">Maize Production in Rwanda has shown significant changes between
+        2024 and 2025, with notable increases in several provinces due to improved agricultural 
+        practices and favorable weather conditions. the charts bellow illustrate the Production
+      </p>
+      <a href="{{ url_for('download_maize_dataset') }}" class="download-btn">⬇ Download Maize Dataset (CSV)</a>
+
+      {% if maize_data %}
+        <div class="chart-container"><h3>📊 Production by Province (2024 vs 2025)</h3><canvas id="maizeBarChart"></canvas></div>
+        <div class="chart-container"><h3>📈 Change Percentage Distribution (Histogram)</h3><canvas id="maizeHistChart"></canvas></div>
+        <div class="chart-container"><h3>🥧 2025 Production Share by Province</h3><canvas id="maizePieChart"></canvas></div>
+      {% else %}
+        <p style="margin-top:12px;">Maize dataset is not available.</p>
+      {% endif %}
+    </div>
+
+    <!-- Research Collaborations -->
+    <button class="accordion">🔬 Research Collaborations</button>
+    <div class="panel">
+      <h2>Soil Health Improvement Project</h2>
+      <p>- Collaboration with universities and NGOs.</p>
+      <p>- Focus: Sustainable soil fertility & productivity.</p>
+    </div>
+
+    <!-- Policy Briefs -->
+    <button class="accordion">📢 Policy Briefs</button>
+    <div class="panel">
+      <h2>Climate-Smart Agriculture Policy</h2>
+      <p>- Input on irrigation, pest management, and seed resilience.</p>
+    </div>
+
+  </div>
+
+  <script>
+    // Accordion toggle (only one opened)
+    const acc = document.getElementsByClassName("accordion");
+    for (let i = 0; i < acc.length; i++) {
+      acc[i].addEventListener("click", function() {
+        for (let j = 0; j < acc.length; j++) {
+          if (acc[j] !== this) {
+            acc[j].classList.remove("active");
+            acc[j].nextElementSibling.style.display = "none";
+          }
+        }
+        this.classList.toggle("active");
+        const panel = this.nextElementSibling;
+        panel.style.display = (panel.style.display === "block") ? "none" : "block";
+      });
+    }
+
+    // DB charts (chart_data)
+    {% if chart_data %}
+    const dbPrices = {{ chart_data|tojson }};
+    new Chart(document.getElementById('lineChart'), {
+      type: 'line',
+      data: {
+        labels: dbPrices.dates,
+        datasets: Object.keys(dbPrices.commodities).map(function(c, idx) {
+          return {
+            label: c,
+            data: dbPrices.commodities[c],
+            borderWidth: 2,
+            fill: false,
+            tension: 0.1
+          };
+        })
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+
+    new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(dbPrices.avg_prices),
+        datasets: [{ label: 'Average Price (DB)', data: Object.values(dbPrices.avg_prices), backgroundColor: '#283593' }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+
+    // Pie chart for average prices share by commodity
+    (function(){
+      var labels = Object.keys(dbPrices.avg_prices);
+      var values = Object.values(dbPrices.avg_prices);
+      var colors = ['#1e88e5','#43a047','#f4511e','#8e24aa','#fdd835','#5e35b1','#00acc1','#fb8c00','#6d4c41','#00897b','#3949ab'];
+      new Chart(document.getElementById('dbPieChart'), {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{ data: values, backgroundColor: labels.map(function(_, i){ return colors[i % colors.length]; }) }]
+        },
+        options: { responsive: true }
+      });
+    })();
+    {% endif %}
+
+    // NISR charts (nisr_chart_data) - bar + histogram
+    {% if nisr_chart_data %}
+    const nisr = {{ nisr_chart_data|tojson }};
+
+    new Chart(document.getElementById('nisrBarChart'), {
+      type: 'bar',
+      data: {
+        labels: nisr.commodities,
+        datasets: [{ label: 'NISR Avg Price', data: nisr.avg_prices, backgroundColor: '#1a237e' }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('nisrHistChart'), {
+      type: 'bar',
+      data: {
+        labels: nisr.histogram_bins,
+        datasets: [{ label: 'Count', data: nisr.histogram_counts, backgroundColor: '#4caf50' }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+    {% endif %}
+
+    // Maize charts (maize_data) - grouped bar, histogram, pie
+    {% if maize_data %}
+    const maize = {{ maize_data|tojson }};
+
+    // Grouped bar: 2024 vs 2025 by province
+    new Chart(document.getElementById('maizeBarChart'), {
+      type: 'bar',
+      data: {
+        labels: maize.provinces,
+        datasets: [
+          { label: '2024 Production (MT)', data: maize.prod_2024, backgroundColor: '#90caf9' },
+          { label: '2025 Production (MT)', data: maize.prod_2025, backgroundColor: '#1e88e5' }
+        ]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+    });
+
+    // Histogram: Change % distribution across districts
+    if (maize.histogram_bins && maize.histogram_counts) {
+      new Chart(document.getElementById('maizeHistChart'), {
+        type: 'bar',
+        data: { labels: maize.histogram_bins, datasets: [{ label: 'District Count', data: maize.histogram_counts, backgroundColor: '#43a047' }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    // Pie: 2025 share by province
+    const pieColors = ['#1e88e5', '#43a047', '#f4511e', '#8e24aa', '#fdd835', '#5e35b1', '#00acc1', '#fb8c00'];
+    new Chart(document.getElementById('maizePieChart'), {
+      type: 'pie',
+      data: {
+        labels: maize.provinces,
+        datasets: [{ data: maize.prod_2025, backgroundColor: maize.provinces.map(function(label, i) { return pieColors[i % pieColors.length]; }) }]
+      },
+      options: { responsive: true }
+    });
+    {% endif %}
+  </script>
+  <script>
+    function showToast(msg){
+      var t=document.createElement('div');
+      t.style.position='fixed';t.style.right='20px';t.style.bottom='20px';t.style.background='rgba(0,0,0,0.85)';
+      t.style.color='#fff';t.style.padding='10px 14px';t.style.borderRadius='6px';t.style.fontSize='14px';
+      t.style.boxShadow='0 2px 6px rgba(0,0,0,0.2)';t.style.opacity='0';t.style.transform='translateY(10px)';
+      t.style.transition='opacity .25s ease, transform .25s ease';t.textContent=msg;document.body.appendChild(t);
+      requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateY(0)';});
+      setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(10px)'; setTimeout(function(){t.remove();},250);},2500);
+    }
+    // Toast when toggling accordion sections
+    document.querySelectorAll('.accordion').forEach(function(btn){
+      btn.addEventListener('click', function(){ showToast('Toggled: ' + (btn.textContent || 'Section')); });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rwanda Crop Yields Dashboard (2020-2024)</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js for charts -->
+</head>
+<body>
+    <header>
+        <h1>Rwanda Crop Yields Dashboard (2020-2024)</h1>
+        <p>Insights on maize and beans yield trends based on weather, fertilizers, and government policy.</p>
+    </header>
+
+    <main>
+        <!-- Yield Charts Section -->
+        <section id="charts-section">
+            <h2>Crop Yields Over Time</h2>
+            <div class="chart-container">
+                <canvas id="maizeYieldChart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="beansYieldChart" width="400" height="200"></canvas>
+            </div>
+        </section>
+
+        <!-- Analysis Section -->
+        <section id="analysis-section">
+            <h2>Factors Affecting Crop Yields</h2>
+            <p>
+                The yields of maize and beans have been influenced by several factors over the years:
+            </p>
+            <ul>
+                <li><strong>Weather:</strong> Rainfall and temperature changes have greatly affected the growth cycles of crops.</li>
+                <li><strong>Fertilizers:</strong> The use of fertilizers like NPK, DAP, and organic composts has enhanced productivity, but availability and affordability remain challenges.</li>
+                <li><strong>Government Policy:</strong> Support from the Rwandan government through subsidies, extension services, and irrigation projects has contributed positively to yield increases.</li>
+            </ul>
+        </section>
+
+        <!-- Comments Section -->
+        <section id="comments-section">
+            <h2>Dashboard Interpretation</h2>
+            <p id="dashboard-comments">
+                <!-- This section will be updated based on chart data -->
+            </p>
+        </section>
+    </main>
+
+    <script src="dashboard.js"></script> <!-- JavaScript for charts -->
+</body>
+</html>

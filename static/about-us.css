@@ -1,0 +1,186 @@
+/* General Styles */
+body {
+    background-color: #011f0f;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: black;
+    padding: 20px;
+    text-align: center;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column; /* Stack elements vertically */
+}
+
+.header-content .logo {
+    width: 150px;
+    height: auto;
+    border-radius: 50%;
+    margin-bottom: 10px; /* Space below logo */
+}
+
+.tagline {
+    font-size: 1.2em;
+    color: #4CAF50;
+    margin-top: 5px; /* Space above tagline */
+}
+
+h1, h2 {
+    color: #4CAF50;
+    text-align: center; /* Center align headings */
+}
+
+main {
+    padding: 20px;
+}
+
+section {
+    margin-bottom: 40px;
+    background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent background for sections */
+    padding: 20px; /* Padding inside sections */
+    border-radius: 8px; /* Rounded corners for sections */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Subtle shadow for depth */
+}
+
+/* =========================
+   Team Section Styling
+   ========================= */
+.team {
+    text-align: center;
+}
+
+.team h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.team table {
+    margin: 0 auto;
+    border-collapse: separate;
+    border-spacing: 30px;
+    background: transparent;
+}
+
+/* Team member card */
+.team-member {
+    background-color: #022b16;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 280px;
+    text-align: center;
+    color: #f1f1f1;
+    margin: 20px auto;
+}
+
+.team-member:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Team member image */
+.team-member img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    border: 3px solid #4caf50;
+}
+
+/* Name & Role */
+.team-member h3 {
+    margin: 10px 0 5px;
+    font-size: 1.3rem;
+    color: #4caf50;
+}
+
+.team-member p {
+    margin: 6px 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* =========================
+   Social Icons
+   ========================= */
+#social-media {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.social-icons a {
+    text-decoration: none;
+    font-size: 24px;
+    color: white;
+    transition: color 0.3s ease;
+}
+
+.social-icons a:hover {
+    color: #4CAF50;
+}
+
+/* =========================
+   Footer
+   ========================= */
+footer {
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+/* =========================
+   Responsive Styles
+   ========================= */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+    }
+
+    .team table {
+        display: block;
+    }
+
+    .team-member {
+        width: 90%;
+        max-width: 300px;
+    }
+
+    .social-icons a {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 2em;
+    }
+
+    header p {
+        font-size: 1em;
+    }
+
+    section {
+        padding: 15px;
+    }
+}

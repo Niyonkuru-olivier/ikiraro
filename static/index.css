@@ -1,0 +1,368 @@
+body {
+    background:#011f0f;
+    color:#fff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    margin-right: 100px;
+    margin-left: 100px;
+}
+
+header {
+    background: black;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+}
+
+/* Dashboard*/
+.chart-container {
+    width: 48%;
+    margin: 1%;
+    background-color: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+canvas {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+/*login User CSS*/
+/* Style for the dropdown container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Hide the dropdown content initially */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Style for the dropdown links */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Show the dropdown content when hovering over Login-User */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Change link color on hover */
+.dropdown-content a:hover {
+    background-color: rgb(18, 46, 43);
+}
+
+
+main {
+    padding: 20px;
+
+    /* for Dashboard*/
+    
+    display: flex;
+    flex-wrap: wrap;
+}
+h1{
+    color:#4CAF50;
+}
+
+ h2 {
+    color: #e8e0e0;
+}
+
+blockquote {
+    border-left: 4px solid #4CAF50;
+    margin: 20px 0;
+    padding-left: 20px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background: #4CAF50;
+    color: #fff;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    margin: auto;
+}
+
+label {
+    margin: 10px 0 5px;
+}
+
+input, textarea {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+   
+   background: black;
+}
+header h1 {
+    font-size: 3em; 
+    margin: 0;
+}
+
+header .tagline {
+    font-size: 1em; 
+    color: #fff;    
+    margin-top: 5px;
+    font-weight: lighter;
+    text-transform: uppercase; 
+}
+
+header {
+    
+    padding: 20px;
+    background: rgb(16, 15, 15);
+   
+}
+h1 p .tagline{
+    line-height: 0.8;
+    text-align: center;
+}
+
+
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-content img.logo {
+    width: 150px; /* Adjust the width as necessary */
+    height: auto;
+    margin-right: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+
+    margin: 30; /* Remove default margin */
+    display: flex; /* Use flexbox for alignment */
+    flex-direction: column; /* Stack elements vertically */
+    align-items: right; /* Center items horizontally */
+}
+
+/* css about farmer*/
+
+.farmer {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+     /* Center text within the main section */
+    padding: 20px; /* Add padding around the main content */
+    background-color:rgb(18, 46, 43); /* Light background color */
+
+}
+
+.big-letter p {
+    font-size: 28px; /* Increase font size for emphasis */
+    font-weight: bold; /* Make text bold */
+    margin: 5px 0; /* Space between lines */
+    margin-left:50px;
+}
+
+.short-letter p {
+    font-size: 20px; /* Slightly smaller font for the subtitle */
+    margin: 10px 0; /* Add space around the text */
+    margin-left:50px;
+}
+
+.farmer a {
+    display: inline-block; /* Make links behave like block elements */
+    margin: 10px 20px; /* Space between links */
+    padding: 10px 20px; /* Add padding around the links */
+    background-color: #eff4ef; /* Green background for buttons */
+    color:black; /* White text color */
+    text-decoration: none; /* Remove underline from links */
+    border-radius: 5px; /* Rounded corners for buttons */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+    display: block; /* Allows width and height to be applied */
+    width: 150px; /* Set a fixed width */
+    height: 25px; /* Set a fixed height */
+    margin-left:50px;
+}
+
+.farmer a:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+.farmer img {
+    margin-top: 20px; /* Space between the image and the content above */
+    max-width: 500px; /* Ensure the image is responsive */
+    height: 500px; /* Maintain aspect ratio */
+    margin-right: 10px;
+    float: right; /* Aligns the image to the right */
+    margin-left: 20px; /* Optional: adds space between the image and text */
+    border-radius:20px;
+}
+
+
+/* CSS about the services*/
+
+table {
+    width: 100%;
+    border-collapse: collapse; /* Removes gaps between table cells */
+}
+
+td {
+    width: 20%; /* You can adjust the width as needed */
+    text-align: center; /* Centers content in each cell */
+    vertical-align: top; /* Aligns content at the top of the cell */
+    padding: 10px; /* Adds padding around each cell */
+}
+
+.services img {
+    width: 100%; /* Makes the image responsive */
+    height: auto; /* Maintains the aspect ratio */
+    border-radius: 8px; /* Adds rounded corners to images */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow for depth */
+}
+
+.services table p {
+    font-weight: bold; /* Makes the text bold */
+    margin: 10px 0; /* Adds space above and below the text */
+}
+
+ table tr a {
+    display: inline-block; /* Makes the link an inline block for better spacing */
+    margin-top: 5px; /* Adds space above the link */
+    padding: 5px 10px; /* Adds padding inside the link for better clickability */
+    background-color: #4CAF50; /* Changes background color of the link */
+    color: white; /* Changes text color to white */
+    text-decoration: none; /* Removes underline from the link */
+    border-radius: 4px; /* Rounds the corners of the link */
+    transition: background-color 0.3s; /* Adds a smooth transition for hover effect */
+}
+
+ table tr a:hover {
+    background-color: #45a049; /* Darkens the background color on hover */
+}
+
+/* Founder CSS*/
+
+#founder {
+    text-align: center; /* Centers text and block elements like <h2>, <h3>, and <p> */
+    padding: 20px;
+    margin: 0 auto;
+    background-color:rgb(18, 46, 43);
+}
+
+#founder img {
+    display: block;
+    margin: 0 auto; /* Centers the image horizontally */
+    border-radius: 50%; /* Optional: Make the image circular */
+    width: 150px; /* Adjust the size of the image */
+    height: 150px;
+}
+
+#founder h2, #founder h3, #founder p {
+    margin: 10px 0;
+}
+
+#founder p {
+    max-width: 600px; /* Limit the width of the paragraph to improve readability */
+    margin: 10px auto;
+    line-height: 1.6;
+}
+
+/* social media CSS*/
+
+.social-icons a {
+    margin: 0 10px;
+    color: white;
+    font-size: 24px;
+    text-decoration: none;
+}
+
+.social-icons a:hover {
+    color: #4CAF50;
+}
+
+/*contact css*/
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td {
+    padding: 20px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    table {
+        display: block;
+        width: 100%;
+    }
+
+    td {
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+    }
+}

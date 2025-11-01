@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crops Yield Dashboard</title>
+    <link rel="stylesheet" href="dashboard2.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Maize & Beans Yield Dashboard (2020-2024)</h1>
+    </header>
+    
+    <main>
+        <section id="charts-section">
+            <table>
+                <tr>
+                    <td>
+            <div class="chart-container">
+                <canvas id="cropYieldChart"></canvas>
+            </div>
+        </td>
+            <td>
+            <div class="chart-container">
+                <canvas id="fertilizerChart"></canvas>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div class="chart-container">
+                <canvas id="weatherChart"></canvas>
+            </div>
+            </td>
+            <td>
+            <div class="chart-container">
+                <canvas id="policyImpactChart"></canvas>
+            </div>
+        </td>
+    </tr>
+        </table>
+        </section>
+    </main>
+    
+    <script src="dashboard2.js"></script>
+</body>
+</html>

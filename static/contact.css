@@ -1,0 +1,104 @@
+/* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* General body styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: rgb(18, 46, 43);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Header styling */
+header {
+    margin-bottom: 20px;
+}
+
+/* Contact container styling */
+.contact-container {
+    background-color: white;
+    color: black;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    text-align: center;
+}
+
+/* Form styling */
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Response message styling */
+.response-message {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+/* Footer styling */
+footer {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.social-icons a {
+    margin: 0 10px;
+    color: white;
+    font-size: 24px;
+    text-decoration: none;
+}
+
+.social-icons a:hover {
+    color: #4CAF50;
+}
+
+/*contact css*/
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td {
+    padding: 20px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    table {
+        display: block;
+        width: 100%;
+    }
+
+    td {
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+    }
+}

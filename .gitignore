@@ -1,0 +1,33 @@
+# Large media files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.flv
+
+# Large images (keep small ones, exclude large ones manually)
+# Uncomment if you want to exclude all images over a certain size
+# *.jpg
+# *.jpeg
+# *.png
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+

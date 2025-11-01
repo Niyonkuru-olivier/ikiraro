@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Success</title>
+    <link rel="stylesheet" href="appreciate.css">
+</head>
+<body>
+    <div class="container">
+        <div class="message-box">
+            <h1>Thank You for Registering!</h1>
+            <p id="appreciation-message">
+                We are excited to welcome you to our growing agricultural community. Your account has been created, and you are now one step closer to accessing vital resources and tools that will help you enhance your farming practices. Whether you're a farmer looking to improve crop yields, an agro-dealer exploring new market opportunities, or a researcher aiming to innovate within the agricultural sector, we are here to support your success.
+
+                This is just the beginning of your journey with us. We’re committed to helping you grow, innovate, and make informed decisions through our platform. Log in now and start exploring a wealth of knowledge, networking opportunities, and tools designed to drive your agricultural success.
+                
+                Together, let’s cultivate a brighter future for agriculture!
+            </p>
+         <a href="{{url_for('login')}}" class="login-user">   <button id="login-btn" class="btn" onclick="redirectToLogin()">Proceed to Login</button></a>
+        </div>
+    </div>
+
+    <script src="appreciate.js"></script>
+</body>
+</html>

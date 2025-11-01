@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Dashboard</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='dash.css')}}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js CDN -->
+</head>
+<body>
+    <h1>Farm Input Costs and Labor Dynamics Dashboard: Understanding Farmer Behavior in Avocado and Poultry Production</h1>
+
+    <!-- Total Metrics -->
+    <div class="metrics">
+        <div class="metric">
+            <h2>602.95M</h2>
+            <p>Total Spent on Pesticide & Irrigation</p>
+        </div>
+        <div class="metric">
+            <h2>714.44K</h2>
+            <p>Total NPK Fertilizer (Kg) 2024</p>
+        </div>
+        <div class="metric">
+            <h2>281.31K</h2>
+            <p>Total DAP Fertilizer (Kg) 2024</p>
+        </div>
+    </div>
+
+    <!-- Graphs -->
+    <div class="dashboard-grid">
+        <canvas id="avokaQtyChart"></canvas>
+        <canvas id="expensePieChart"></canvas>
+        <canvas id="farmerGroupExpenseChart"></canvas>
+        <canvas id="totalSeedsChart"></canvas>
+        <canvas id="inkokoQtyChart"></canvas>
+    </div>
+
+    <!-- Link to JavaScript -->
+    <script src="{{url_for('static', filename='dash.js')}}"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter OTP</title>
+    <link rel="stylesheet" href="OTP.css"> <!-- Link to CSS file -->
+</head>
+<body>
+    <div class="container">
+        <h1>Enter OTP</h1>
+        <p>Please enter the OTP sent to your registered email or phone number.</p>
+        <form id="otpForm" action="verify-otp.php" method="POST">
+            <input type="text" id="otp" maxlength="6" placeholder="Enter OTP" required>
+            <button type="submit">Verify</button>
+        </form>
+        <p id="message"></p>
+    </div>
+    <script src="OTP-customer.js"></script> <!-- Link to JavaScript file -->
+</body>
+</html>

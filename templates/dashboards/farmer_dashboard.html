@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Farmer Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f5f7fa;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+header {
+  background: linear-gradient(135deg, #022b16, #022b16);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.container {
+  padding: 25px;
+  max-width: 1400px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  grid-gap: 20px;
+}
+
+/* Accordion Buttons */
+.accordion {
+  background-color: #022b16;
+  color: #fff;
+  cursor: pointer;
+  padding: 16px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  font-size: 17px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.accordion::after {
+  content: '\25BC';
+  font-size: 14px;
+  transition: transform 0.3s;
+}
+
+.accordion.active::after {
+  transform: rotate(-180deg);
+}
+
+.accordion.active,
+.accordion:hover {
+  background-color: #022b16;
+}
+
+.panel {
+ display: none; /* Hidden by default */
+  padding: 15px;
+  background-color: white;
+  border: 1px solid #ccc;
+
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid #e0e0e0;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+th {
+  background: #022b16;
+  color: white;
+  font-weight: 500;
+}
+
+td {
+  background: #fafafa;
+}
+
+tr:nth-child(even) td {
+  background: #f0fdfb;
+}
+
+/* Charts */
+.chart-container {
+  width: 100%;
+  height: 320px;
+  margin-top: 10px;
+}
+
+/* Farming Tips */
+.tip-section {
+  margin-bottom: 20px;
+}
+
+.tip-section h3 {
+  margin-top: 0;
+  color: #022b16;
+  font-size: 16px;
+}
+
+.tip-section ul {
+  padding-left: 18px;
+  margin: 6px 0;
+}
+
+.tip-section li {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+/* Buttons & Forms */
+form input, form button {
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+form button {
+  background: #022b16;
+  color: white;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+form button:hover {
+  background: #022b16;
+}
+
+/* Back link */
+.single-view-back {
+  margin-bottom: 20px;
+}
+
+.single-view-back a {
+  color: #022b16;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.single-view-back a:hover {
+  text-decoration: underline;
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome, {{ user.full_name }} (Farmer)</h1>
+  </header>
+
+  <div class="container">
+    <div id="single-view-back" class="single-view-back" style="display:none;">
+      <a href="{{ url_for('farmer_dashboard') if false else '#' }}" onclick="event.preventDefault(); window.location.href = window.location.pathname;">← Back to all sections</a>
+    </div>
+    <!-- Weather Forecast -->
+    <div class="accordion-container">
+      <button class="accordion" data-view="weather">🌦 Weather Forecast</button>
+      <div class="panel">
+        {% if weather_data.time %}
+          <canvas id="temperatureChart" class="chart-container"></canvas>
+          <canvas id="rainfallChart" class="chart-container"></canvas>
+        {% else %}
+          <p class="small">Weather data not available.</p>
+          {% if weather_data.error %}<p class="small">Error: {{ weather_data.error }}</p>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Market Prices -->
+    <div class="accordion-container">
+      <button class="accordion" data-view="market">📈 Market Prices</button>
+      <div class="panel">
+        {% if market_prices %}
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Commodity</th>
+                <th>Price</th>
+                <th>Province</th>
+                <th>Unit</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for mp in market_prices %}
+              <tr>
+                <td>{{ mp.id }}</td>
+                <td>{{ mp.commodity }}</td>
+                <td>{{ mp.price }}</td>
+                <td>{{ mp.province or '-' }}</td>
+                <td>{{ mp.unit or '-' }}</td>
+                <td>{{ mp.date }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="small">Market price data not available.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Available Agro-Dealer Inventory -->
+    <div class="accordion-container">
+      <button class="accordion" data-view="inventory">📦 Available Agro-Dealer Inventory</button>
+      <div class="panel">
+        {% if inventories %}
+          <table>
+            <thead>
+              <tr>
+                <th>Dealer ID</th>
+                <th>Product</th>
+                <th>Stock</th>
+                <th>Unit</th>
+                <th>Price</th>
+                <th>Order</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in inventories %}
+              <tr>
+                <td>{{ item.dealer_id }}</td>
+                <td>{{ item.product_name }}</td>
+                <td>{{ item.stock }}</td>
+                <td>{{ item.unit }}</td>
+                <td>{{ item.price if item.price is not none else '-' }}</td>
+                <td>
+                  <form method="post" action="{{ url_for('farmer_create_order') }}" style="display:flex; gap:6px; align-items:center;">
+                    <input type="hidden" name="dealer_id" value="{{ item.dealer_id }}" />
+                    <input type="hidden" name="product_name" value="{{ item.product_name }}" />
+                    <input type="number" name="quantity" placeholder="Qty" min="1" required style="width:80px; padding:6px;" />
+                    <input type="text" name="unit" value="{{ item.unit }}" style="width:70px; padding:6px;" />
+                    <button type="submit" style="padding:6px 10px; background:#022b16; color:#fff; border:none; border-radius:4px; cursor:pointer;">Order</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="small">No dealer inventory available yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- My Orders -->
+    <div class="accordion-container">
+      <button class="accordion" data-view="my-orders">🧾 My Orders</button>
+      <div class="panel">
+        {% if my_orders %}
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Dealer ID</th>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Last Update</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for o in my_orders %}
+              <tr>
+                <td>{{ o.id }}</td>
+                <td>{{ o.dealer_id }}</td>
+                <td>{{ o.product_name }}</td>
+                <td>{{ o.quantity }} {{ o.unit }}</td>
+                <td>{{ o.status }}</td>
+                <td>{{ o.created_at.strftime('%Y-%m-%d %H:%M') if o.created_at else '-' }}</td>
+                <td>{{ o.updated_at.strftime('%Y-%m-%d %H:%M') if o.updated_at else '-' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="small">You don't have any orders yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Publish Crop Offers for Processors -->
+    <div class="accordion-container">
+      <button class="accordion" data-view="publish">🌾 Publish Crops for Processors</button>
+      <div class="panel">
+        <form method="post" action="{{ url_for('farmer_create_crop') }}" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <input type="text" name="crop_name" placeholder="Crop name (e.g., Maize)" required style="flex:2; padding:8px;" />
+          <input type="number" step="0.01" name="quantity" placeholder="Quantity" required style="width:140px; padding:8px;" />
+          <input type="text" name="unit" placeholder="Unit (e.g., kg, ton)" value="kg" style="width:140px; padding:8px;" />
+          <input type="number" step="0.01" name="price" placeholder="Price (optional)" style="width:160px; padding:8px;" />
+          <input type="text" name="province" placeholder="Province (optional)" style="width:180px; padding:8px;" />
+          <button type="submit" style="padding:8px 12px; background:#022b16; color:#fff; border:none; border-radius:4px; cursor:pointer;">Publish</button>
+        </form>
+        <p class="small">Once published, your offer appears under "Available Crops" on the Processor dashboard.</p>
+      </div>
+    </div>
+
+    <!-- Processor Orders (Farmer Approval) -->
+    <div class="accordion-container">
+      <button class="accordion" data-view="processor-orders">📬 Processor Orders (Approve / Reject)</button>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Processor</th>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Unit</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="processor-orders-tbody"></tbody>
+        </table>
+        <p id="no-processor-orders" class="small">No processor orders yet.</p>
+      </div>
+    </div>
+
+
+    <!-- Farming Tips -->
+    <div class="accordion-container">
+      <button class="accordion" data-view="tips">💡 Farming Tips</button>
+      <div class="panel">
+        <div class="tip-section">
+          <h3>Crop-Specific Advice</h3>
+          <ul>
+            <li>Maize: Use improved seeds, plant 25–30 cm apart, monitor for stem borers.</li>
+            <li>Beans: Rotate crops to reduce soil-borne diseases.</li>
+            <li>Irish Potatoes: Ensure proper drainage and avoid planting too deep.</li>
+          </ul>
+        </div>
+        <div class="tip-section">
+          <h3>Weather-Based Tips</h3>
+          <ul>
+            <li>Plant maize seedlings before light rains expected this week.</li>
+            <li>Water crops in early morning or late evening during high temperature days.</li>
+          </ul>
+        </div>
+        <div class="tip-section">
+          <h3>Market-Informed Tips</h3>
+          <ul>
+            <li>Focus on harvesting crops with high current market demand.</li>
+            <li>Beans prices are trending high in Kigali — consider selling.</li>
+          </ul>
+        </div>
+        <div class="tip-section">
+          <h3>Sustainable Practices</h3>
+          <ul>
+            <li>Use composting and crop rotation for soil fertility.</li>
+            <li>Implement integrated pest management (IPM).</li>
+            <li>Use efficient irrigation techniques and harvest rainwater.</li>
+          </ul>
+        </div>
+        <div class="tip-section">
+          <h3>Health & Safety</h3>
+          <ul>
+            <li>Handle fertilizers and pesticides safely.</li>
+            <li>Store crops properly to reduce post-harvest losses.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Accordion: Only one open at a time
+    const acc = document.getElementsByClassName("accordion");
+    for (let i = 0; i < acc.length; i++) {
+      acc[i].addEventListener("click", function(e) {
+        const view = this.getAttribute('data-view');
+        if (view) {
+          e.preventDefault();
+          const url = new URL(window.location.href);
+          url.searchParams.set('view', view);
+          window.location.href = url.toString();
+          return;
+        }
+        for (let j = 0; j < acc.length; j++) {
+          if (acc[j] !== this) {
+            acc[j].classList.remove("active");
+            acc[j].nextElementSibling.style.display = "none";
+          }
+        }
+        this.classList.toggle("active");
+        const panel = this.nextElementSibling;
+        panel.style.display = (panel.style.display === "block") ? "none" : "block";
+      });
+    }
+
+    // Single-section page view handler using ?view=<key>
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view');
+      if (!view) return;
+      const containers = document.querySelectorAll('.accordion-container');
+      let found = false;
+      containers.forEach(function(c){
+        const btn = c.querySelector('.accordion');
+        if (btn && btn.getAttribute('data-view') === view) {
+          found = true;
+          btn.classList.add('active');
+          const panel = btn.nextElementSibling; if (panel) panel.style.display = 'block';
+          c.style.display = 'block';
+        } else {
+          c.style.display = 'none';
+        }
+      });
+      if (found) {
+        const back = document.getElementById('single-view-back');
+        if (back) back.style.display = 'block';
+      }
+    })();
+
+    {% if weather_data.time %}
+    const labels = {{ weather_data.time | tojson }};
+    const tempMax = {{ weather_data.temperature_2m_max | tojson }};
+    const tempMin = {{ weather_data.temperature_2m_min | tojson }};
+    const rainfall = {{ weather_data.precipitation_sum | tojson }};
+
+    const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+    new Chart(tempCtx, { type: 'line', data: { labels: labels, datasets: [
+        { label: 'Max Temp (°C)', data: tempMax, borderColor: 'rgba(255,99,132,1)', backgroundColor: 'rgba(255,99,132,0.2)', fill: true },
+        { label: 'Min Temp (°C)', data: tempMin, borderColor: 'rgba(54,162,235,1)', backgroundColor: 'rgba(54,162,235,0.2)', fill: true }
+      ]}, options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: false } } }
+    });
+
+    const rainCtx = document.getElementById('rainfallChart').getContext('2d');
+    new Chart(rainCtx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Rainfall (mm)', data: rainfall, backgroundColor: 'rgba(75,192,192,0.6)' }] },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+    {% endif %}
+
+    // --- Toast notifications ---
+    function showToast(message) {
+      const t = document.createElement('div');
+      t.style.position = 'fixed';
+      t.style.right = '20px';
+      t.style.bottom = '20px';
+      t.style.background = 'rgba(0,0,0,0.85)';
+      t.style.color = '#fff';
+      t.style.padding = '10px 14px';
+      t.style.borderRadius = '6px';
+      t.style.fontSize = '14px';
+      t.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+      t.style.opacity = '0';
+      t.style.transform = 'translateY(10px)';
+      t.style.transition = 'opacity .25s ease, transform .25s ease';
+      t.textContent = message;
+      document.body.appendChild(t);
+      requestAnimationFrame(()=>{ t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
+      setTimeout(()=>{ t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; setTimeout(()=> t.remove(), 250); }, 2500);
+    }
+
+    // --- Shared localStorage order store used by processor and farmer ---
+    function getStoredOrders() {
+      try { return JSON.parse(localStorage.getItem('processor_customer_orders') || '[]'); } catch (e) { return []; }
+    }
+    function saveStoredOrders(orders) {
+      localStorage.setItem('processor_customer_orders', JSON.stringify(orders));
+    }
+
+    function renderFarmerOrders() {
+      const tbody = document.getElementById('processor-orders-tbody');
+      if (!tbody) return;
+      const orders = getStoredOrders();
+      tbody.innerHTML = '';
+      let shown = 0;
+      orders.forEach(o => {
+        // Show only orders that need farmer action and were created by processor
+        if ((o.status || '').toLowerCase() !== 'pending farmer approval') return;
+        if (!o.customer_name || o.customer_name === '{{ user.full_name }}') return;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${o.customer_name || ''}</td>
+          <td>${o.product_name || ''}</td>
+          <td>${o.quantity || ''}</td>
+          <td>${o.unit || ''}</td>
+          <td class="status">${o.status || ''}</td>
+          <td>
+            <button class="approve-btn" data-id="${o.id}">Approve</button>
+            <button class="reject-btn" data-id="${o.id}" style="margin-left:6px;">Reject</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+        shown++;
+      });
+      const empty = document.getElementById('no-processor-orders');
+      if (empty) empty.style.display = shown === 0 ? 'block' : 'none';
+
+      // Attach handlers
+      tbody.querySelectorAll('.approve-btn').forEach(btn => btn.addEventListener('click', function() {
+        const id = Number(this.getAttribute('data-id'));
+        const orders = getStoredOrders();
+        const idx = orders.findIndex(o => o.id === id);
+        if (idx >= 0) {
+          orders[idx].status = 'Approved by Farmer';
+          orders[idx].updated_at = new Date().toISOString();
+          saveStoredOrders(orders);
+          renderFarmerOrders();
+          showToast('Order approved.');
+        }
+      }));
+      tbody.querySelectorAll('.reject-btn').forEach(btn => btn.addEventListener('click', function() {
+        const id = Number(this.getAttribute('data-id'));
+        const orders = getStoredOrders();
+        const idx = orders.findIndex(o => o.id === id);
+        if (idx >= 0) {
+          orders[idx].status = 'Rejected by Farmer';
+          orders[idx].updated_at = new Date().toISOString();
+          saveStoredOrders(orders);
+          renderFarmerOrders();
+          showToast('Order rejected.');
+        }
+      }));
+
+      // Add ability to change decision later and delete
+      // Keep approved/rejected orders visible with actions
+      const fullTbody = document.getElementById('processor-orders-tbody');
+      const allOrders = getStoredOrders();
+      allOrders.forEach(o => {
+        if ((o.status || '').toLowerCase() === 'approved by farmer' || (o.status || '').toLowerCase() === 'rejected by farmer') {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${o.customer_name || ''}</td>
+            <td>${o.product_name || ''}</td>
+            <td>${o.quantity || ''}</td>
+            <td>${o.unit || ''}</td>
+            <td class="status">${o.status || ''}</td>
+            <td>
+              <button class="change-decision" data-id="${o.id}">Change decision</button>
+              <button class="delete-decision" data-id="${o.id}" style="margin-left:6px;">Delete</button>
+            </td>
+          `;
+          fullTbody.appendChild(tr);
+        }
+      });
+
+      fullTbody.querySelectorAll('.change-decision').forEach(btn => btn.addEventListener('click', function() {
+        const id = Number(this.getAttribute('data-id'));
+        const orders = getStoredOrders();
+        const idx = orders.findIndex(o => o.id === id);
+        if (idx >= 0) {
+          const current = (orders[idx].status || '').toLowerCase();
+          const next = current.includes('approved') ? 'Rejected by Farmer' : 'Approved by Farmer';
+          orders[idx].status = next;
+          orders[idx].updated_at = new Date().toISOString();
+          saveStoredOrders(orders);
+          renderFarmerOrders();
+          showToast('Decision updated.');
+        }
+      }));
+      fullTbody.querySelectorAll('.delete-decision').forEach(btn => btn.addEventListener('click', function() {
+        const id = Number(this.getAttribute('data-id'));
+        const orders = getStoredOrders();
+        const idx = orders.findIndex(o => o.id === id);
+        if (idx >= 0) {
+          orders.splice(idx, 1);
+          saveStoredOrders(orders);
+          renderFarmerOrders();
+          showToast('Decision and order removed.');
+        }
+      }));
+    }
+
+    // Initial render and sync if other tabs update
+    renderFarmerOrders();
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'processor_customer_orders') {
+        renderFarmerOrders();
+      }
+    });
+
+    // Farmer creates an order for processor
+    const farmerOrderForm = document.getElementById('farmer-create-processor-order');
+    if (farmerOrderForm) {
+      farmerOrderForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const product = document.getElementById('fpo-product').value.trim();
+        const qty = document.getElementById('fpo-qty').value.trim();
+        const unit = document.getElementById('fpo-unit').value.trim();
+        if (!product || !qty) return;
+        const orders = getStoredOrders();
+        orders.push({
+          id: Date.now(),
+          customer_name: '{{ user.full_name }}',
+          farmer_name: '{{ user.full_name }}',
+          product_name: product,
+          quantity: qty,
+          unit: unit || 'kg',
+          status: 'Pending Processor Review',
+          created_at: new Date().toISOString(),
+          updated_at: null
+        });
+        saveStoredOrders(orders);
+        // Clear form
+        document.getElementById('fpo-product').value = '';
+        document.getElementById('fpo-qty').value = '';
+        // Notify
+        alert('Order submitted and visible to the processor.');
+      });
+    }
+  </script>
+</body>
+</html>

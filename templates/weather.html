@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMUHUZA - Weather Forecasting in Agriculture</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='weather.css')}}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>UMUHUZA: Weather Forecasting for Sustainable Agriculture</h1>
+        <marquee><h1>Weather Forecasting</h1></marquee>
+        <p>Leveraging weather data to improve agricultural practices in Rwanda.</p>
+    </header>
+
+    <!-- Weather Forecasting Benefits Section -->
+    <section id="benefits">
+        <h2>Benefits of Weather Forecasting</h2>
+        <p>Weather forecasting can significantly enhance agricultural decision-making in several ways:</p>
+        <ul>
+            <li type="none"><strong>1. Optimizing Irrigation Scheduling:</strong> Adjust irrigation based on rain forecasts.</li>
+            <li type="none"><strong>2. Crop Planning and Management:</strong> Determine the best planting times and manage pests.</li>
+            <li type="none"><strong>3. Yield Prediction:</strong> Use weather data to model and predict crop yields.</li>
+            <li type="none"><strong>4. Training and Education:</strong> Educate farmers on interpreting weather forecasts.</li>
+            <li type="none"><strong>5. Insurance and Risk Management:</strong> Develop weather-indexed insurance products.</li>
+            <li type="none"><strong>6. Collaboration with Meteorological Services:</strong> Partner with agencies for localized forecasts.</li>
+            <li type="none"><strong>7. Mobile and Digital Solutions:</strong> Provide farmers with easy access to weather data.</li>
+        </ul>
+    </section>
+
+    <!-- Optimizing Irrigation Scheduling Section -->
+    <section id="irrigation">
+        <h2>Optimizing Irrigation Scheduling</h2>
+        <div class="video-container">
+            <video controls width="600">
+                <source src="videos/irrigation-techniques.mp4" type="video/mp4"> <!-- Replace with actual video -->
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <p>Utilizing real-time weather data helps farmers optimize irrigation schedules to conserve water.</p>
+    </section>
+
+    <!-- Crop Planning Section -->
+    <section id="crop-planning">
+        <h2>Crop Planning and Management</h2>
+        <div class="graph-section">
+            <h3>Weather Patterns Impact on Crop Yields</h3>
+            <canvas id="cropYieldChart"></canvas>
+            <p>The chart above illustrates the correlation between weather patterns and maize crop yields over the years.</p>
+        </div>
+    </section>
+
+    <!-- Training Section -->
+    <section id="training">
+        <h2>Training and Education</h2>
+        <p>We conduct workshops to educate farmers on how to utilize weather data effectively in their practices.</p>
+        <div class="image-container">
+            <img src="{{url_for('static', filename='training.jpeg')}}" alt="Crop Consultancy" class="service-photo">
+        </div>
+    </section>
+    <div>
+        <center>
+            <a href="{{url_for('index')}}"><button type="submit" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">Back</button></a>
+        </center>
+    </div>
+    <!-- Social Media Section -->
+    <section id="social-media" style="background-color: rgb(52, 98, 6);">
+        <h3 style="color:beige;">Follow Us on Social Media</h3>
+        <div class="social-icons">
+            <a href="https://facebook.com/ikiraro" target="_blank" title="Facebook" style="color:beige;">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://x.com/ProjectIkiraro" target="_blank" title="Twitter" style="color:beige;">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://instagram.com/ikiraro" target="_blank" title="Instagram" style="color:beige;">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://www.linkedin.com/company/project-ikiraro-platform/" target="_blank" title="LinkedIn" style="color:beige;">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+        </div>
+    </section>
+    <center><h3 style="color:white">© 2025 UMUHUZA. All rights reserved.</h3></center>
+   <script src="{{url_for('static', filename='weather.js')}}"></script> <!-- JavaScript for charts -->
+</body>
+</html>

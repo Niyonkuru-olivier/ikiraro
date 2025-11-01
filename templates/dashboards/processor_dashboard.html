@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Processor & Customer Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #fdfdfd; margin: 0; padding: 0; }
+    header { background: #022b16; color: white; padding: 15px; text-align: center; }
+    .container { padding: 20px; max-width: 1000px; margin: auto; display: flex; 
+      flex-direction: column; gap: 15px; }
+
+    .accordion {
+      background-color: #022b16;
+      color: white;
+      cursor: pointer;
+      padding: 20px;
+      text-align: center;
+      font-size: 18px;
+      border: none;
+      outline: none;
+      transition: 0.4s;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .accordion.active, .accordion:hover { background-color: #022b16; }
+
+    .panel {
+      padding: 15px;
+      display: none;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      animation: fadeIn 0.3s ease-in-out;
+      overflow-x: auto;
+    }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #022b16; color: white; }
+    a.action-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 15px;
+      background: #022b16;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    a.action-btn:hover { background: #022b16; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Toast notifications */
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      min-width: 200px;
+      max-width: 320px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 9999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome, {{ user.full_name }} (Processor & Customer)</h1>
+  </header>
+
+  <div class="container">
+    <!-- Crops Section -->
+    <button class="accordion">🌾 Available Crops (From Farmers)</button>
+    <div class="panel">
+      <h2>Available Crops</h2>
+      {% if crops %}
+        <table>
+          <thead>
+            <tr>
+              <th>Farmer</th>
+              <th>Crop</th>
+              <th>Quantity</th>
+              <th>Unit</th>
+              <th>Price</th>
+              <th>Province</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for crop in crops %}
+            <tr>
+              <td class="farmer-name">{{ crop.farmer_name }}</td>
+              <td class="crop-name">{{ crop.crop_name }}</td>
+              <td class="crop-qty">{{ crop.quantity }}</td>
+              <td class="crop-unit">{{ crop.unit }}</td>
+              <td>{{ crop.price }}</td>
+              <td>{{ crop.province }}</td>
+              <td>
+                <a href="#" class="action-btn" style="margin-right:8px;">Buy</a>
+                <a href="#" class="action-btn order-btn">Order</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No crops available.</p>
+      {% endif %}
+    </div>
+
+    <!-- Certifications -->
+    <button class="accordion">📜 Quality Certifications</button>
+    <div class="panel">
+      <h2>Product Certifications</h2>
+      {% if certifications %}
+        <ul>
+          {% for cert in certifications %}
+          <li>{{ cert.product_name }} - Certified on {{ cert.cert_date }} (Valid until {{ cert.expiry_date }})</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No certifications available.</p>
+      {% endif %}
+    </div>
+
+    <!-- Logistics -->
+    <button class="accordion">🚚 Logistics</button>
+    <div class="panel">
+      <h2>Delivery Schedules</h2>
+      {% if logistics %}
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Destination</th>
+              <th>Delivery Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for delivery in logistics %}
+            <tr>
+              <td>{{ delivery.product_name }}</td>
+              <td>{{ delivery.quantity }}</td>
+              <td>{{ delivery.destination }}</td>
+              <td>{{ delivery.delivery_date }}</td>
+              <td>{{ delivery.status }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No delivery schedules.</p>
+      {% endif %}
+    </div>
+
+    <!-- Orders -->
+    <button class="accordion">🛒 Customer Orders</button>
+    <div class="panel">
+      <h2>Customer Orders</h2>
+      {% if orders %}
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Unit</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="customer-orders-tbody">
+            {% for order in orders %}
+            <tr>
+              <td>{{ order.customer_name }}</td>
+              <td>{{ order.product_name }}</td>
+              <td>{{ order.quantity }}</td>
+              <td>{{ order.unit }}</td>
+              <td>{{ order.status }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Unit</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="customer-orders-tbody"></tbody>
+        </table>
+        <p id="no-orders-msg">No orders placed yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    const acc = document.getElementsByClassName("accordion");
+    for (let i = 0; i < acc.length; i++) {
+      acc[i].addEventListener("click", function() {
+        for (let j = 0; j < acc.length; j++) {
+          if (acc[j] !== this) {
+            acc[j].classList.remove("active");
+            acc[j].nextElementSibling.style.display = "none";
+          }
+        }
+        this.classList.toggle("active");
+        const panel = this.nextElementSibling;
+        panel.style.display = (panel.style.display === "block") ? "none" : "block";
+      });
+    }
+
+    // --- Simple localStorage order handling between Processor and Farmer ---
+    function showToast(message) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = message;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('show'));
+      setTimeout(() => { t.classList.remove('show'); setTimeout(()=> t.remove(), 250); }, 2500);
+    }
+
+    function getStoredOrders() {
+      try { return JSON.parse(localStorage.getItem('processor_customer_orders') || '[]'); } catch (e) { return []; }
+    }
+    function saveStoredOrders(orders) {
+      localStorage.setItem('processor_customer_orders', JSON.stringify(orders));
+    }
+    function renderProcessorOrders() {
+      const tbody = document.getElementById('customer-orders-tbody');
+      if (!tbody) return;
+      const orders = getStoredOrders();
+      // Clear dynamic rows (only keep possible server-side rows by wiping and re-rendering all client rows)
+      tbody.querySelectorAll('[data-local-order="1"]').forEach(r => r.remove());
+      let added = 0;
+      orders.forEach(o => {
+        // Show all orders, including those created by farmer for processor and those awaiting farmer approval
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-local-order', '1');
+        tr.innerHTML = `
+          <td>${o.customer_name || ''}</td>
+          <td>${o.product_name || ''}</td>
+          <td>${o.quantity || ''}</td>
+          <td>${o.unit || ''}</td>
+          <td>${o.status || ''}</td>
+        `;
+        tbody.appendChild(tr);
+        added++;
+      });
+      const emptyMsg = document.getElementById('no-orders-msg');
+      if (emptyMsg) emptyMsg.style.display = (orders.length === 0 && added === 0) ? 'block' : 'none';
+    }
+
+    function attachOrderButtons() {
+      const buttons = document.querySelectorAll('.order-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const row = this.closest('tr');
+          const farmerName = row.querySelector('.farmer-name')?.textContent?.trim() || '';
+          const cropName = row.querySelector('.crop-name')?.textContent?.trim() || '';
+          const unit = row.querySelector('.crop-unit')?.textContent?.trim() || '';
+          let qty = prompt('Enter quantity to order:');
+          if (qty === null) return; // cancelled
+          qty = String(qty).trim();
+          if (!qty) { alert('Quantity is required'); return; }
+
+          const orders = getStoredOrders();
+          const newOrder = {
+            id: Date.now(),
+            customer_name: '{{ user.full_name }}',
+            farmer_name: farmerName,
+            product_name: cropName,
+            quantity: qty,
+            unit: unit,
+            status: 'Pending Farmer Approval',
+            created_at: new Date().toISOString(),
+            updated_at: null
+          };
+          orders.push(newOrder);
+          saveStoredOrders(orders);
+          renderProcessorOrders();
+          showToast('Order sent to farmer for approval.');
+        });
+      });
+    }
+
+    // Initial render and bindings
+    attachOrderButtons();
+    renderProcessorOrders();
+
+    // Update if another tab modifies storage
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'processor_customer_orders') {
+        renderProcessorOrders();
+        showToast('Orders updated.');
+      }
+    });
+  </script>
+</body>
+</html>

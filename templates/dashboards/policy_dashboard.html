@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Policy Maker Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #fff8e1; margin: 0; padding: 0; }
+    header { background: #022b16; color: white; padding: 15px; text-align: center; }
+    .container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, 
+      minmax(250px, 1fr)); gap: 20px; }
+    .card { background: white; padding: 15px; border-radius: 8px; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; cursor: pointer; }
+    .card:hover { transform: scale(1.03); }
+    h2 { color: #022b16; }
+    .stats { font-size: 18px; margin-top: 10px; color: #333; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome, {{ user.full_name }} (Policy Maker)</h1>
+  </header>
+  <div class="container">
+
+    <div class="card" onclick="window.location.href='/users/farmer'">
+      <h2>👨‍🌾 Farmers</h2>
+      <p class="stats">{{ stats.farmers }} registered</p>
+    </div>
+
+    <div class="card" onclick="window.location.href='/users/promoter'">
+      <h2>🌱 Farmer Promoters</h2>
+      <p class="stats">{{ stats.promoters }} registered</p>
+    </div>
+
+    <div class="card" onclick="window.location.href='/users/dealer'">
+      <h2>🏪 Agro-Dealers</h2>
+      <p class="stats">{{ stats.dealers }} registered</p>
+    </div>
+
+    <div class="card" onclick="window.location.href='/users/processor'">
+      <h2>🏭 Processors & Customers</h2>
+      <p class="stats">{{ stats.processors }} registered</p>
+    </div>
+
+    <div class="card" onclick="window.location.href='/users/researcher'">
+      <h2>🔬 Researchers & Experts</h2>
+      <p class="stats">{{ stats.researchers }} registered</p>
+    </div>
+
+    <div class="card" onclick="window.location.href='/users/policy'">
+      <h2>🏛️ Policy Makers</h2>
+      <p class="stats">{{ stats.policymakers }} registered</p>
+    </div>
+
+    <div class="card">
+      <h2>📑 Reports</h2>
+      <p>Monthly productivity reports available for review.</p>
+    </div>
+
+    <div class="card">
+      <h2>⚠️ Alerts</h2>
+      <p>Upcoming drought risk in Eastern Province.</p>
+    </div>
+
+  </div>
+  <script>
+    function showToast(msg){
+      var t=document.createElement('div');
+      t.style.position='fixed';t.style.right='20px';t.style.bottom='20px';t.style.background='rgba(0,0,0,0.85)';
+      t.style.color='#fff';t.style.padding='10px 14px';t.style.borderRadius='6px';t.style.fontSize='14px';
+      t.style.boxShadow='0 2px 6px rgba(0,0,0,0.2)';t.style.opacity='0';t.style.transform='translateY(10px)';
+      t.style.transition='opacity .25s ease, transform .25s ease';t.textContent=msg;document.body.appendChild(t);
+      requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateY(0)';});
+      setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(10px)'; setTimeout(function(){t.remove();},250);},2500);
+    }
+    // Example: toast when clicking any dashboard card
+    document.querySelectorAll('.card').forEach(function(card){
+      card.addEventListener('click', function(){ showToast('Opening: ' + (card.querySelector('h2')?.textContent || 'Section')); });
+    });
+  </script>
+</body>
+</html>

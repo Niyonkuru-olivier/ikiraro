@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMUHUZA Agriculture Services & Projects</title>
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="{{url_for('static', filename='service.css')}}">
+    <!-- Font Awesome for Social Media Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Chart.js for Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>UMUHUZA - Revolutionizing Agriculture through Collaborative Intelligence</h1>
+        <p>Ongoing Agriculture Services and Projects</p>
+    </header>
+
+    <!-- Purpose Section -->
+    <section id="purpose">
+        <h2>Purpose</h2>
+        <p>
+            At UMUHUZA, we are committed to providing innovative agricultural services aimed at enhancing the maize farming sector. Our focus is on modern farming techniques, crop management, and the sustainable use of fertilizers.
+        </p>
+
+        <!-- I. Crop Section -->
+        <div class="crop-section">
+            <h3>Maize Crop Services</h3>
+            <p>In maize farming, proper use of fertilizers is crucial. We focus on three main types of fertilizers:</p>
+            <ul>
+                <li>NPK</li>
+                <li>DAP</li>
+                <li>Imborera (organic fertilizer)</li>
+            </ul>
+
+            <h4>Fertilizer Usage Rate</h4>
+            <canvas id="fertilizerUsageChart"></canvas>
+            <p>The chart above shows the usage rates of these fertilizers in maize farming over the last few years.</p>
+        </div>
+
+        <!-- II. Farming Technologies Section -->
+        <div class="tech-section">
+            <h3>Farming Technologies in Maize Agriculture</h3>
+            <p>We are embracing modern technologies to improve maize productivity, including:</p>
+            <ul>
+                <li>Precision Farming</li>
+                <li>Drone Technology for field monitoring</li>
+                <li>Automated Irrigation Systems</li>
+            </ul>
+            <p>These technologies help farmers manage their crops more effectively and sustainably, reducing resource waste and increasing yields.</p>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services">
+        <center>
+        <h2>Agricultural Services</h2>
+
+        <!-- I. Description of Services -->
+        <div class="service-description">
+            <h3>Service Descriptions</h3>
+
+            <!-- Crop Consultancy -->
+            <div class="service-item">
+                <h4>Crop Consultancy</h4>
+                <p>We provide expert consultancy on crop management, pest control, and improving maize yields. Our crop experts visit farms to offer tailored solutions to farmers.</p>
+                <img src="{{url_for('static', filename='consultancy.jpeg')}}" alt="Crop Consultancy" class="service-photo">
+            </div>
+
+            <!-- Irrigation Solutions -->
+            <div class="service-item">
+                <h4>Irrigation Solutions</h4>
+                <p style="margin-right:20%">We help farmers install and maintain modern irrigation systems, ensuring that water is used efficiently for better crop growth.</p>
+                <img src="{{url_for('static', filename='irrigation.jpeg')}}" alt="Irrigation Solutions" class="service-photo">
+            </div>
+        </center>
+            <!-- Graph for Irrigation Impact -->
+            <h4>Irrigation Impact on Yield</h4>
+            <canvas id="irrigationImpactChart"></canvas>
+        </div>
+
+        <!-- II. Project Highlights -->
+        <div class="project-highlights">
+            <h3>Project Highlights</h3>
+            <ul>
+                <li><strong>Modernization Efforts:</strong> We are integrating digital platforms and sensor-based technologies to track crop growth and soil health.</li>
+                <li><strong>Sustainability:</strong> Our projects focus on minimizing environmental impact through the use of organic fertilizers and water conservation techniques.</li>
+                <li><strong>Collaboration:</strong> We partner with local and international organizations to provide farmers with resources and knowledge for improved agricultural practices.</li>
+            </ul>
+        </div>
+
+        <!-- Video Section -->
+         <center>
+        <div class="video-section">
+<iframe width="600" height="338"
+src="https://www.youtube.com/embed/{{ youtube_id }}"
+title="YouTube video player" frameborder="0"
+allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+allowfullscreen>
+        </iframe>
+        </div>
+    </center>
+    </section>
+    <div>
+        <center>
+            <a href="{{url_for('index')}}"><button type="submit" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">Back</button></a>
+        </center>
+    </div>
+    <!-- Footer Section -->
+    <footer style="background-color: rgb(103, 194, 12);">
+        <h3 style="color:beige;">Follow Us</h3>
+        <div class="social-icons">
+            <a href="https://facebook.com/ikiraro" target="_blank" title="Facebook" id="facebook" style="color:beige;">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://x.com/ProjectIkiraro" target="_blank" title="Twitter" id="twitter" style="color:beige;">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://instagram.com/ikiraro" target="_blank" title="Instagram" id="instagram" style="color:beige;">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://www.linkedin.com/company/project-ikiraro-platform/" target="_blank" title="LinkedIn" id="linkedin" style="color:beige;">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+           
+        </div>
+        <br>
+        © 2025 IKIRARO. All rights reserved.
+    </footer>
+
+    <!-- Custom Scripts -->
+    <script src="{{url_for('static', filename='service.js')}}"></script> <!-- JavaScript to handle charts -->
+   
+</body>
+</html>
