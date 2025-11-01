@@ -42,15 +42,21 @@ database_url = os.environ.get('DATABASE_URL')
 if database_url:
     # Handle different database URL formats
     if database_url.startswith('mysql://'):
+        # Convert mysql:// to mysql+pymysql:// for PyMySQL compatibility
+        database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
         app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     elif database_url.startswith('postgresql://') or database_url.startswith('postgres://'):
         app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     else:
-        # Default for local development
-        app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:Da1wi2d$@localhost/umuhuza"
+        # Default for local development - use pymysql driver
+        app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:Da1wi2d$@localhost/umuhuza"
 else:
     # Fallback to local MySQL for development (but will fail on Vercel)
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI', "mysql://root:Da1wi2d$@localhost/umuhuza")
+    # Use pymysql driver instead of default MySQLdb
+    local_db = os.environ.get('SQLALCHEMY_DATABASE_URI', "mysql+pymysql://root:Da1wi2d$@localhost/umuhuza")
+    if local_db.startswith('mysql://'):
+        local_db = local_db.replace('mysql://', 'mysql+pymysql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = local_db
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {

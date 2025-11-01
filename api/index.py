@@ -15,16 +15,23 @@ if parent_dir not in sys.path:
 os.chdir(parent_dir)
 
 # Import the Flask app
+flask_app = None
+import_error = None
+error_trace = None
+
 try:
     from app import app as flask_app
     app = flask_app
-except Exception as e:
-    # If import fails, create a simple error handler
+except Exception as import_error_exception:
+    # Store error for later use
+    import_error = import_error_exception
     error_trace = traceback.format_exc()
-    def app(environ, start_response):
+    
+    def error_app(environ, start_response):
+        """Error handler app when import fails"""
         error_msg = f"""<html><body>
             <h1>Application Import Error</h1>
-            <p><strong>Error:</strong> {str(e)}</p>
+            <p><strong>Error:</strong> {str(import_error)}</p>
             <pre>{error_trace}</pre>
             <p>Please check:</p>
             <ul>
@@ -37,6 +44,8 @@ except Exception as e:
         headers = [('Content-Type', 'text/html; charset=utf-8')]
         start_response(status, headers)
         return [error_msg.encode('utf-8')]
+    
+    app = error_app
 
 # Export for Vercel
 # Vercel Python runtime will call this as a WSGI application
