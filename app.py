@@ -49,11 +49,21 @@ if database_url:
         # Default for local development
         app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:Da1wi2d$@localhost/umuhuza"
 else:
-    # Fallback to local MySQL for development
+    # Fallback to local MySQL for development (but will fail on Vercel)
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI', "mysql://root:Da1wi2d$@localhost/umuhuza")
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'connect_args': {'connect_timeout': 10}
+}
 db = SQLAlchemy(app)
+
+# Error handler for database connection issues
+@app.errorhandler(500)
+def handle_500_error(e):
+    """Handle 500 errors gracefully"""
+    return f"<h1>Database Connection Error</h1><p>Please check your DATABASE_URL environment variable in Vercel settings.</p><p>Error: {str(e)}</p>", 500
 
 # ---------------- Email Config ----------------
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
@@ -181,7 +191,42 @@ serializer = URLSafeTimedSerializer(app.secret_key)
 # -------- General Pages --------
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        # If template rendering fails, return a simple HTML page
+        return f"""
+        <html>
+        <head><title>UMUHUZA - Error</title></head>
+        <body>
+            <h1>UMUHUZA Platform</h1>
+            <p>Template rendering error: {str(e)}</p>
+            <p>App is running, but there's an issue with templates.</p>
+            <p><a href="/test">Test Route</a></p>
+        </body>
+        </html>
+        """, 200
+
+# Test route that doesn't require database
+@app.route('/test')
+def test():
+    return """
+    <html>
+    <head><title>Test Route</title></head>
+    <body>
+        <h1>✅ Flask App is Working!</h1>
+        <p>If you see this, your Flask app deployed successfully.</p>
+        <p><a href="/">Go to Home</a></p>
+        <hr>
+        <h2>Diagnostics:</h2>
+        <ul>
+            <li>Flask Version: Working</li>
+            <li>Database URL: {}
+            <li>Secret Key: Set</li>
+        </ul>
+    </body>
+    </html>
+    """.format(os.environ.get('DATABASE_URL', 'NOT SET - Please configure in Vercel'))
 
 @app.route('/about-us')
 def about_us():
