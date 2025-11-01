@@ -27,24 +27,41 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 
 
+# ---------------- Standard Library ---------------- 
+import os
+
 # ====================================================
 # Flask App & Config
 # ====================================================
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # ⚠️ Change in production!
+app.secret_key = os.environ.get('SECRET_KEY', 'supersecretkey-change-in-production')
 
 # ---------------- Database Config ----------------
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:Da1wi2d$@localhost/umuhuza"
+# Support both MySQL and PostgreSQL for Vercel deployment
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Handle different database URL formats
+    if database_url.startswith('mysql://'):
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    elif database_url.startswith('postgresql://') or database_url.startswith('postgres://'):
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    else:
+        # Default for local development
+        app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:Da1wi2d$@localhost/umuhuza"
+else:
+    # Fallback to local MySQL for development
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI', "mysql://root:Da1wi2d$@localhost/umuhuza")
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # ---------------- Email Config ----------------
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = "oniyonkuru233@gmail.com"
-app.config['MAIL_PASSWORD'] = "jvvd hzba fwqa jbnz"  # ⚠️ Gmail App Password
-app.config['MAIL_DEFAULT_SENDER'] = "oniyonkuru233@gmail.com"
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', "oniyonkuru233@gmail.com")
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', "jvvd hzba fwqa jbnz")
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', "oniyonkuru233@gmail.com")
 mail = Mail(app)
 
 # ====================================================
