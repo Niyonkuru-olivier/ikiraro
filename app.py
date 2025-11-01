@@ -33,7 +33,8 @@ import os
 # ====================================================
 # Flask App & Config
 # ====================================================
-app = Flask(__name__)
+# Configure Flask to serve static files correctly on Vercel
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.secret_key = os.environ.get('SECRET_KEY', 'supersecretkey-change-in-production')
 
 # ---------------- Database Config ----------------
@@ -303,6 +304,27 @@ def test():
     </body>
     </html>
     """
+
+# Static files route for Vercel (explicit handling)
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    """Serve static files with error handling"""
+    try:
+        # Handle case-insensitive file names on Vercel
+        static_dir = app.static_folder
+        if not os.path.exists(os.path.join(static_dir, filename)):
+            # Try to find file case-insensitively
+            filename_lower = filename.lower()
+            if os.path.exists(static_dir):
+                for file in os.listdir(static_dir):
+                    if file.lower() == filename_lower:
+                        filename = file
+                        break
+        
+        return send_from_directory(static_dir, filename)
+    except Exception as e:
+        app.logger.error(f"Error serving static file {filename}: {e}")
+        return f"Static file not found: {filename}", 404
 
 @app.route('/about-us')
 def about_us():
