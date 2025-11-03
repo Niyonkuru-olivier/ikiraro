@@ -45,12 +45,52 @@ if database_url:
     if database_url.startswith('mysql://'):
         # Convert mysql:// to mysql+pymysql:// for PyMySQL compatibility
         database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
+
+        # Robustly strip unsupported MySQL query params like ssl-mode/ssl_mode
+        try:
+            from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
+            parts = urlsplit(database_url)
+            query_pairs = parse_qsl(parts.query, keep_blank_values=True)
+            filtered_pairs = []
+            for k, v in query_pairs:
+                key_lower = k.lower()
+                if key_lower in ('ssl-mode', 'ssl_mode', 'sslmode'):
+                    continue  # drop unsupported flags that break PyMySQL
+                filtered_pairs.append((k, v))
+            new_query = urlencode(filtered_pairs)
+            database_url = urlunsplit((parts.scheme, parts.netloc, parts.path, new_query, parts.fragment))
+        except Exception:
+            # Fallback: simple string removals for common cases
+            for token in ['?ssl-mode=REQUIRED', '&ssl-mode=REQUIRED', '?ssl_mode=REQUIRED', '&ssl_mode=REQUIRED']:
+                if token in database_url:
+                    database_url = database_url.replace(token, '')
+
+        # Configure SSL for PyMySQL (Aiven requires TLS). Passing an empty dict enables TLS.
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_pre_ping': True,
+            'pool_recycle': 300,
+            'connect_args': {
+                'connect_timeout': 10,
+                'ssl': {}
+            }
+        }
+
         app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     elif database_url.startswith('postgresql://') or database_url.startswith('postgres://'):
         app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_pre_ping': True,
+            'pool_recycle': 300,
+            'connect_args': {'connect_timeout': 10}
+        }
     else:
         # Default for local development - use pymysql driver
         app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:Da1wi2d$@localhost/umuhuza"
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_pre_ping': True,
+            'pool_recycle': 300,
+            'connect_args': {'connect_timeout': 10}
+        }
 else:
     # Fallback to local MySQL for development (but will fail on Vercel)
     # Use pymysql driver instead of default MySQLdb
@@ -58,13 +98,13 @@ else:
     if local_db.startswith('mysql://'):
         local_db = local_db.replace('mysql://', 'mysql+pymysql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = local_db
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'connect_args': {'connect_timeout': 10}
+    }
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_pre_ping': True,
-    'pool_recycle': 300,
-    'connect_args': {'connect_timeout': 10}
-}
 # Don't fail on database connection errors during initialization
 try:
     db = SQLAlchemy(app)
@@ -300,6 +340,75 @@ def test():
                 <li>Redeploy your application</li>
             </ol>
             <p><a href="/">← Go to Home</a></p>
+            <hr>
+            <h2>Database Connection Test:</h2>
+            <p><a href="/test-db">Test Database Connection</a></p>
+        </div>
+    </body>
+    </html>
+    """
+
+# Database connection test route
+@app.route('/test-db')
+def test_db():
+    """Test database connection and show tables"""
+    results = {
+        'connected': False,
+        'error': None,
+        'tables': [],
+        'users_count': 0,
+        'connection_string': app.config.get('SQLALCHEMY_DATABASE_URI', 'Not set')[:50] + '...'
+    }
+    
+    try:
+        from sqlalchemy import text, inspect
+        # Test connection
+        db.session.execute(text('SELECT 1'))
+        results['connected'] = True
+        
+        # Try to get tables
+        inspector = inspect(db.engine)
+        results['tables'] = inspector.get_table_names()
+        
+        # Try to count users
+        try:
+            results['users_count'] = User.query.count()
+        except:
+            results['users_count'] = "Error counting users"
+            
+    except Exception as e:
+        results['error'] = str(e)
+        import traceback
+        results['traceback'] = traceback.format_exc()
+    
+    return f"""
+    <html>
+    <head><title>Database Test - UMUHUZA</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }}
+            .container {{ max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }}
+            .success {{ color: #28a745; }}
+            .error {{ color: #dc3545; }}
+            pre {{ background: #f4f4f4; padding: 15px; border-radius: 4px; overflow-x: auto; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Database Connection Test</h1>
+            <p><strong>Status:</strong> <span class="{'success' if results['connected'] else 'error'}">
+                {'✅ Connected' if results['connected'] else '❌ Not Connected'}
+            </span></p>
+            
+            <p><strong>Connection String:</strong> <code>{results['connection_string']}</code></p>
+            
+            {f"<p><strong>Tables found:</strong> {', '.join(results['tables']) if results['tables'] else 'None'}</p>" if results['connected'] else ''}
+            {f"<p><strong>Users in database:</strong> {results['users_count']}</p>" if results['connected'] else ''}
+            
+            {f"<h2>Error Details:</h2><pre>{results.get('error', '')}</pre>" if results.get('error') else ''}
+            {f"<h2>Traceback:</h2><pre>{results.get('traceback', '')}</pre>" if results.get('traceback') else ''}
+            
+            <hr>
+            <p><a href="/">← Go to Home</a> | <a href="/test">System Test</a></p>
         </div>
     </body>
     </html>
@@ -346,18 +455,27 @@ def login():
         role = request.form.get("role")
         password = request.form.get("password")
 
-        user = None
-        if phone:
-            user = User.query.filter_by(phone=phone, role=role).first()
-        elif email:
-            user = User.query.filter_by(email=email, role=role).first()
+        try:
+            user = None
+            if phone:
+                user = User.query.filter_by(phone=phone, role=role).first()
+            elif email:
+                user = User.query.filter_by(email=email, role=role).first()
 
-        if user and user.check_password(password):
-            login_user(user)
-            flash("Login successful!", "success")
-            return redirect(url_for("dashboard"))
-        else:
-            flash("Invalid credentials. Please try again.", "error")
+            if user:
+                if user.check_password(password):
+                    login_user(user)
+                    flash("Login successful!", "success")
+                    return redirect(url_for("dashboard"))
+                else:
+                    flash("Invalid password. Please try again.", "error")
+            else:
+                flash(f"No user found with those credentials (role: {role}).", "error")
+        except Exception as e:
+            app.logger.error(f"Login error: {str(e)}")
+            import traceback
+            app.logger.error(traceback.format_exc())
+            flash(f"Database connection error: {str(e)}. Please check your DATABASE_URL.", "error")
 
     return render_template("login.html")
 
