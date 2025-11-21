@@ -196,6 +196,6 @@ The platform communicates:
 | Orders | Platform DB | Farmer A → 10 bags Maize Seeds |
 
 ---
-
+Interact Here: https://ikiraro1.vercel.app/
 ## 🧭 Navigation Map
 
