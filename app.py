@@ -458,19 +458,33 @@ def login():
         try:
             user = None
             if phone:
-                user = User.query.filter_by(phone=phone, role=role).first()
+                user = User.query.filter_by(phone=phone).first()
             elif email:
-                user = User.query.filter_by(email=email, role=role).first()
+                user = User.query.filter_by(email=email).first()
+
+            if user and user.role == "promoter":
+                user.role = "dealer"
+                try:
+                    db.session.commit()
+                except Exception as commit_err:
+                    db.session.rollback()
+                    app.logger.error(f"Failed to migrate promoter role during login: {commit_err}")
 
             if user:
-                if user.check_password(password):
+                normalized_role = user.role
+                if normalized_role == "promoter":
+                    normalized_role = "dealer"
+
+                if normalized_role != role:
+                    flash("Selected role does not match your account.", "error")
+                elif user.check_password(password):
                     login_user(user)
                     flash("Login successful!", "success")
                     return redirect(url_for("dashboard"))
                 else:
                     flash("Invalid password. Please try again.", "error")
             else:
-                flash(f"No user found with those credentials (role: {role}).", "error")
+                flash("No user found with those credentials.", "error")
         except Exception as e:
             app.logger.error(f"Login error: {str(e)}")
             import traceback
@@ -495,6 +509,14 @@ def create_account():
         role = request.form.get('role')
         password = request.form.get('password')
         confirm_password = request.form.get('confirmPassword')
+
+        if role == "promoter":
+            role = "dealer"
+
+        valid_roles = {"farmer", "dealer", "processor", "researcher", "policy"}
+        if role not in valid_roles:
+            flash("Invalid role selected.", "error")
+            return redirect(url_for('create_account'))
 
         if password != confirm_password:
             flash("Passwords do not match.", "error")
@@ -653,8 +675,6 @@ def dashboard():
     # ... other roles unchanged ...
 
 
-    elif role == "promoter":
-        return render_template("dashboards/promoter_dashboard.html", user=current_user)
     elif role == "dealer":
         return redirect(url_for('agro_dealer_dashboard'))
     elif role == "processor":
@@ -866,8 +886,7 @@ def dashboard():
     elif role == "policy":
         stats = {
             "farmers": User.query.filter_by(role="farmer").count(),
-            "promoters": User.query.filter_by(role="promoter").count(),
-            "dealers": User.query.filter_by(role="dealer").count(),
+            "dealers": User.query.filter(User.role.in_(["dealer", "promoter"])).count(),
             "processors": User.query.filter_by(role="processor").count(),
             "researchers": User.query.filter_by(role="researcher").count(),
             "policymakers": User.query.filter_by(role="policy").count(),
@@ -1280,12 +1299,15 @@ def list_users(role):
         flash("Access denied. Only policy makers can view user lists.", "error")
         return redirect(url_for("dashboard"))
 
-    valid_roles = ["farmer", "promoter", "dealer", "processor", "researcher", "policy"]
+    valid_roles = ["farmer", "dealer", "processor", "researcher", "policy"]
     if role not in valid_roles:
         flash("Invalid role selected.", "error")
         return redirect(url_for("dashboard"))
 
-    users = User.query.filter_by(role=role).all()
+    if role == "dealer":
+        users = User.query.filter(User.role.in_(["dealer", "promoter"])).all()
+    else:
+        users = User.query.filter_by(role=role).all()
     return render_template("dashboards/user_list.html",
                            role=role.capitalize(), users=users)
 
@@ -1297,12 +1319,15 @@ def export_users(role, filetype):
         flash("Access denied. Only policy makers can export data.", "error")
         return redirect(url_for("dashboard"))
 
-    valid_roles = ["farmer", "promoter", "dealer", "processor", "researcher", "policy"]
+    valid_roles = ["farmer", "dealer", "processor", "researcher", "policy"]
     if role not in valid_roles:
         flash("Invalid role.", "error")
         return redirect(url_for("dashboard"))
 
-    users = User.query.filter_by(role=role).all()
+    if role == "dealer":
+        users = User.query.filter(User.role.in_(["dealer", "promoter"])).all()
+    else:
+        users = User.query.filter_by(role=role).all()
     data = [{
         "ID": u.id,
         "Full Name": u.full_name,
