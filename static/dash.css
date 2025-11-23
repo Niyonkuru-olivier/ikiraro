@@ -1,13 +1,17 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #8bcae8;
-    color: #333;
+    background-color: #011f0f;
+    color: #fff;
     text-align: center;
+    margin: 0;
+    padding: 0;
 }
 
 h1 {
     margin-top: 20px;
-    background-color: rgb(238, 131, 131);
+    background-color: rgb(18, 46, 43);
+    color: #4CAF50;
+    padding: 15px;
     border-radius: 10px;
 }
 
@@ -15,14 +19,29 @@ h1 {
     display: flex;
     justify-content: space-around;
     margin: 20px 0;
+    flex-wrap: wrap;
 }
 
 .metric {
-    background-color: #124E2B;
+    background-color: rgb(18, 46, 43);
     color: #fff;
     padding: 15px;
     border-radius: 10px;
     width: 30%;
+    min-width: 200px;
+    margin: 10px;
+    border: 2px solid #4CAF50;
+}
+
+.metric h2 {
+    color: #4CAF50;
+    font-size: 2em;
+    margin: 10px 0;
+}
+
+.metric p {
+    color: #fff;
+    margin: 5px 0;
 }
 
 .dashboard-grid {
@@ -42,10 +61,21 @@ canvas {
     background-color: #fff;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 2px 10px rgba(76, 175, 80, 0.3);
     max-width: 400px;   /* Set the max width of each chart */
     max-height: 400px;  /* Set the max height of each chart */
     width: 100%;        /* Ensure responsive behavior */
     height: 100%;
+    border: 1px solid #4CAF50;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
+    background-color: rgba(18, 46, 43, 0.5);
+    border-radius: 10px;
+    margin: 20px;
 }
 

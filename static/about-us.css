@@ -8,29 +8,40 @@ body {
 }
 
 header {
-    background-color: black;
-    padding: 20px;
+    background: black;
+    padding: 10px 0;
     text-align: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .header-content {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column; /* Stack elements vertically */
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
 }
 
-.header-content .logo {
+.header-content img.logo {
     width: 150px;
     height: auto;
+    margin-right: 200px;
     border-radius: 50%;
-    margin-bottom: 10px; /* Space below logo */
+    object-fit: cover;
 }
 
 .tagline {
-    font-size: 1.2em;
-    color: #4CAF50;
-    margin-top: 5px; /* Space above tagline */
+    font-size: 1em;
+    color: #fff;
+    margin-top: 5px;
+    font-weight: lighter;
+    text-transform: uppercase;
+    line-height: 0.8;
 }
 
 h1, h2 {
@@ -40,14 +51,21 @@ h1, h2 {
 
 main {
     padding: 20px;
+    margin-top: 0;
 }
 
 section {
     margin-bottom: 40px;
-    background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent background for sections */
+    background-color: rgba(18, 46, 43, 0.8); /* Dark green background for sections */
     padding: 20px; /* Padding inside sections */
     border-radius: 8px; /* Rounded corners for sections */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Subtle shadow for depth */
+    box-shadow: 0 2px 5px rgba(76, 175, 80, 0.3); /* Green shadow */
+    border: 1px solid #4CAF50; /* Green border */
+    color: #fff;
+}
+
+section p, section li {
+    color: #fff;
 }
 
 /* =========================
@@ -72,43 +90,74 @@ section {
 
 /* Team member card */
 .team-member {
-    background-color: #022b16;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    max-width: 280px;
+    background-color: rgba(18, 46, 43, 0.95);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+    border: 2px solid #4CAF50;
+    transition: all 0.3s ease;
+    max-width: 350px;
+    min-width: 280px;
     text-align: center;
-    color: #f1f1f1;
+    color: #fff;
     margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .team-member:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    transform: translateY(-10px);
+    box-shadow: 0 8px 20px rgba(76, 175, 80, 0.6);
+    border-color: #45a049;
+    background-color: rgba(18, 46, 43, 1);
 }
 
 /* Team member image */
 .team-member img {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     object-fit: cover;
     border-radius: 50%;
-    margin-bottom: 15px;
-    border: 3px solid #4caf50;
+    margin-bottom: 20px;
+    border: 4px solid #4CAF50;
+    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+    transition: all 0.3s ease;
 }
 
-/* Name & Role */
+.team-member:hover img {
+    border-color: #45a049;
+    box-shadow: 0 6px 15px rgba(76, 175, 80, 0.5);
+    transform: scale(1.05);
+}
+
+/* Name */
 .team-member h3 {
-    margin: 10px 0 5px;
-    font-size: 1.3rem;
-    color: #4caf50;
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    color: #4CAF50;
+    font-weight: bold;
+    text-align: center;
 }
 
-.team-member p {
-    margin: 6px 0;
-    font-size: 0.95rem;
-    line-height: 1.4;
+/* Role/Title (first paragraph - job title) */
+.team-member p:first-of-type {
+    margin: 0 0 15px 0;
+    font-size: 1rem;
+    color: #4CAF50;
+    font-weight: 600;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Description (second paragraph - bio) */
+.team-member p:not(:first-of-type) {
+    margin: 8px 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #fff;
+    text-align: left;
+    text-align: justify;
 }
 
 /* =========================

@@ -6,14 +6,15 @@
 
 body {
   font-family: Arial, sans-serif;
-  background-color:  rgb(22, 57, 54);;
+  background-color: #011f0f;
   padding: 20px;
+  color: #fff;
 }
 
 h1 {
   text-align: center;
   margin-bottom: 20px;
-  color: white;
+  color: #4CAF50;
 }
 
 div {
@@ -21,25 +22,38 @@ div {
   text-align: center;
 }
 
+label {
+  color: #fff;
+}
+
 input[type="text"] {
   padding: 10px;
   width: 200px;
   margin-right: 10px;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid #4CAF50;
+  background-color: #fff;
+  color: #333;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
 }
 
 button {
   padding: 10px 15px;
-  background-color: #28a745;
+  background-color: #4CAF50;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
-  background-color: #218838;
+  background-color: #45a049;
 }
 
 table {
@@ -47,10 +61,12 @@ table {
   border-collapse: collapse;
   margin-top: 20px;
   text-align: left;
+  background-color: #fff;
+  color: #333;
 }
 
 table, th, td {
-  border: 1px solid #ddd;
+  border: 1px solid #4CAF50;
 }
 
 th, td {
@@ -58,7 +74,12 @@ th, td {
 }
 
 th {
-  background-color: #f4f4f4;
+  background-color: rgb(18, 46, 43);
+  color: #fff;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
 }
 
 canvas {
@@ -66,4 +87,8 @@ canvas {
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
+  background-color: #fff;
+  border: 1px solid #4CAF50;
+  border-radius: 10px;
+  padding: 20px;
 }

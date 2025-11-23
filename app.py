@@ -121,7 +121,7 @@ def handle_500_error(e):
     <html>
     <head><title>Error - UMUHUZA</title></head>
     <body style="font-family: Arial, sans-serif; padding: 20px;">
-        <h1>⚠️ Application Error</h1>
+        <h1><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px; color: #ff6b6b;"><path d="M1 21H23L12 2L1 21ZM13 18H11V16H13V18ZM13 14H11V10H13V14Z" fill="currentColor"/></svg> Application Error</h1>
         <p><strong>Error:</strong> {error_msg}</p>
         <hr>
         <h2>Common Solutions:</h2>
@@ -450,17 +450,15 @@ def dash():
 @app.route('/login', methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        phone = request.form.get("phone")
         email = request.form.get("email")
-        role = request.form.get("role")
         password = request.form.get("password")
 
+        if not email or not password:
+            flash("Email and password are required.", "error")
+            return render_template("login.html")
+
         try:
-            user = None
-            if phone:
-                user = User.query.filter_by(phone=phone).first()
-            elif email:
-                user = User.query.filter_by(email=email).first()
+            user = User.query.filter_by(email=email).first()
 
             if user and user.role == "promoter":
                 user.role = "dealer"
@@ -471,20 +469,14 @@ def login():
                     app.logger.error(f"Failed to migrate promoter role during login: {commit_err}")
 
             if user:
-                normalized_role = user.role
-                if normalized_role == "promoter":
-                    normalized_role = "dealer"
-
-                if normalized_role != role:
-                    flash("Selected role does not match your account.", "error")
-                elif user.check_password(password):
+                if user.check_password(password):
                     login_user(user)
                     flash("Login successful!", "success")
                     return redirect(url_for("dashboard"))
                 else:
                     flash("Invalid password. Please try again.", "error")
             else:
-                flash("No user found with those credentials.", "error")
+                flash("No user found with that email address.", "error")
         except Exception as e:
             app.logger.error(f"Login error: {str(e)}")
             import traceback
@@ -513,9 +505,10 @@ def create_account():
         if role == "promoter":
             role = "dealer"
 
-        valid_roles = {"farmer", "dealer", "processor", "researcher", "policy"}
+        # Normal users can only create these roles (admin-only roles excluded)
+        valid_roles = {"farmer", "processor", "researcher"}
         if role not in valid_roles:
-            flash("Invalid role selected.", "error")
+            flash("Invalid role selected. Admin, Agro-Dealer, and Policy Maker accounts can only be created by administrators.", "error")
             return redirect(url_for('create_account'))
 
         if password != confirm_password:
@@ -535,6 +528,50 @@ def create_account():
         return redirect(url_for('login'))
 
     return render_template('create-account.html')
+
+# ====================================================
+# Admin Account Creation (Policy Maker Only)
+# ====================================================
+@app.route('/admin/create-account', methods=['GET', 'POST'])
+@login_required
+def admin_create_account():
+    # Only policy makers (admins) can access this route
+    if current_user.role != "policy":
+        flash("Access denied. Only administrators can create admin and agro-dealer accounts.", "error")
+        return redirect(url_for('dash'))
+    
+    if request.method == 'POST':
+        full_name = request.form.get('fullName')
+        phone = request.form.get('phone')
+        email = request.form.get('email')
+        role = request.form.get('role')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirmPassword')
+
+        # Only allow creating admin (policy) and dealer (agro-dealer) roles
+        valid_admin_roles = {"policy", "dealer"}
+        if role not in valid_admin_roles:
+            flash("Invalid role selected. Only Admin (Policy Maker) and Agro-Dealer roles can be created here.", "error")
+            return redirect(url_for('admin_create_account'))
+
+        if password != confirm_password:
+            flash("Passwords do not match.", "error")
+            return redirect(url_for('admin_create_account'))
+
+        if User.query.filter((User.phone == phone) | (User.email == email)).first():
+            flash("Phone or Email already registered.", "error")
+            return redirect(url_for('admin_create_account'))
+
+        new_user = User(full_name=full_name, phone=phone, email=email, role=role)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        role_display = "Admin (Policy Maker)" if role == "policy" else "Agro-Dealer"
+        flash(f"{role_display} account created successfully!", "success")
+        return redirect(url_for('admin_create_account'))
+
+    return render_template('admin-create-account.html')
 
 # ====================================================
 # Password Reset

@@ -4,79 +4,216 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
     <link rel="stylesheet" href="{{url_for('static', filename='contact.css')}}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            margin-right: 100px;
+            margin-left: 100px;
+            padding-top: 150px; /* Add padding to account for fixed header */
+        }
+        header {
+            background: black;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            left: 0;
+            right: 0;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .header-content img.logo {
+            width: 150px;
+            height: auto;
+            margin-right: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        header h1 {
+            color: #4CAF50;
+            font-size: 3em;
+            margin: 0;
+        }
+        header .tagline {
+            font-size: 1em;
+            color: #fff;
+            margin-top: 5px;
+            font-weight: lighter;
+            text-transform: uppercase;
+            line-height: 0.8;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+        }
+        nav ul li {
+            display: inline-block;
+            margin: 0 10px;
+            white-space: nowrap;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            padding: 5px 10px;
+            display: inline-block;
+        }
+        nav ul li a:hover {
+            color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.1);
+            border-radius: 3px;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1001;
+            top: 100%;
+            left: 0;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: rgb(18, 46, 43);
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h1 style="color:#4CAF50;">Contact UMUHUZA</h1>
+        <div class="header-content">
+            <!-- Insert your image here -->
+            <img src="{{ url_for('static', filename='ikiraro.png') }}" alt="Ikiraro logo" class="logo">
+            <div>
+                <h1 style="text-align:center;">UMUHUZA</h1>
+                <p style="font-size: 12px; line-height: 0.3em;text-align: center;" class="tagline">
+                    REVOLUTIONIliZING AGRICULTURE THROUGH COLLABORATIVE Artificial INTELLIGENCE
+                </p>
+                <nav>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about_us') }}">About</a></li>
+                        <li><a href="{{url_for('dash')}}">Dashboard</a></li>
+                        <li class="dropdown">
+                            <a href="{{url_for('login')}}" class="login-user">Login</a>
+                        </li>
+                        <li class="dropdown">
+                            <a href="{{url_for('create_account')}}" class="login-user">Sign Up</a>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#services" class="login-user">Services</a>
+                            <div class="dropdown-content">
+                                <a href="{{url_for('service')}}">Extension Services</a>
+                                <a href="{{url_for('irrigation')}}">Irrigation Technology</a>
+                                <a href="{{url_for('weather')}}"> Weather Forecasting </a>
+                                <a href="{{url_for('market')}}">Market Price</a>
+                                <a href="{{ url_for('input_page')}}"> Input Information</a>
+                            </div>
+                        </li>
+                        <li><a href="{{url_for('contact')}}">Contact-Us</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
     </header>
 
-    <table style="width: 100%;">
-        <tr>
-            <td>
-                <h2 style="margin-left: 10%;">Write Us</h2>
-                <p style="margin-left: 10%;">Join us a note, and we’ll get back to you as quickly as possible.</p>
-                <p style="margin-left: 10%;">We’re here to help! Want to learn how we’re accelerating the transition to modern, more resilient agriculture? Write to us; we’d love to hear from you!</p>
-            </td>
-            <td style="vertical-align: top;">
-                <div class="contact-container">
-                    <h2>Get in Touch</h2>
-                    
-                    <!-- Contact Form -->
-                    <form id="contactForm" method="POST" action="/contact">
-                        <input type="text" name="name" placeholder="Your Name" required>
-                        <input type="email" name="email" placeholder="Your Email" required>
-                        <textarea name="message" placeholder="Your Message" required></textarea>
-                        <button type="submit">Send Message</button>
-                    </form>
+    <!-- Page Title Section -->
+    <div style="text-align: center; padding: 20px; margin-top: 20px;">
+        <h1 style="color: #4CAF50; font-size: 2.5em; margin-bottom: 10px;">Contact Us</h1>
+        <p style="color: #fff; font-size: 1.2em;">Get in touch with us - we'd love to hear from you!</p>
+    </div>
 
-                    <!-- Flash Messages -->
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                      {% if messages %}
-                        {% for category, message in messages %}
-                          <p class="flash {{ category }}">{{ message }}</p>
-                        {% endfor %}
-                      {% endif %}
-                    {% endwith %}
-                </div>
-            </td>
-        </tr>
-        
-        <tr>
-            <td style="vertical-align: top; background-color:yellowgreen;">
-                <footer>
-                    <h3>Follow Us Our Daily Activities</h3>
-                    <div class="social-icons">
-                        <table>
-                            <tr>
-                                <td>
-                                    <a href="mailto:project.ikiraro@gmail.com" title="Email Us"><i class="fas fa-envelope"></i></a><br>
-                                    UMUHUZA@gmail.com
-                                </td>
-                                <td>
-                                    <a href="https://instagram.com/ikiraro" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
-                                    UMUHUZA
-                                </td>
-                                <td>
-                                    <a href="https://x.com/ProjectIkiraro" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
-                                    UMUHUZA
-                                </td>
-                                <td>
-                                    <a href="https://www.youtube.com/@ProjectIkiraro" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a><br>
-                                    UMUHUZA
-                                </td>
-                            </tr>
-                        </table>
-                        <center>
-                            <footer>
-                                <p>&copy; 2025 UMUHUZA. All rights reserved.</p>
-                            </footer>
-                        </center>
-                    </div>
-                </footer>
-            </td>
-        </tr>
-    </table>
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-around; padding: 20px; gap: 20px;">
+        <div style="flex: 1; min-width: 300px; max-width: 500px; padding: 20px;">
+            <h2 style="color: #4CAF50; margin-bottom: 15px;">Write Us</h2>
+            <p style="color: #fff; margin-bottom: 15px; line-height: 1.6;">Join us a note, and we'll get back to you as quickly as possible.</p>
+            <p style="color: #fff; line-height: 1.6;">We're here to help! Want to learn how we're accelerating the transition to modern, more resilient agriculture? Write to us; we'd love to hear from you!</p>
+        </div>
+        <div style="flex: 1; min-width: 300px; max-width: 500px;">
+            <div class="contact-container">
+                <h2 style="color: rgb(18, 46, 43);">Get in Touch</h2>
+                
+                <!-- Contact Form -->
+                <form id="contactForm" method="POST" action="/contact">
+                    <input type="text" name="name" placeholder="Your Name" required>
+                    <input type="email" name="email" placeholder="Your Email" required>
+                    <textarea name="message" placeholder="Your Message" required></textarea>
+                    <button type="submit">Send Message</button>
+                </form>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <p class="flash {{ category }}">{{ message }}</p>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Social Media Section -->
+    <section id="social-media" style="background-color: rgb(18, 46, 43); color:#fff; border-top: 2px solid #4CAF50; padding: 30px; margin-top: 40px; text-align: center;">
+        <h3 style="color:#4CAF50; margin-bottom: 20px;">Follow Us on Social Media</h3>
+        <div class="social-icons" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+            <div style="text-align: center;">
+                <a href="mailto:project.ikiraro@gmail.com" title="Email Us" style="color:#fff; font-size: 24px; text-decoration: none; display: block; margin-bottom: 5px;">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <span style="color:#fff; font-size: 14px;">UMUHUZA@gmail.com</span>
+            </div>
+            <div style="text-align: center;">
+                <a href="https://instagram.com/ikiraro" target="_blank" title="Instagram" style="color:#fff; font-size: 24px; text-decoration: none; display: block; margin-bottom: 5px;">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <span style="color:#fff; font-size: 14px;">UMUHUZA</span>
+            </div>
+            <div style="text-align: center;">
+                <a href="https://x.com/ProjectIkiraro" target="_blank" title="Twitter" style="color:#fff; font-size: 24px; text-decoration: none; display: block; margin-bottom: 5px;">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <span style="color:#fff; font-size: 14px;">UMUHUZA</span>
+            </div>
+            <div style="text-align: center;">
+                <a href="https://www.youtube.com/@ProjectIkiraro" target="_blank" title="YouTube" style="color:#fff; font-size: 24px; text-decoration: none; display: block; margin-bottom: 5px;">
+                    <i class="fab fa-youtube"></i>
+                </a>
+                <span style="color:#fff; font-size: 14px;">UMUHUZA</span>
+            </div>
+        </div>
+        <p style="color:#fff; margin-top: 20px;">&copy; 2025 UMUHUZA. All rights reserved.</p>
+    </section>
 </body>
 </html>

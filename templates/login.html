@@ -4,45 +4,178 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: Arial, sans-serif;
       background-color: rgb(18, 46, 43);
       color: white;
-      display: flex; justify-content: center; align-items: center;
-      height: 100vh; padding-top: 50px;
+      margin-right: 100px;
+      margin-left: 100px;
+      padding-top: 150px; /* Add padding to account for fixed header */
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     header {
-      background-color: rgb(45, 157, 146);
-      width: 100%; padding: 20px 0;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      display: flex; justify-content: center; align-items: center;
-      position: fixed; top: 0; z-index: 1;
+      background: black;
+      color: #fff;
+      padding: 10px 0;
+      text-align: center;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      left: 0;
+      right: 0;
     }
     .header-content {
-      display: flex; align-items: center; max-width: 1200px; width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
     }
-    .logo { width: 100px; height: auto; margin-right: 20px; }
+    .header-content img.logo {
+      width: 150px;
+      height: auto;
+      margin-right: 200px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    header h1 {
+      color: #4CAF50;
+      font-size: 3em;
+      margin: 0;
+    }
+    header .tagline {
+      font-size: 1em;
+      color: #fff;
+      margin-top: 5px;
+      font-weight: lighter;
+      text-transform: uppercase;
+      line-height: 0.8;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 10px;
+    }
+    nav ul {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    nav ul li {
+      display: inline-block;
+      margin: 0 15px;
+    }
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      transition: color 0.3s ease;
+      padding: 5px 10px;
+      display: inline-block;
+    }
+    nav ul li a:hover {
+      color: #4CAF50;
+      background-color: rgba(76, 175, 80, 0.1);
+      border-radius: 3px;
+    }
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1001;
+      top: 100%;
+      left: 0;
+    }
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+    .dropdown-content a:hover {
+      background-color: rgb(18, 46, 43);
+      color: white;
+    }
     .container {
       background-color: white;
-      padding: 20px;
+      padding: 30px;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 400px; margin-top: 150px;
+      width: 450px;
       color: black;
+      margin: 20px auto;
     }
-    .container h2 { text-align: center; margin-bottom: 20px; color: rgb(18, 46, 43); }
-    input, select { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+    .container h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: rgb(18, 46, 43);
+      font-size: 24px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+    }
     button {
-      width: 100%; padding: 10px;
-      background-color: #4CAF50; color: white;
-      border: none; border-radius: 5px; cursor: pointer;
+      width: 100%;
+      padding: 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
       margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
     }
-    button:hover { background-color: #45a049; }
-    .error { color: red; font-size: 14px; text-align: center; margin-top: 10px; }
-    .success { color: green; text-align: center; margin-top: 10px; }
+    button:hover {
+      background-color: #45a049;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #ffebee;
+      border-radius: 5px;
+    }
+    .success {
+      color: green;
+      text-align: center;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #e8f5e9;
+      border-radius: 5px;
+    }
     .link { text-align: center; margin-top: 15px; font-size: 14px; }
     .link a { color: #4CAF50; text-decoration: none; }
     .link a:hover { text-decoration: underline; }
@@ -62,26 +195,47 @@
 </head>
 <body>
 
-<header>
-  <div class="header-content">
-    <img src="{{url_for('static', filename='ikiraro.png')}}" alt="Ikiraro logo" class="logo">
-    <h1 style="color:#4CAF50">UMUHUZA</h1>
-  </div>
-</header>
+  <header>
+    <div class="header-content">
+        <!-- Insert your image here -->
+        <img src="{{ url_for('static', filename='ikiraro.png') }}" alt="Ikiraro logo" class="logo">
+        <div>
+            <h1 style="text-align:center;">UMUHUZA</h1>
+            <p style="font-size: 12px; line-height: 0.3em;text-align: center;" class="tagline">
+                REVOLUTIONIliZING AGRICULTURE THROUGH COLLABORATIVE Artificial INTELLIGENCE
+            </p>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('about_us') }}">About</a></li>
+                    <li><a href="{{url_for('dash')}}">Dashboard</a></li>
+                    <li class="dropdown">
+                        <a href="{{url_for('login')}}" class="login-user">Login</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="{{url_for('create_account')}}" class="login-user">Sign Up</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#services" class="login-user">Services</a>
+                        <div class="dropdown-content">
+                            <a href="{{url_for('service')}}">Extension Services</a>
+                            <a href="{{url_for('irrigation')}}">Irrigation Technology</a>
+                            <a href="{{url_for('weather')}}"> Weather Forecasting </a>
+                            <a href="{{url_for('market')}}">Market Price</a>
+                            <a href="{{ url_for('input_page')}}"> Input Information</a>
+                        </div>
+                    </li>
+                    <li><a href="{{url_for('contact')}}">Contact-Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+  </header>
 
 <div class="container">
   <h2>Login</h2>
   <form method="POST" action="{{ url_for('login') }}">
-    <input type="tel" name="phone" placeholder="+2507XXXXXXXX (optional)">
-    <input type="email" name="email" placeholder="Email Address (optional)">
-    <select name="role" required>
-      <option value="">Select Role</option>
-      <option value="farmer">Farmer</option>
-      <option value="dealer">Agro-Dealer</option>
-      <option value="processor">Processor & Customer</option>
-      <option value="researcher">Researcher & Expert</option>
-      <option value="policy">Policy Maker</option>
-    </select>
+    <input type="email" name="email" placeholder="Email Address" required>
     <input type="password" name="password" placeholder="Password" required>
     
     <div class="forgot">

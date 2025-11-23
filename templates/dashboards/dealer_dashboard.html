@@ -33,7 +33,7 @@
     <div class="grid">
       <!-- Inventory -->
       <div class="card">
-        <h2>📦 Inventory</h2>
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;"><path d="M20 6H16L14 4H10L8 6H4C2.9 6 2 6.9 2 8V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V8C22 6.9 21.1 6 20 6ZM20 19H4V8H6.83L8.83 6H15.17L17.17 8H20V19ZM12 9C9.24 9 7 11.24 7 14C7 16.76 9.24 19 12 19C14.76 19 17 16.76 17 14C17 11.24 14.76 9 12 9ZM12 17C10.35 17 9 15.65 9 14C9 12.35 10.35 11 12 11C13.65 11 15 12.35 15 14C15 15.65 13.65 17 12 17Z" fill="currentColor"/></svg> Inventory</h2>
         <form method="post" action="{{ url_for('dealer_inventory_create') }}" style="margin:0 0 12px 0; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
           <input type="text" name="product_name" placeholder="Product name" required style="flex:2; padding:8px;" />
           <input type="number" name="stock" placeholder="Stock" min="0" value="0" style="width:110px; padding:8px;" />

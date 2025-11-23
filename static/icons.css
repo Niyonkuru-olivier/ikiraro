@@ -1,0 +1,36 @@
+/* Professional Icon Styles for UMUHUZA Platform */
+.icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: #4CAF50;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+.icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.icon-large {
+    width: 32px;
+    height: 32px;
+}
+
+.icon-small {
+    width: 18px;
+    height: 18px;
+}
+
+.icon-white {
+    color: #fff;
+}
+
+.icon-dark {
+    color: rgb(18, 46, 43);
+}
+

@@ -5,19 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UMUHUZA Agriculture Services & Projects</title>
     <!-- Main Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
     <link rel="stylesheet" href="{{url_for('static', filename='service.css')}}">
     <!-- Font Awesome for Social Media Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- Chart.js for Graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            margin-right: 100px;
+            margin-left: 100px;
+            padding-top: 150px; /* Add padding to account for fixed header */
+        }
+        header {
+            background: black;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            left: 0;
+            right: 0;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .header-content img.logo {
+            width: 150px;
+            height: auto;
+            margin-right: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        header h1 {
+            color: #4CAF50;
+            font-size: 3em;
+            margin: 0;
+        }
+        header .tagline {
+            font-size: 1em;
+            color: #fff;
+            margin-top: 5px;
+            font-weight: lighter;
+            text-transform: uppercase;
+            line-height: 0.8;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        nav ul li {
+            display: inline-block;
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            padding: 5px 10px;
+            display: inline-block;
+        }
+        nav ul li a:hover {
+            color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.1);
+            border-radius: 3px;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1001;
+            top: 100%;
+            left: 0;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: rgb(18, 46, 43);
+            color: white;
+        }
+    </style>
 </head>
 <body>
-
     <!-- Header Section -->
     <header>
-        <h1>UMUHUZA - Revolutionizing Agriculture through Collaborative Intelligence</h1>
-        <p>Ongoing Agriculture Services and Projects</p>
+        <div class="header-content">
+            <!-- Insert your image here -->
+            <img src="{{ url_for('static', filename='ikiraro.png') }}" alt="Ikiraro logo" class="logo">
+            <div>
+                <h1 style="text-align:center;">UMUHUZA</h1>
+                <p style="font-size: 12px; line-height: 0.3em;text-align: center;" class="tagline">
+                    REVOLUTIONIliZING AGRICULTURE THROUGH COLLABORATIVE Artificial INTELLIGENCE
+                </p>
+                <nav>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about_us') }}">About</a></li>
+                        <li><a href="{{url_for('dash')}}">Dashboard</a></li>
+                        <li class="dropdown">
+                            <a href="{{url_for('login')}}" class="login-user">Login</a>
+                        </li>
+                        <li class="dropdown">
+                            <a href="{{url_for('create_account')}}" class="login-user">Sign Up</a>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#services" class="login-user">Services</a>
+                            <div class="dropdown-content">
+                                <a href="{{url_for('service')}}">Extension Services</a>
+                                <a href="{{url_for('irrigation')}}">Irrigation Technology</a>
+                                <a href="{{url_for('weather')}}"> Weather Forecasting </a>
+                                <a href="{{url_for('market')}}">Market Price</a>
+                                <a href="{{ url_for('input_page')}}"> Input Information</a>
+                            </div>
+                        </li>
+                        <li><a href="{{url_for('contact')}}">Contact-Us</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
     </header>
+
+    <!-- Page Title Section -->
+    <div style="text-align: center; padding: 20px; margin-top: 20px;">
+        <h1 style="color: #4CAF50; font-size: 2.5em; margin-bottom: 10px;">Extension Services</h1>
+        <p style="color: #fff; font-size: 1.2em;">Ongoing Agriculture Services and Projects</p>
+    </div>
 
     <!-- Purpose Section -->
     <section id="purpose">
@@ -110,25 +248,25 @@ allowfullscreen>
         </center>
     </div>
     <!-- Footer Section -->
-    <footer style="background-color: rgb(103, 194, 12);">
-        <h3 style="color:beige;">Follow Us</h3>
+    <footer style="background-color: rgb(18, 46, 43); border-top: 2px solid #4CAF50;">
+        <h3 style="color:#4CAF50;">Follow Us</h3>
         <div class="social-icons">
-            <a href="https://facebook.com/ikiraro" target="_blank" title="Facebook" id="facebook" style="color:beige;">
+            <a href="https://facebook.com/ikiraro" target="_blank" title="Facebook" id="facebook" style="color:#fff;">
                 <i class="fab fa-facebook-f"></i>
             </a>
-            <a href="https://x.com/ProjectIkiraro" target="_blank" title="Twitter" id="twitter" style="color:beige;">
+            <a href="https://x.com/ProjectIkiraro" target="_blank" title="Twitter" id="twitter" style="color:#fff;">
                 <i class="fab fa-twitter"></i>
             </a>
-            <a href="https://instagram.com/ikiraro" target="_blank" title="Instagram" id="instagram" style="color:beige;">
+            <a href="https://instagram.com/ikiraro" target="_blank" title="Instagram" id="instagram" style="color:#fff;">
                 <i class="fab fa-instagram"></i>
             </a>
-            <a href="https://www.linkedin.com/company/project-ikiraro-platform/" target="_blank" title="LinkedIn" id="linkedin" style="color:beige;">
+            <a href="https://www.linkedin.com/company/project-ikiraro-platform/" target="_blank" title="LinkedIn" id="linkedin" style="color:#fff;">
                 <i class="fab fa-linkedin-in"></i>
             </a>
            
         </div>
         <br>
-        © 2025 IKIRARO. All rights reserved.
+        <p style="color:#fff;">© 2025 UMUHUZA. All rights reserved.</p>
     </footer>
 
     <!-- Custom Scripts -->

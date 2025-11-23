@@ -42,8 +42,8 @@
     </table>
 
     <div class="export-btns">
-      <a href="{{ url_for('export_users', role=role.lower(), filetype='excel') }}">⬇ Export to Excel</a>
-      <a href="{{ url_for('export_users', role=role.lower(), filetype='pdf') }}">⬇ Export to PDF</a>
+      <a href="{{ url_for('export_users', role=role.lower(), filetype='excel') }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;"><path d="M19 9H15V3H9V9H5L12 16L19 9ZM5 18V20H19V18H5Z" fill="currentColor"/></svg> Export to Excel</a>
+      <a href="{{ url_for('export_users', role=role.lower(), filetype='pdf') }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;"><path d="M19 9H15V3H9V9H5L12 16L19 9ZM5 18V20H19V18H5Z" fill="currentColor"/></svg> Export to PDF</a>
     </div>
 
     {% else %}

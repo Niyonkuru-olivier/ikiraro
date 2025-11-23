@@ -31,12 +31,12 @@
                 </li>-->
                 <li><a href="{{url_for('dash')}}">Dashboard</a></li>
                 <li class="dropdown">
-                    <a href="{{url_for('login')}}" class="login-user">Login-User</a>
+                    <a href="{{url_for('login')}}" class="login-user">Login</a>
                 
                 </li>
                 <!--<li><a href="#account">Create Account</a></li>-->
                 <li class="dropdown">
-                    <a href="{{url_for('create_account')}}" class="login-user">Create Account</a>
+                    <a href="{{url_for('create_account')}}" class="login-user">Sign Up</a>
                    
                 </li>
                 <li class="dropdown">
@@ -156,11 +156,24 @@
 <script src="https://cdn.botpress.cloud/webchat/v0/inject.js"></script>
 <script>
 window.botpressWebChat.init({
-"botId":"f5a1ef00-3dd2-4a3e-b8b9-0ba70c5f6d37",
-"hostUrl":"https://cdn.botpress.cloud/webchat/v0",
-"messagingUrl":"https://messaging.botpress.cloud",
-"clientId":"f5a1ef00-3dd2-4a3e-b8b9-0ba70c5f6d37",
-"botName":"Botpress Webchat"
+    "botId": "f5a1ef00-3dd2-4a3e-b8b9-0ba70c5f6d37",
+    "hostUrl": "https://cdn.botpress.cloud/webchat/v0",
+    "messagingUrl": "https://messaging.botpress.cloud",
+    "clientId": "f5a1ef00-3dd2-4a3e-b8b9-0ba70c5f6d37",
+    "botName": "UMUHUZA Assistant",
+    "composerPlaceholder": "Ask me about agriculture, services, weather, irrigation, market prices, or inputs...",
+    "theme": {
+        "primaryColor": "#4CAF50",
+        "secondaryColor": "#011f0f",
+        "textColor": "#ffffff"
+    },
+    "conversationStarters": [
+        "What services do you offer?",
+        "How can I get weather forecasts?",
+        "Tell me about irrigation systems",
+        "What are current market prices?",
+        "How do I order agricultural inputs?"
+    ]
 });
 </script>
 

@@ -3,21 +3,167 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maize Market Database</title>
+  <title>Maize Market Database - UMUHUZA</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
   <link rel="stylesheet" href="{{url_for('static', filename='market.css')}}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+        body {
+            margin-right: 100px;
+            margin-left: 100px;
+            padding-top: 150px; /* Add padding to account for fixed header */
+        }
+        header {
+            background: black;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            left: 0;
+            right: 0;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .header-content img.logo {
+            width: 150px;
+            height: auto;
+            margin-right: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        header h1 {
+            color: #4CAF50;
+            font-size: 3em;
+            margin: 0;
+        }
+        header .tagline {
+            font-size: 1em;
+            color: #fff;
+            margin-top: 5px;
+            font-weight: lighter;
+            text-transform: uppercase;
+            line-height: 0.8;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        nav ul li {
+            display: inline-block;
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            padding: 5px 10px;
+            display: inline-block;
+        }
+        nav ul li a:hover {
+            color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.1);
+            border-radius: 3px;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1001;
+            top: 100%;
+            left: 0;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: rgb(18, 46, 43);
+            color: white;
+        }
+    </style>
 </head>
 <body>
-  <h1>Maize Market Prices</h1>
-  <div>
-    <label for="search">Search for Year(between 2020-2024):</label>
-    <input type="text" id="search" placeholder="Enter region or date">
-    <button onclick="searchPrices()">Search</button>
+  <!-- Header Section -->
+  <header>
+    <div class="header-content">
+        <!-- Insert your image here -->
+        <img src="{{ url_for('static', filename='ikiraro.png') }}" alt="Ikiraro logo" class="logo">
+        <div>
+            <h1 style="text-align:center;">UMUHUZA</h1>
+            <p style="font-size: 12px; line-height: 0.3em;text-align: center;" class="tagline">
+                REVOLUTIONIliZING AGRICULTURE THROUGH COLLABORATIVE Artificial INTELLIGENCE
+            </p>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('about_us') }}">About</a></li>
+                    <li><a href="{{url_for('dash')}}">Dashboard</a></li>
+                    <li class="dropdown">
+                        <a href="{{url_for('login')}}" class="login-user">Login</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="{{url_for('create_account')}}" class="login-user">Sign Up</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#services" class="login-user">Services</a>
+                        <div class="dropdown-content">
+                            <a href="{{url_for('service')}}">Extension Services</a>
+                            <a href="{{url_for('irrigation')}}">Irrigation Technology</a>
+                            <a href="{{url_for('weather')}}"> Weather Forecasting </a>
+                            <a href="{{url_for('market')}}">Market Price</a>
+                            <a href="{{ url_for('input_page')}}"> Input Information</a>
+                        </div>
+                    </li>
+                    <li><a href="{{url_for('contact')}}">Contact-Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+  </header>
+
+  <!-- Page Title Section -->
+  <div style="text-align: center; padding: 20px; margin-top: 20px;">
+    <h1 style="color: #4CAF50; font-size: 2.5em; margin-bottom: 10px;">Market Price</h1>
+    <p style="color: #fff; font-size: 1.2em;">Maize Market Prices Database</p>
   </div>
-  <table id="prices-table">
-    <!-- Table to display searchable data -->
-  </table>
-  <canvas id="price-chart"></canvas>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <div style="background-color: rgba(18, 46, 43, 0.8); padding: 20px; border-radius: 8px; margin: 20px; border: 1px solid #4CAF50;">
+    <div style="margin-bottom: 20px;">
+      <label for="search" style="color: #fff; margin-right: 10px;">Search for Year(between 2020-2024):</label>
+      <input type="text" id="search" placeholder="Enter region or date" style="padding: 10px; border-radius: 5px; border: 1px solid #4CAF50; background-color: #fff; color: #333; margin-right: 10px;">
+      <button onclick="searchPrices()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">Search</button>
+    </div>
+    <table id="prices-table" style="width: 100%; color: #fff; margin-bottom: 20px;">
+      <!-- Table to display searchable data -->
+    </table>
+    <canvas id="price-chart" style="background-color: #fff; padding: 20px; border-radius: 10px; border: 1px solid #4CAF50;"></canvas>
+  </div>
   <script src="{{url_for('static', filename='market.js')}}"></script>
 </body>
 </html>
