@@ -1,8 +1,7 @@
 # ---------------- Standard Library ----------------
 from io import BytesIO
 from datetime import datetime
-from flask import send_from_directory, render_template
-import requests
+from flask import send_from_directory, render_template, jsonify
 
 from sqlalchemy import desc
 from datetime import date
@@ -19,6 +18,7 @@ from flask_login import (
     logout_user, current_user, UserMixin
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
@@ -30,12 +30,18 @@ from reportlab.lib.styles import getSampleStyleSheet
 # ---------------- Standard Library ---------------- 
 import os
 
+from services.weather import weather_service
+
 # ====================================================
 # Flask App & Config
 # ====================================================
 # Configure Flask to serve static files correctly on Vercel
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.secret_key = os.environ.get('SECRET_KEY', 'supersecretkey-change-in-production')
+app.config['PROFILE_UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads', 'profile_photos')
+app.config['PROFILE_ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+app.config['PROFILE_MAX_FILE_SIZE_MB'] = int(os.environ.get('PROFILE_MAX_FILE_SIZE_MB', 4))
+os.makedirs(app.config['PROFILE_UPLOAD_FOLDER'], exist_ok=True)
 
 # ---------------- Database Config ----------------
 # Support both MySQL and PostgreSQL for Vercel deployment
@@ -161,6 +167,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True, nullable=True)
     role = db.Column(db.String(50), nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
+    profile_photo = db.Column(db.String(255), nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -265,6 +272,17 @@ def load_user(user_id):
 # Token Serializer for Password Reset
 # ====================================================
 serializer = URLSafeTimedSerializer(app.secret_key)
+
+# ====================================================
+# Profile Helpers
+# ====================================================
+def allowed_profile_file(filename: str) -> bool:
+    return (
+        bool(filename)
+        and '.' in filename
+        and filename.rsplit('.', 1)[1].lower() in app.config['PROFILE_ALLOWED_EXTENSIONS']
+    )
+
 
 # ====================================================
 # Routes
@@ -649,36 +667,108 @@ def reset_password(token):
     return render_template("reset_password.html", token=token)
 
 # ====================================================
+# Profile Management
+# ====================================================
+@app.route("/profile/update", methods=["POST"])
+@login_required
+def update_profile():
+    full_name = (request.form.get("full_name") or "").strip()
+    phone = (request.form.get("phone") or "").strip()
+    email = (request.form.get("email") or "").strip()
+
+    if not full_name:
+        flash("Full name is required.", "error")
+        return redirect(request.referrer or url_for("dashboard"))
+
+    try:
+        if email:
+            existing_email = User.query.filter(
+                User.email == email,
+                User.id != current_user.id
+            ).first()
+            if existing_email:
+                flash("Email is already in use.", "error")
+                return redirect(request.referrer or url_for("dashboard"))
+
+        if phone:
+            existing_phone = User.query.filter(
+                User.phone == phone,
+                User.id != current_user.id
+            ).first()
+            if existing_phone:
+                flash("Telephone number is already in use.", "error")
+                return redirect(request.referrer or url_for("dashboard"))
+
+        current_user.full_name = full_name
+        current_user.phone = phone or None
+        current_user.email = email or None
+        db.session.commit()
+        flash("Profile updated successfully.", "success")
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Profile update error: {e}")
+        flash("Unable to update profile right now.", "error")
+
+    return redirect(request.referrer or url_for("dashboard"))
+
+
+@app.route("/profile/photo", methods=["POST"])
+@login_required
+def upload_profile_photo():
+    file = request.files.get("profile_photo")
+    if not file or file.filename == "":
+        flash("Please choose a photo to upload.", "error")
+        return redirect(request.referrer or url_for("dashboard"))
+
+    if not allowed_profile_file(file.filename):
+        allowed = ", ".join(sorted(app.config['PROFILE_ALLOWED_EXTENSIONS']))
+        flash(f"Unsupported file type. Allowed: {allowed}", "error")
+        return redirect(request.referrer or url_for("dashboard"))
+
+    # Validate file size
+    file.stream.seek(0, os.SEEK_END)
+    size_bytes = file.stream.tell()
+    file.stream.seek(0)
+    max_bytes = app.config['PROFILE_MAX_FILE_SIZE_MB'] * 1024 * 1024
+    if size_bytes > max_bytes:
+        flash(f"File is too large. Max {app.config['PROFILE_MAX_FILE_SIZE_MB']}MB.", "error")
+        return redirect(request.referrer or url_for("dashboard"))
+
+    ext = file.filename.rsplit(".", 1)[1].lower()
+    safe_name = secure_filename(f"user_{current_user.id}_{int(datetime.utcnow().timestamp())}.{ext}")
+    save_path = os.path.join(app.config['PROFILE_UPLOAD_FOLDER'], safe_name)
+    try:
+        file.save(save_path)
+        # Clean up previous photo if it exists
+        if current_user.profile_photo:
+            old_path = os.path.join(app.static_folder, current_user.profile_photo.replace("/", os.sep))
+            if os.path.exists(old_path):
+                try:
+                    os.remove(old_path)
+                except OSError:
+                    app.logger.warning(f"Could not remove old profile photo: {old_path}")
+
+        current_user.profile_photo = os.path.join("uploads", "profile_photos", safe_name).replace("\\", "/")
+        db.session.commit()
+        flash("Profile photo updated.", "success")
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Profile photo upload error: {e}")
+        flash("Could not upload photo. Please try again.", "error")
+
+    return redirect(request.referrer or url_for("dashboard"))
+
+
+# ====================================================
 # Dashboard (Role-Based)
 # ====================================================
 @app.route('/dashboard')
 @login_required
 def dashboard():
     role = current_user.role
+    weather_snapshot = weather_service.get_weather()
 
     if role == "farmer":
-        # ---- Weather API (Open-Meteo) ----
-        lat, lon = -1.94, 30.06  # Kigali coordinates
-        weather_data = {}
-        try:
-            url = (
-                "https://api.open-meteo.com/v1/forecast"
-                f"?latitude={lat}&longitude={lon}"
-                "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum"
-                "&timezone=Africa%2FKigali"
-            )
-            resp = requests.get(url, timeout=5)
-            json_data = resp.json()
-            weather_data = json_data.get("daily", {})
-        except Exception as e:
-            weather_data = {
-                "temperature_2m_max": [],
-                "temperature_2m_min": [],
-                "precipitation_sum": [],
-                "time": [],
-                "error": str(e)
-            }
-
         # ---- Market Prices (from DB) ----
         try:
             market_prices = MarketPrice.query.order_by(MarketPrice.date.desc()).all()
@@ -703,7 +793,7 @@ def dashboard():
         return render_template(
             "dashboards/farmer_dashboard.html",
             user=current_user,
-            weather_data=weather_data,
+            weather=weather_snapshot,
             market_prices=market_prices,
             inventories=inventories,
             my_orders=my_orders
@@ -769,6 +859,7 @@ def dashboard():
 
         return render_template("dashboards/processor_dashboard.html",
                                user=current_user,
+                               weather=weather_snapshot,
                                crops=crops,
                                certifications=certifications,
                                logistics=logistics,
@@ -914,6 +1005,7 @@ def dashboard():
         return render_template(
             "dashboards/researcher_dashboard.html",
             user=current_user,
+             weather=weather_snapshot,
             market_prices=market_prices,
             chart_data=chart_data,
             nisr_chart_data=nisr_chart_data,
@@ -929,7 +1021,7 @@ def dashboard():
             "policymakers": User.query.filter_by(role="policy").count(),
         }
         return render_template("dashboards/policy_dashboard.html",
-                               user=current_user, stats=stats)
+                               user=current_user, weather=weather_snapshot, stats=stats)
     else:
         flash("Role not recognized. Contact admin.", "error")
         return redirect(url_for("login"))
@@ -972,6 +1064,8 @@ def agro_dealer_dashboard():
         flash("Access denied: dealer-only area.", "error")
         return redirect(url_for('dashboard'))
 
+    weather_snapshot = weather_service.get_weather()
+
     # Inventory for this dealer
     inventory = Inventory.query.filter_by(dealer_id=current_user.id).order_by(Inventory.product_name).all()
 
@@ -984,6 +1078,7 @@ def agro_dealer_dashboard():
 
     return render_template('dashboards/dealer_dashboard.html',
                            user=current_user,
+                           weather=weather_snapshot,
                            inventory=inventory,
                            orders=orders,
                            subsidies=subsidies)
@@ -1462,9 +1557,15 @@ def service():
     youtube_id = "29KDeFQIIpI"
     return render_template('service.html', youtube_id=youtube_id)
 
+@app.route('/api/weather')
+def api_weather():
+    refresh = request.args.get('refresh') == '1'
+    data = weather_service.get_weather(force_refresh=refresh)
+    return jsonify(data)
+
 @app.route('/weather')
 def weather():
-    return render_template('weather.html')
+    return render_template('weather.html', weather=weather_service.get_weather())
 
 @app.route('/agrodealer')
 def appreciate_agrodealer():

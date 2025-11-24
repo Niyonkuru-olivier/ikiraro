@@ -1,0 +1,77 @@
+<section class="profile-strip" data-profile-strip>
+ 
+  <div class="profile-avatar-wrapper">
+    {% set photo_path = url_for('static', filename=user.profile_photo) if user.profile_photo else url_for('static', filename='avatar-default.svg') %}
+    <button class="profile-avatar-btn" type="button" aria-expanded="false" aria-label="Open profile menu">
+      <img src="{{ photo_path }}" alt="{{ user.full_name }} avatar" loading="lazy">
+    </button>
+    <div class="profile-dropdown" role="dialog" aria-hidden="true">
+      <h3>Account Profile</h3>
+      <form action="{{ url_for('update_profile') }}" method="post" class="profile-detail-form">
+        <div class="profile-field">
+          <label for="profile-full-name">Full Name</label>
+          <input type="text" id="profile-full-name" name="full_name" value="{{ user.full_name }}" required>
+        </div>
+        <div class="profile-field">
+          <label for="profile-phone">Telephone Number</label>
+          <input type="tel" id="profile-phone" name="phone" value="{{ user.phone or '' }}" placeholder="+250 7XX XXX XXX">
+        </div>
+        <div class="profile-field">
+          <label for="profile-email">Email Address</label>
+          <input type="email" id="profile-email" name="email" value="{{ user.email or '' }}" placeholder="name@example.com">
+        </div>
+        <div class="profile-field">
+          <label for="profile-role">Role</label>
+          <input type="text" id="profile-role" value="{{ user.role|replace('_', ' ')|title }}" readonly>
+        </div>
+        <button type="submit" class="profile-save-btn">Update Profile</button>
+      </form>
+      <form action="{{ url_for('upload_profile_photo') }}" method="post" enctype="multipart/form-data" class="profile-photo-form">
+        <div class="profile-field profile-upload-input">
+          <label for="profile-photo-input">Profile Photo</label>
+          <input type="file" id="profile-photo-input" name="profile_photo" accept="image/*" required>
+        </div>
+        <button type="submit" class="profile-upload-btn">Upload Photo</button>
+        <p class="profile-hint">PNG, JPG, GIF up to {{ config['PROFILE_MAX_FILE_SIZE_MB'] }}MB.</p>
+      </form>
+    </div>
+  </div>
+</section>
+<script>
+  (function () {
+    const strip = document.querySelector('[data-profile-strip]');
+    if (!strip) return;
+    const btn = strip.querySelector('.profile-avatar-btn');
+    const dropdown = strip.querySelector('.profile-dropdown');
+    let isOpen = false;
+
+    const closeDropdown = () => {
+      if (!isOpen) return;
+      isOpen = false;
+      dropdown.setAttribute('aria-hidden', 'true');
+      btn.setAttribute('aria-expanded', 'false');
+    };
+
+    const openDropdown = () => {
+      if (isOpen) return;
+      isOpen = true;
+      dropdown.setAttribute('aria-hidden', 'false');
+      btn.setAttribute('aria-expanded', 'true');
+    };
+
+    btn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      isOpen ? closeDropdown() : openDropdown();
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!strip.contains(event.target)) {
+        closeDropdown();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeDropdown();
+    });
+  })();
+</script>

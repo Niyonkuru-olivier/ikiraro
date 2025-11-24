@@ -4,10 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Researcher Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='weather-widget.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background: #eef2fb; margin: 0; padding: 0; }
-    header { background: #022b16; color: white; padding: 15px; text-align: center; }
+    header { background: #022b16; color: white; padding: 20px; text-align: left; }
     .container { padding: 20px; max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 15px; }
 
     .accordion { background-color: #022b16; color: white; cursor: pointer; 
@@ -37,11 +39,21 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>Welcome, {{ user.full_name }} (Researcher)</h1>
+  <header class="dashboard-hero">
+    <div class="dashboard-hero__heading">
+      <p>R&D Intelligence Hub</p>
+      <h1>Welcome, {{ user.full_name }} (Researcher)</h1>
+    </div>
+    <div class="dashboard-hero__profile">
+      {% include 'partials/profile_section.html' %}
+    </div>
   </header>
 
   <div class="container">
+    
+    {% with weather=weather, variant='compact', refresh_seconds=480 %}
+      {% include 'partials/weather_widget.html' %}
+    {% endwith %}
 
     <!-- Market Prices (DB) -->
     <button class="accordion"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;"><path d="M3.5 18.49L9.5 12.49L13.5 16.49L22 6.92V20.5C22 21.05 21.55 21.5 21 21.5H3C2.45 21.5 2 21.05 2 20.5V18.49L3.5 18.49ZM21 4.5H3C2.45 4.5 2 4.95 2 5.5V7.51L3.5 7.51L9.5 13.51L13.5 9.51L21 1.92V4.5Z" fill="currentColor"/></svg> Market Price Data </button>
@@ -252,5 +264,6 @@ commodity of Beans, Maize and Cassava      </p>
       btn.addEventListener('click', function(){ showToast('Toggled: ' + (btn.textContent || 'Section')); });
     });
   </script>
+  <script src="{{ url_for('static', filename='weather.js') }}"></script>
 </body>
 </html>

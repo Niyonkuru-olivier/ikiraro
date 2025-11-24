@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Farmer Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='weather-widget.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -16,15 +18,9 @@
 header {
   background: linear-gradient(135deg, #022b16, #022b16);
   color: white;
-  padding: 20px;
-  text-align: center;
+  padding: 24px;
+  text-align: left;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-header h1 {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 600;
 }
 
 .container {
@@ -185,11 +181,18 @@ form button:hover {
   </style>
 </head>
 <body>
-  <header>
-    <h1>Welcome, {{ user.full_name }} (Farmer)</h1>
+  <header class="dashboard-hero">
+    <div class="dashboard-hero__heading">
+      <p>Farmer Command Center</p>
+      <h1>Welcome, {{ user.full_name }} (Farmer)</h1>
+    </div>
+    <div class="dashboard-hero__profile">
+      {% include 'partials/profile_section.html' %}
+    </div>
   </header>
 
   <div class="container">
+  
     <div id="single-view-back" class="single-view-back" style="display:none;">
       <a href="{{ url_for('farmer_dashboard') if false else '#' }}" onclick="event.preventDefault(); window.location.href = window.location.pathname;">← Back to all sections</a>
     </div>
@@ -197,14 +200,9 @@ form button:hover {
     <div class="accordion-container">
       <button class="accordion" data-view="weather"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;"><path d="M6.76 4.84L4.96 3.05L3.54 4.46L5.34 6.25C4.53 7.25 4 8.55 4 10C4 13.31 6.69 16 10 16C13.31 16 16 13.31 16 10C16 6.69 13.31 4 10 4C8.55 4 7.25 4.53 6.25 5.34L4.46 3.54L3.05 4.96L4.84 6.76C4.03 7.76 3.5 9.06 3.5 10.5C3.5 14.09 6.41 17 10 17C13.59 17 16.5 14.09 16.5 10.5C16.5 6.91 13.59 4 10 4H10.5C10.5 4 10 4 10 4Z" fill="currentColor"/><path d="M12 8V12L15 15L13.5 16.5L10 13V8H12Z" fill="currentColor"/></svg> Weather Forecast</button>
       <div class="panel">
-        {% if weather_data.time %}
-          <canvas id="temperatureChart" class="chart-container"></canvas>
-          <canvas id="rainfallChart" class="chart-container"></canvas>
-        {% else %}
-          <p class="small">Weather data not available.</p>
-          {% if weather_data.error %}<p class="small">Error: {{ weather_data.error }}</p>
-          {% endif %}
-        {% endif %}
+        {% with weather=weather, variant='compact', refresh_seconds=420 %}
+          {% include 'partials/weather_widget.html' %}
+        {% endwith %}
       </div>
     </div>
 
@@ -455,25 +453,6 @@ form button:hover {
       }
     })();
 
-    {% if weather_data.time %}
-    const labels = {{ weather_data.time | tojson }};
-    const tempMax = {{ weather_data.temperature_2m_max | tojson }};
-    const tempMin = {{ weather_data.temperature_2m_min | tojson }};
-    const rainfall = {{ weather_data.precipitation_sum | tojson }};
-
-    const tempCtx = document.getElementById('temperatureChart').getContext('2d');
-    new Chart(tempCtx, { type: 'line', data: { labels: labels, datasets: [
-        { label: 'Max Temp (°C)', data: tempMax, borderColor: 'rgba(255,99,132,1)', backgroundColor: 'rgba(255,99,132,0.2)', fill: true },
-        { label: 'Min Temp (°C)', data: tempMin, borderColor: 'rgba(54,162,235,1)', backgroundColor: 'rgba(54,162,235,0.2)', fill: true }
-      ]}, options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: false } } }
-    });
-
-    const rainCtx = document.getElementById('rainfallChart').getContext('2d');
-    new Chart(rainCtx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Rainfall (mm)', data: rainfall, backgroundColor: 'rgba(75,192,192,0.6)' }] },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-    });
-    {% endif %}
-
     // --- Toast notifications ---
     function showToast(message) {
       const t = document.createElement('div');
@@ -644,5 +623,6 @@ form button:hover {
       });
     }
   </script>
+  <script src="{{ url_for('static', filename='weather.js') }}"></script>
 </body>
 </html>

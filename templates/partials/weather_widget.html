@@ -1,0 +1,160 @@
+{% set weather_data = weather or {} %}
+{% set variant = variant if variant is defined else 'compact' %}
+{% set refresh_seconds = refresh_seconds if refresh_seconds is defined else 300 %}
+{% set location = weather_data.get('location', {}) if weather_data else {} %}
+{% set current = weather_data.get('current', {}) if weather_data else {} %}
+{% set icon_url = current.get('icon') if current else None %}
+{% if icon_url and icon_url.startswith('//') %}
+  {% set icon_url = 'https:' + icon_url %}
+{% endif %}
+{% set forecast = weather_data.get('forecast', []) if weather_data else [] %}
+{% set alerts = weather_data.get('alerts', []) if weather_data else [] %}
+
+<div class="weather-widget weather-widget--{{ variant }}"
+     data-weather-widget
+     data-variant="{{ variant }}"
+     data-refresh-seconds="{{ refresh_seconds }}">
+  <script type="application/json" data-weather-initial>{{ weather_data|tojson }}</script>
+  <div class="weather-widget__error" data-weather-error {% if not weather_data.error %}hidden{% endif %}>
+    <p>{{ weather_data.error or "Weather data is currently unavailable." }}</p>
+    <button type="button" class="weather-retry-btn" data-weather-retry>Retry</button>
+  </div>
+  <div class="weather-widget__body" data-weather-body {% if weather_data.error %}hidden{% endif %}>
+    <div class="weather-header">
+      <div>
+        <p class="weather-subtitle">Real-time Climate Monitor</p>
+        <h3>
+          <span data-weather-key="location.name">{{ location.get('name', 'Kigali') }}</span>,
+          <span data-weather-key="location.country">{{ location.get('country', 'Rwanda') }}</span>
+        </h3>
+        <small>
+          Updated
+          <span data-weather-key="updated_at">{{ weather_data.get('updated_at', '—') }}</span>
+        </small>
+      </div>
+      <span class="weather-chip">Live</span>
+    </div>
+
+    <div class="weather-current">
+      <div class="weather-temp">
+        <span class="weather-temp__value" data-weather-key="current.temp_c" data-weather-format="temperature">
+          {{ current.get('temp_c') ~ '°C' if current.get('temp_c') is not none else '—' }}
+        </span>
+        <p>
+          Feels like
+          <strong data-weather-key="current.feelslike_c" data-weather-format="temperature">
+            {{ current.get('feelslike_c') ~ '°C' if current.get('feelslike_c') is not none else '—' }}
+          </strong>
+        </p>
+        <p>
+          Wind:
+          <span data-weather-key="current.wind_kph" data-weather-format="speed">
+            {% if current.get('wind_kph') is not none %}
+              {{ current.get('wind_kph') }} km/h
+            {% else %}
+              —
+            {% endif %}
+          </span>
+          <span data-weather-key="current.wind_dir">
+            {{ current.get('wind_dir') or '' }}
+          </span>
+        </p>
+      </div>
+      <div class="weather-condition">
+        <img data-weather-icon src="{{ icon_url or url_for('static', filename='ikiraro.png') }}"
+             alt="Weather condition icon" loading="lazy">
+        <p data-weather-key="current.condition">{{ current.get('condition') or 'Loading...' }}</p>
+      </div>
+    </div>
+
+    <div class="weather-metrics">
+      <article>
+        <p>Humidity</p>
+        <strong data-weather-key="current.humidity" data-weather-format="percentage">
+          {{ current.get('humidity') ~ '%' if current.get('humidity') is not none else '—' }}
+        </strong>
+      </article>
+      <article>
+        <p>Rainfall</p>
+        <strong data-weather-key="current.precip_mm" data-weather-format="precipitation">
+          {% if current.get('precip_mm') is not none %}
+            {{ current.get('precip_mm') }} mm
+          {% else %}
+            —
+          {% endif %}
+        </strong>
+      </article>
+      <article>
+        <p>UV Index</p>
+        <strong data-weather-key="current.uv">
+          {{ current.get('uv') or '—' }}
+        </strong>
+      </article>
+      <article>
+        <p>Cloud Cover</p>
+        <strong data-weather-key="current.cloud" data-weather-format="percentage">
+          {{ current.get('cloud') ~ '%' if current.get('cloud') is not none else '—' }}
+        </strong>
+      </article>
+      {% if variant == 'extended' %}
+      <article>
+        <p>Pressure</p>
+        <strong data-weather-key="current.pressure_mb">
+          {{ current.get('pressure_mb') or '—' }} mb
+        </strong>
+      </article>
+      <article>
+        <p>Gust</p>
+        <strong data-weather-key="current.gust_kph" data-weather-format="speed">
+          {{ current.get('gust_kph') or '—' }} km/h
+        </strong>
+      </article>
+      {% endif %}
+    </div>
+
+    <div class="weather-forecast" data-weather-forecast>
+      {% if forecast %}
+        {% set limit = 5 if variant == 'extended' else 3 %}
+        {% for day in forecast[:limit] %}
+          {% set icon = day.icon %}
+          {% if icon and icon.startswith('//') %}
+            {% set icon = 'https:' + icon %}
+          {% endif %}
+          <article>
+            <p class="weather-forecast__date">{{ day.date }}</p>
+            <img src="{{ icon or url_for('static', filename='ikiraro.png') }}" alt="{{ day.condition }}">
+            <div>
+              <p class="weather-forecast__temps">
+                {{ day.max_temp_c }}° / {{ day.min_temp_c }}°
+              </p>
+              <small>{{ day.condition }}</small>
+              {% if day.daily_chance_of_rain %}
+                <span class="weather-rain-chip">{{ day.daily_chance_of_rain }}% rain</span>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      {% else %}
+        <p>No forecast data available.</p>
+      {% endif %}
+    </div>
+
+    {% if variant == 'extended' %}
+      <div class="weather-alerts" data-weather-alerts>
+        <h4>Climate Alerts & News</h4>
+        {% if alerts %}
+          {% for alert in alerts %}
+            <article>
+              <h5>{{ alert.headline or alert.category }}</h5>
+              <p>{{ alert.note or 'Stay alert for local advisories.' }}</p>
+              <small>Severity: {{ alert.severity or 'Info' }} · Areas: {{ alert.areas or 'Rwanda' }}</small>
+            </article>
+          {% endfor %}
+        {% else %}
+          <p class="weather-alerts__empty">No active weather alerts across Rwanda.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+

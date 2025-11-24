@@ -6,6 +6,7 @@
     <title>UMUHUZA - Weather Forecasting in Agriculture</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
     <link rel="stylesheet" href="{{url_for('static', filename='weather.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='weather-widget.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -155,6 +156,67 @@
         <h1 style="color: #4CAF50; font-size: 2.5em; margin-bottom: 10px;">Weather Forecasting</h1>
         <p style="color: #fff; font-size: 1.2em;">Leveraging weather data to improve agricultural practices in Rwanda</p>
     </div>
+
+    {% set location = weather.get('location', {}) if weather else {} %}
+    {% set current = weather.get('current', {}) if weather else {} %}
+    {% set condition = current.get('condition') if current else None %}
+    {% set forecast_list = weather.get('forecast', []) if weather else [] %}
+    {% set next_forecast = forecast_list[0] if forecast_list else {} %}
+    {% set weather_error = weather.get('error') if weather else None %}
+
+    <section class="weather-hero">
+        <div>
+            <h2>Real-time Rwanda Weather Intelligence</h2>
+            <p>Live pipeline for Kigali ({{ location.get('name', 'Kigali') }}) and surrounding provinces, refreshed automatically for every dashboard.</p>
+            <div class="hero-meta">
+                <span>Location: {{ location.get('name', 'Kigali') }}, {{ location.get('country', 'Rwanda') }}</span>
+                <span>Last sync: {{ weather.get('updated_at', '—') }}</span>
+            </div>
+            {% if weather_error %}
+                <p class="weather-hero__alert">Notice: {{ weather_error }}</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="weather-live-grid">
+        <div class="weather-widget-wrapper">
+            {% with weather=weather, variant='extended', refresh_seconds=300 %}
+                {% include 'partials/weather_widget.html' %}
+            {% endwith %}
+        </div>
+        <div class="weather-insights">
+            <article>
+                <h3>Field Conditions</h3>
+                <p>
+                    {% if condition %}
+                        Currently {{ condition|lower }} with average temperature around
+                        {{ current.get('temp_c') }}°C and humidity at {{ current.get('humidity') }}%.
+                    {% else %}
+                        We are syncing the latest conditions for Kigali.
+                    {% endif %}
+                </p>
+                <ul>
+                    <li>Wind: {{ current.get('wind_kph') or '—' }} km/h {{ current.get('wind_dir') or '' }}</li>
+                    <li>Rainfall (prev hour): {{ current.get('precip_mm') or 0 }} mm</li>
+                    <li>UV Index: {{ current.get('uv') or '—' }}</li>
+                </ul>
+            </article>
+            <article>
+                <h3>48h Outlook</h3>
+                {% if next_forecast %}
+                    <p>Expect {{ next_forecast.get('condition', 'stable conditions')|lower }} with temperature ranging between
+                        {{ next_forecast.get('min_temp_c') }}°C and {{ next_forecast.get('max_temp_c') }}°C.
+                        Chance of rain stands at {{ next_forecast.get('daily_chance_of_rain', 0) }}%.</p>
+                {% else %}
+                    <p>Forecast data is being prepared.</p>
+                {% endif %}
+                <p>
+                    Weather alerts and advisories automatically propagate to researcher, policy, and agro-dealer dashboards,
+                    ensuring every stakeholder gets the same trusted feed in real-time.
+                </p>
+            </article>
+        </div>
+    </section>
 
     <!-- Weather Forecasting Benefits Section -->
     <section id="benefits">
