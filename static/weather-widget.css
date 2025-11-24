@@ -8,6 +8,53 @@
   margin-bottom: 24px;
 }
 
+@media (max-width: 768px) {
+  .weather-widget {
+    padding: 12px 16px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+  }
+
+  .weather-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .weather-current {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .weather-temp__value {
+    font-size: 2rem;
+  }
+
+  .weather-condition {
+    text-align: left;
+  }
+
+  .weather-condition img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .weather-metrics {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .weather-forecast {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .weather-forecast__item {
+    min-width: 100px;
+  }
+}
+
 .weather-widget--compact {
   max-width: 100%;
 }

@@ -1,0 +1,328 @@
+/* ====================================================
+   Mobile Responsive Styles for All Dashboards
+   ==================================================== */
+
+/* Base Mobile Styles */
+@media (max-width: 768px) {
+  /* Global adjustments */
+  body {
+    font-size: 14px;
+  }
+
+  /* Header/Hero Section */
+  header {
+    padding: 16px !important;
+  }
+
+  .dashboard-hero {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .dashboard-hero__heading {
+    flex: 1 1 100% !important;
+    min-width: 100% !important;
+  }
+
+  .dashboard-hero__heading h1 {
+    font-size: 1.4rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .dashboard-hero__heading p {
+    font-size: 0.85rem !important;
+    margin-top: 4px !important;
+  }
+
+  .dashboard-hero__profile {
+    flex: 1 1 100% !important;
+    min-width: 100% !important;
+  }
+
+  /* Profile Strip */
+  .profile-strip {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 14px 16px !important;
+    gap: 12px !important;
+  }
+
+  .profile-welcome {
+    font-size: 0.95rem !important;
+  }
+
+  .profile-welcome strong {
+    font-size: 1.1rem !important;
+  }
+
+  .profile-avatar-btn {
+    width: 56px !important;
+    height: 56px !important;
+  }
+
+  .profile-dropdown {
+    left: 0 !important;
+    right: 0 !important;
+    width: calc(100vw - 32px) !important;
+    max-width: none !important;
+    min-width: auto !important;
+  }
+
+  .profile-dropdown::before {
+    left: 24px !important;
+    right: auto !important;
+  }
+
+  /* Container adjustments */
+  .container {
+    padding: 12px !important;
+    grid-template-columns: 1fr !important;
+    grid-gap: 12px !important;
+  }
+
+  .wrap {
+    padding: 12px !important;
+  }
+
+  /* Cards */
+  .card {
+    padding: 12px !important;
+  }
+
+  .card h2 {
+    font-size: 1.1rem !important;
+  }
+
+  .stats {
+    font-size: 16px !important;
+  }
+
+  /* Tables - Make scrollable on mobile */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    font-size: 12px !important;
+  }
+
+  th, td {
+    padding: 8px 6px !important;
+    font-size: 12px !important;
+  }
+
+  /* Forms */
+  form {
+    flex-direction: column !important;
+  }
+
+  form input,
+  form select,
+  form textarea {
+    width: 100% !important;
+    margin-bottom: 8px !important;
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+
+  form button {
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 16px !important;
+  }
+
+  /* Accordions */
+  .accordion {
+    padding: 14px !important;
+    font-size: 15px !important;
+  }
+
+  .panel {
+    padding: 12px !important;
+  }
+
+  /* Charts */
+  .chart-container {
+    height: 250px !important;
+    overflow-x: auto;
+  }
+
+  canvas {
+    max-width: 100% !important;
+  }
+
+  /* Buttons */
+  .btn,
+  button[type="submit"],
+  .action-btn {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    min-height: 44px; /* Touch target size */
+  }
+
+  /* Grid layouts */
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Weather Widget */
+  .weather-widget {
+    padding: 12px !important;
+  }
+
+  .weather-widget__hero {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .weather-widget__temp {
+    font-size: 2rem !important;
+  }
+
+  .weather-widget__metrics {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Tip sections */
+  .tip-section {
+    margin-bottom: 16px !important;
+  }
+
+  .tip-section h3 {
+    font-size: 14px !important;
+  }
+
+  .tip-section ul {
+    padding-left: 16px !important;
+  }
+
+  .tip-section li {
+    font-size: 13px !important;
+    margin-bottom: 4px !important;
+  }
+
+  /* Small form adjustments */
+  .small-form {
+    flex-direction: column !important;
+  }
+
+  .small-form input {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .actions form {
+    display: block !important;
+    margin-bottom: 8px !important;
+  }
+
+  .actions form button {
+    width: 100% !important;
+  }
+
+  /* Subsidy cards */
+  .subsidy {
+    padding: 10px !important;
+    font-size: 13px !important;
+  }
+
+  /* Social icons */
+  .social-icons {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+
+  /* Hide less important elements on mobile */
+  .single-view-back {
+    font-size: 13px !important;
+  }
+
+  /* Toast notifications */
+  .toast {
+    right: 10px !important;
+    left: 10px !important;
+    max-width: calc(100vw - 20px) !important;
+    font-size: 13px !important;
+  }
+}
+
+/* Extra Small Devices (phones in portrait) */
+@media (max-width: 480px) {
+  header {
+    padding: 12px !important;
+  }
+
+  .dashboard-hero__heading h1 {
+    font-size: 1.2rem !important;
+  }
+
+  .container {
+    padding: 8px !important;
+  }
+
+  .card {
+    padding: 10px !important;
+  }
+
+  .accordion {
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  .panel {
+    padding: 10px !important;
+  }
+
+  table {
+    font-size: 11px !important;
+  }
+
+  th, td {
+    padding: 6px 4px !important;
+  }
+
+  .profile-strip {
+    padding: 12px !important;
+  }
+
+  .profile-avatar-btn {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  .dashboard-hero {
+    flex-direction: row !important;
+  }
+
+  .dashboard-hero__heading {
+    flex: 1 1 50% !important;
+  }
+
+  .dashboard-hero__profile {
+    flex: 1 1 50% !important;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  a, button, .card {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Remove hover effects on touch devices */
+  .card:hover {
+    transform: none !important;
+  }
+
+  .accordion:hover {
+    background-color: inherit !important;
+  }
+}
+
