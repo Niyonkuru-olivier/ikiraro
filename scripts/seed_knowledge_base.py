@@ -22,7 +22,8 @@ from typing import List
 import mysql.connector
 import numpy as np
 from dotenv import load_dotenv
-from sklearn.feature_extraction.text import HashingVectorizer
+
+from services.embeddings import get_embed_dim_from_env, hash_embed
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 KNOWLEDGE_FILE = ROOT_DIR / "chatbot_knowledge_base.json"
@@ -77,13 +78,7 @@ def connect_db():
 def main():
     load_dotenv()
 
-    dim = int(os.getenv("KNOWLEDGE_EMBED_DIM", "4096"))
-    vectorizer = HashingVectorizer(
-        n_features=dim,
-        alternate_sign=False,
-        norm="l2",
-        stop_words="english",
-    )
+    dim = get_embed_dim_from_env()
     db = connect_db()
     cursor = db.cursor()
 
@@ -95,7 +90,7 @@ def main():
     print(f"Seeding {len(chunks)} snippets into knowledge_base...")
 
     for idx, chunk in enumerate(chunks, start=1):
-        vector = vectorizer.transform([chunk]).toarray()[0]
+        vector = hash_embed(chunk, dim)
         embedding = np.asarray(vector, dtype=float).tolist()
 
         cursor.execute(

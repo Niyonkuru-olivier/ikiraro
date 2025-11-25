@@ -4,9 +4,10 @@ from typing import Dict, List, Sequence
 
 import numpy as np
 from groq import Groq
-from sklearn.feature_extraction.text import HashingVectorizer
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+
+from services.embeddings import get_embed_dim_from_env, hash_embed
 
 
 SYSTEM_PROMPT = (
@@ -22,7 +23,6 @@ SYSTEM_PROMPT = (
     "not yet in the knowledge base."
 )
 
-DEFAULT_VECTOR_DIM = 4096
 DEFAULT_GROQ_MODEL = "llama-3.1-8b-instant"
 
 
@@ -37,7 +37,6 @@ class RateLimitExceededError(RuntimeError):
 class UmuhuzaAssistant:
     def __init__(self):
         self._client: Groq | None = None
-        self._vectorizer: HashingVectorizer | None = None
 
     def _get_client(self) -> Groq:
         if self._client is None:
@@ -48,17 +47,6 @@ class UmuhuzaAssistant:
                 )
             self._client = Groq(api_key=api_key)
         return self._client
-
-    def _get_vectorizer(self) -> HashingVectorizer:
-        if self._vectorizer is None:
-            n_features = int(os.getenv("KNOWLEDGE_EMBED_DIM", DEFAULT_VECTOR_DIM))
-            self._vectorizer = HashingVectorizer(
-                n_features=n_features,
-                alternate_sign=False,
-                norm="l2",
-                stop_words="english",
-            )
-        return self._vectorizer
 
     def _build_messages(
         self,
@@ -94,8 +82,8 @@ class UmuhuzaAssistant:
         if session is None or not question.strip():
             return []
 
-        vectorizer = self._get_vectorizer()
-        query_vector = vectorizer.transform([question.strip()]).toarray()[0]
+        embed_dim = get_embed_dim_from_env()
+        query_vector = hash_embed(question.strip(), embed_dim)
 
         rows = session.execute(
             text(
