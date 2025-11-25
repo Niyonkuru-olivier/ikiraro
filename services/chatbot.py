@@ -3,7 +3,8 @@ import os
 from typing import Dict, List, Sequence
 
 import numpy as np
-from openai import APIConnectionError, APIError, OpenAI, RateLimitError
+from groq import Groq
+from sklearn.feature_extraction.text import HashingVectorizer
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -21,28 +22,43 @@ SYSTEM_PROMPT = (
     "not yet in the knowledge base."
 )
 
+DEFAULT_VECTOR_DIM = 4096
+DEFAULT_GROQ_MODEL = "llama-3.1-8b-instant"
+
 
 class MissingAPIKeyError(RuntimeError):
-    """Raised when the OPENAI_API_KEY is not configured."""
+    """Raised when the GROQ_API_KEY is not configured."""
 
 
 class RateLimitExceededError(RuntimeError):
-    """Raised when OpenAI reports a rate/usage limit issue."""
+    """Raised when the chat model reports a rate/usage limit issue."""
 
 
 class UmuhuzaAssistant:
     def __init__(self):
-        self._client: OpenAI | None = None
+        self._client: Groq | None = None
+        self._vectorizer: HashingVectorizer | None = None
 
-    def _get_client(self) -> OpenAI:
+    def _get_client(self) -> Groq:
         if self._client is None:
-            api_key = os.getenv("OPENAI_API_KEY")
+            api_key = os.getenv("GROQ_API_KEY")
             if not api_key:
                 raise MissingAPIKeyError(
-                    "OPENAI_API_KEY is not configured. Set it in your environment."
+                    "GROQ_API_KEY is not configured. Set it in your environment."
                 )
-            self._client = OpenAI(api_key=api_key)
+            self._client = Groq(api_key=api_key)
         return self._client
+
+    def _get_vectorizer(self) -> HashingVectorizer:
+        if self._vectorizer is None:
+            n_features = int(os.getenv("KNOWLEDGE_EMBED_DIM", DEFAULT_VECTOR_DIM))
+            self._vectorizer = HashingVectorizer(
+                n_features=n_features,
+                alternate_sign=False,
+                norm="l2",
+                stop_words="english",
+            )
+        return self._vectorizer
 
     def _build_messages(
         self,
@@ -78,18 +94,8 @@ class UmuhuzaAssistant:
         if session is None or not question.strip():
             return []
 
-        client = self._get_client()
-        try:
-            query_embedding = client.embeddings.create(
-                model="text-embedding-3-small",
-                input=question.strip(),
-            ).data[0].embedding
-        except RateLimitError as exc:
-            raise RateLimitExceededError(
-                "OpenAI rate limit reached during embedding creation."
-            ) from exc
-        except (APIConnectionError, APIError) as exc:
-            raise RuntimeError("Embedding service error.") from exc
+        vectorizer = self._get_vectorizer()
+        query_vector = vectorizer.transform([question.strip()]).toarray()[0]
 
         rows = session.execute(
             text(
@@ -100,8 +106,6 @@ class UmuhuzaAssistant:
         )
 
         scored_chunks: List[tuple[str, float]] = []
-        query_vector = np.array(query_embedding, dtype=np.float32)
-        query_norm = np.linalg.norm(query_vector)
 
         for content, embedding_payload in rows:
             if not content or not embedding_payload:
@@ -114,7 +118,10 @@ class UmuhuzaAssistant:
                     continue
 
             chunk_vector = np.array(embedding_payload, dtype=np.float32)
-            denominator = query_norm * np.linalg.norm(chunk_vector)
+            if chunk_vector.size == 0:
+                continue
+
+            denominator = np.linalg.norm(query_vector) * np.linalg.norm(chunk_vector)
             if denominator == 0:
                 continue
 
@@ -145,21 +152,22 @@ class UmuhuzaAssistant:
             knowledge_context=knowledge_context,
         )
 
-        model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-        temperature = float(os.getenv("OPENAI_TEMPERATURE", "0.4"))
+        groq_model = os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL)
+        temperature = float(os.getenv("GROQ_TEMPERATURE", "0.4"))
 
         try:
             response = client.chat.completions.create(
-                model=model_name,
+                model=groq_model,
                 messages=messages,
                 temperature=temperature,
                 max_tokens=600,
             )
-        except RateLimitError as exc:
-            raise RateLimitExceededError(
-                "OpenAI rate limit reached. Please try again shortly."
-            ) from exc
-        except (APIConnectionError, APIError) as exc:
+        except Exception as exc:  # Groq SDK does not expose fine-grained errors yet
+            error_message = str(exc)
+            if "rate limit" in error_message.lower():
+                raise RateLimitExceededError(
+                    "Groq rate limit reached. Please try again shortly."
+                ) from exc
             raise RuntimeError("The UMUHUZA assistant is temporarily unavailable.") from exc
 
         choice = response.choices[0]

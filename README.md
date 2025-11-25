@@ -209,12 +209,13 @@ The landing page now includes **UMUHUZA - Assistant**, an AI chatbot tailored to
 
 1. Create a `.env` file (never commit it) and add:
    ```
-   OPENAI_API_KEY=sk-your-key
-   OPENAI_MODEL=gpt-4o-mini          # optional
-   OPENAI_TEMPERATURE=0.4            # optional
+   GROQ_API_KEY=your_groq_key
+   GROQ_MODEL=llama-3.1-8b-instant   # optional override
+   GROQ_TEMPERATURE=0.4              # optional
+   KNOWLEDGE_EMBED_DIM=4096          # optional
    ```
 2. Install dependencies: `pip install -r requirements.txt`
-3. Restart the Flask server. The new `/chat` endpoint proxies requests to OpenAI without exposing your key to the browser.
+3. Restart the Flask server. The new `/chat` endpoint now uses Groq’s free Llama models plus UMUHUZA’s knowledge base.
 
 > ⚠️ Never paste the API key into HTML, JavaScript, GitHub, or public docs.
 
@@ -228,11 +229,11 @@ The landing page now includes **UMUHUZA - Assistant**, an AI chatbot tailored to
        embedding JSON NOT NULL
    );
    ```
-2. **Seed embeddings** from `chatbot_knowledge_base.json`:
+2. **Seed embeddings** from `chatbot_knowledge_base.json` (uses a hashing vectorizer, no API cost):
    ```bash
    python scripts/seed_knowledge_base.py
    ```
-   The script reads every UMUHUZA snippet, skips any text mentioning other brands, creates embeddings with `text-embedding-3-small`, and stores them in MySQL.
+   The script reads every UMUHUZA snippet, skips any text mentioning other brands, converts them into deterministic TF-style hash embeddings (default 4096 dimensions), and stores them in MySQL.
 3. **Chat flow**:
    - `/chat` embeds the user question
    - Fetches the top matching snippets via cosine similarity
@@ -242,7 +243,7 @@ The landing page now includes **UMUHUZA - Assistant**, an AI chatbot tailored to
    - Re-run the seed script to refresh embeddings
    - No code changes required
 
-Keep `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, and `MYSQL_DATABASE` in `.env` so both Flask and the seeding script use the same credentials.
+Keep `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, and `MYSQL_DATABASE` in `.env` so both Flask and the seeding script use the same credentials. Set `GROQ_API_KEY` (for chat) and `KNOWLEDGE_EMBED_DIM` if you want a different hashing dimension.
 
 ---
 Interact Here: https://ikiraro1.vercel.app/

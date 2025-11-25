@@ -1,15 +1,15 @@
-"""Seed the UMUHUZA knowledge base with OpenAI embeddings.
+"""Seed the UMUHUZA knowledge base with hashing-based embeddings.
 
 Usage:
     python scripts/seed_knowledge_base.py
 
 Environment variables:
-    OPENAI_API_KEY         - required
     MYSQL_HOST             - default: localhost
     MYSQL_PORT             - default: 3306
     MYSQL_USER             - default: root
     MYSQL_PASSWORD         - default: (empty)
     MYSQL_DATABASE         - default: umuhuza
+    KNOWLEDGE_EMBED_DIM    - default: 4096
 """
 
 from __future__ import annotations
@@ -17,11 +17,12 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Iterable, List
+from typing import List
 
 import mysql.connector
+import numpy as np
 from dotenv import load_dotenv
-from openai import OpenAI
+from sklearn.feature_extraction.text import HashingVectorizer
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 KNOWLEDGE_FILE = ROOT_DIR / "chatbot_knowledge_base.json"
@@ -75,11 +76,14 @@ def connect_db():
 
 def main():
     load_dotenv()
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY is required.")
 
-    client = OpenAI(api_key=api_key)
+    dim = int(os.getenv("KNOWLEDGE_EMBED_DIM", "4096"))
+    vectorizer = HashingVectorizer(
+        n_features=dim,
+        alternate_sign=False,
+        norm="l2",
+        stop_words="english",
+    )
     db = connect_db()
     cursor = db.cursor()
 
@@ -91,10 +95,8 @@ def main():
     print(f"Seeding {len(chunks)} snippets into knowledge_base...")
 
     for idx, chunk in enumerate(chunks, start=1):
-        embedding = client.embeddings.create(
-            model="text-embedding-3-small",
-            input=chunk,
-        ).data[0].embedding
+        vector = vectorizer.transform([chunk]).toarray()[0]
+        embedding = np.asarray(vector, dtype=float).tolist()
 
         cursor.execute(
             "INSERT INTO knowledge_base (content, embedding) VALUES (%s, %s)",
