@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UMUHUZA</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-   
+    <link rel="preconnect" href="https://cdn.botpress.cloud" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.botpress.cloud">
+    <link rel="preconnect" href="https://messaging.botpress.cloud" crossorigin>
+    <link rel="dns-prefetch" href="https://messaging.botpress.cloud">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
     
 </head>
@@ -15,7 +17,7 @@
     <header>
         <div class="header-content">
             <!-- Insert your image here -->
-            <img src="{{ url_for('static', filename='ikiraro.png') }}" alt="Ikiraro logo" class="logo">
+            <img src="{{ url_for('static', filename='ikiraro.png') }}" alt="Ikiraro logo" class="logo" width="150" height="150">
             <div>
                 
         <h1 style="text-align:center;">UMUHUZA</h1>
@@ -79,7 +81,7 @@
                     <a href="@subscription">Subscription</a>
                 </td>
                 <td style="width: 50%; vertical-align: top;">
-                    <img src="{{url_for('static', filename='bridge.jpeg')}}" alt="farmer" style="width: 100%; height: auto;"/> <!-- Adjust size as needed -->
+                    <img src="{{url_for('static', filename='bridge.jpeg')}}" alt="farmer" style="width: 100%; height: auto;" width="600" height="400"/> <!-- Adjust size as needed -->
                 </td>
             </tr>
         </table>
@@ -107,17 +109,17 @@
                 <table style="width: 100%;">
                     <tr>
                         <td style="width: 20%; vertical-align: top;">
-                            <img src="{{url_for('static', filename='farmer1.jpeg')}}" alt="Farmer registration" height="267px">
+                            <img src="{{url_for('static', filename='farmer1.jpeg')}}" alt="Farmer registration" width="320" height="267" loading="lazy">
                             <p>Farmer Registration</p> 
                             <a href="{{url_for('create_account')}}">More info</a>  
                         </td>
                         <td style="width: 20%; vertical-align: top;"> 
-                            <img src="{{url_for('static', filename='extension.jpeg')}}" alt="Extensions service ">
+                            <img src="{{url_for('static', filename='extension.jpeg')}}" alt="Extensions service " width="320" height="240" loading="lazy">
                             <p>Extension Services</p>
                             <a href="{{url_for('service')}}">More info</a> 
                         </td>
                         <td style="width: 20%; vertical-align: top;"> 
-                            <img src="{{url_for('static', filename='input.jpeg')}}" alt="input information ">
+                            <img src="{{url_for('static', filename='input.jpeg')}}" alt="input information " width="320" height="240" loading="lazy">
                             <p>Input Information</p>
                             <a href="{{url_for('input_page')}}">More info</a>
                         </td>
@@ -126,19 +128,19 @@
                     <tr> 
                         </td>
                         <td style="width: 33.3%; vertical-align: top;"> 
-                            <img src="{{url_for('static', filename='weather.jpeg')}}" alt="weather forecasting " height="287px">
+                            <img src="{{url_for('static', filename='weather.jpeg')}}" alt="weather forecasting " width="320" height="287" loading="lazy">
                             <p>Weather Forecasting</p>
                             <a href="{{url_for('weather')}}">More info</a> 
                         </td>
                         <td style="width: 33.3%; vertical-align: top;"> 
-                            <img src="{{url_for('static', filename='market.jpeg')}}" alt="market connections ">
+                            <img src="{{url_for('static', filename='market.jpeg')}}" alt="market connections " width="320" height="240" loading="lazy">
                             <p>Market Price</p>
                             <a href="{{url_for('market')}}">More info</a>  
                         </td>
                         
                         </td>
                         <td style="width: 33.4%; vertical-align: top;">
-                            <img src="{{url_for('static', filename='irrigation.jpeg')}}" alt="supply sourcing "  height="290px">
+                            <img src="{{url_for('static', filename='irrigation.jpeg')}}" alt="supply sourcing "  width="320" height="290" loading="lazy">
                             <p>Irrigation Technology</p>
                             <a href="{{url_for('irrigation')}}">More info</a>
                         </td>
@@ -152,33 +154,6 @@
 
 
 
-
-<script src="https://cdn.botpress.cloud/webchat/v0/inject.js"></script>
-<script>
-window.botpressWebChat.init({
-    "botId": "5fad55d7-f769-4728-8470-2796d5f181ae",
-    "clientId": "2ee2e3ac-70c9-417b-a6a1-6e147c5a1a65",
-    "hostUrl": "https://cdn.botpress.cloud/webchat/v0",
-    "messagingUrl": "https://messaging.botpress.cloud",
-
-    "botName": "UMUHUZA Assistant",
-    "composerPlaceholder": "Ask me about agriculture, services, weather, irrigation, market prices, or inputs...",
-
-    "theme": {
-        "primaryColor": "#4CAF50",
-        "secondaryColor": "#011f0f",
-        "textColor": "#ffffff"
-    },
-
-    "conversationStarters": [
-        "What services do you offer?",
-        "How can I get weather forecasts?",
-        "Tell me about irrigation systems",
-        "What are current market prices?",
-        "How do I order agricultural inputs?"
-    ]
-});
-</script>
 
 
 
@@ -252,7 +227,7 @@ window.botpressWebChat.init({
          
         <td>
             <div class="team-member">
-                <img src="{{url_for('static', filename='olivier.jpg')}}" alt="Team Member 2">
+                <img src="{{url_for('static', filename='olivier.jpg')}}" alt="Team Member 2" width="150" height="150" loading="lazy">
                 <h3>Olivier Niyonkuru</h3>
                 <p>Software Engineer</p>
                 <p> 4th year student at the University of Rwanda (Computer and Software Engineering), 
@@ -263,7 +238,7 @@ window.botpressWebChat.init({
         </td>
         <td>
             <div class="team-member">
-                <img src="{{url_for('static', filename='ashula.jpg')}}" alt="Team Member 3">
+                <img src="{{url_for('static', filename='ashula.jpg')}}" alt="Team Member 3" width="150" height="150" loading="lazy">
                 <h3>Ashulah Ishimwe</h3>
                 <p>Data analyst</p>
                 <p>4th year student at the University of Rwanda (Information system.), 
@@ -341,6 +316,40 @@ window.botpressWebChat.init({
         </section>-->
         
     </main>
+
+    <div id="chatbot-panel" class="chatbot-panel" aria-live="polite" aria-expanded="false">
+        <div class="chatbot-header">
+            <div>
+                <p class="chatbot-title">UMUHUZA - Assistant</p>
+                <p class="chatbot-subtitle">Ask about services, data, or your account.</p>
+            </div>
+            <button id="chatbot-close" class="chatbot-close" aria-label="Close assistant">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages" role="log"></div>
+        <div id="chatbot-status" class="chatbot-status" role="status" aria-live="polite"></div>
+        <form id="chatbot-form" class="chatbot-form">
+            <label class="sr-only" for="chatbot-input">Your message</label>
+            <input
+                type="text"
+                id="chatbot-input"
+                name="message"
+                placeholder="Type your question..."
+                autocomplete="off"
+                required
+            >
+            <button type="submit" id="chatbot-send">
+                <span>Send</span>
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+
+    <button id="chatbot-launcher" class="chatbot-launcher" aria-label="Chat with UMUHUZA">
+        <i class="fa-solid fa-comments"></i>
+    </button>
+
     <footer style="background-color: rgb(103, 194, 12);">
     <!-- Social Media Section-->
     <section id="social-media">
@@ -368,7 +377,8 @@ window.botpressWebChat.init({
         <p>&copy; 2025 UMUHUZA. All rights reserved.</p>
     </footer>
 
-    <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="{{ url_for('static', filename='index.js') }}" defer></script>
 
 </body>
 </html>

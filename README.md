@@ -196,6 +196,55 @@ The platform communicates:
 | Orders | Platform DB | Farmer A → 10 bags Maize Seeds |
 
 ---
+
+## 🤖 UMUHUZA - Assistant
+
+The landing page now includes **UMUHUZA - Assistant**, an AI chatbot tailored to this platform. It answers onboarding questions, explains dashboards, and guides farmers, agro-dealers, processors, and policymakers.
+
+1. Click the green chat bubble to open the assistant.
+2. Ask about services, weather data, market prices, or account steps.
+3. Close the panel or press `Esc` to hide it.
+
+### Backend configuration
+
+1. Create a `.env` file (never commit it) and add:
+   ```
+   OPENAI_API_KEY=sk-your-key
+   OPENAI_MODEL=gpt-4o-mini          # optional
+   OPENAI_TEMPERATURE=0.4            # optional
+   ```
+2. Install dependencies: `pip install -r requirements.txt`
+3. Restart the Flask server. The new `/chat` endpoint proxies requests to OpenAI without exposing your key to the browser.
+
+> ⚠️ Never paste the API key into HTML, JavaScript, GitHub, or public docs.
+
+### Retrieval-Augmented Generation (RAG)
+
+1. **Create the table** (done):
+   ```sql
+   CREATE TABLE knowledge_base (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       content TEXT NOT NULL,
+       embedding JSON NOT NULL
+   );
+   ```
+2. **Seed embeddings** from `chatbot_knowledge_base.json`:
+   ```bash
+   python scripts/seed_knowledge_base.py
+   ```
+   The script reads every UMUHUZA snippet, skips any text mentioning other brands, creates embeddings with `text-embedding-3-small`, and stores them in MySQL.
+3. **Chat flow**:
+   - `/chat` embeds the user question
+   - Fetches the top matching snippets via cosine similarity
+   - Sends the context + question to OpenAI for a grounded answer
+4. **Updating knowledge**:
+   - Edit `chatbot_knowledge_base.json`
+   - Re-run the seed script to refresh embeddings
+   - No code changes required
+
+Keep `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, and `MYSQL_DATABASE` in `.env` so both Flask and the seeding script use the same credentials.
+
+---
 Interact Here: https://ikiraro1.vercel.app/
 ## 🧭 Navigation Map
 

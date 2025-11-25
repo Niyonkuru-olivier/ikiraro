@@ -30,7 +30,16 @@ from reportlab.lib.styles import getSampleStyleSheet
 # ---------------- Standard Library ---------------- 
 import os
 
+from dotenv import load_dotenv
+
 from services.weather import weather_service
+from services.chatbot import (
+    generate_response_with_session as generate_chat_response,
+    MissingAPIKeyError,
+    RateLimitExceededError,
+)
+
+load_dotenv()
 
 # ====================================================
 # Flask App & Config
@@ -306,6 +315,56 @@ def index():
         </body>
         </html>
         """, 200
+
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    payload = request.get_json(silent=True) or {}
+    user_message = (payload.get("message") or "").strip()
+    history = payload.get("history") or []
+
+    if not user_message:
+        return jsonify({"error": "Message is required."}), 400
+
+    try:
+        assistant_reply = generate_chat_response(user_message, history, db.session)
+    except RateLimitExceededError:
+        return (
+            jsonify(
+                {
+                    "error": (
+                        "UMUHUZA is temporarily at capacity. "
+                        "We are the bridge connecting farmers, agro-dealers, "
+                        "and policymakers, and the assistant needs a short breather. "
+                        "Please try again in a moment."
+                    ),
+                    "detail": "Rate limit reached",
+                }
+            ),
+            429,
+        )
+    except MissingAPIKeyError:
+        return (
+            jsonify(
+                {
+                    "error": (
+                        "UMUHUZA Assistant is not configured yet. "
+                        "Please contact the administrator."
+                    )
+                }
+            ),
+            503,
+        )
+    except Exception as exc:
+        app.logger.exception("Chatbot error: %s", exc)
+        return (
+            jsonify(
+                {"error": "UMUHUZA Assistant is currently unavailable. Try again later."}
+            ),
+            500,
+        )
+
+    return jsonify({"message": assistant_reply})
 
 # Test route that doesn't require database
 @app.route('/test')
