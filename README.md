@@ -207,13 +207,11 @@ The landing page now includes **UMUHUZA - Assistant**, an AI chatbot tailored to
 
 ### Backend configuration
 
-1. Create a `.env` file (never commit it) and add:
+1. Copy `env.example` to `.env` (never commit `.env`):
    ```
-   GROQ_API_KEY=your_groq_key
-   GROQ_MODEL=llama-3.1-8b-instant   # optional override
-   GROQ_TEMPERATURE=0.4              # optional
-   KNOWLEDGE_EMBED_DIM=4096          # optional
+   cp env.example .env
    ```
+   Update the values (`GROQ_API_KEY`, DB credentials, mail settings, etc.).
 2. Install dependencies: `pip install -r requirements.txt`
 3. Restart the Flask server. The new `/chat` endpoint now uses Groq’s free Llama models plus UMUHUZA’s knowledge base.
 
