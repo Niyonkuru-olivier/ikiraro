@@ -98,6 +98,48 @@
     `).join('');
   };
 
+  const buildDistrictTickerHtml = (districts = [], errorMessage, updatedAt) => {
+    if (!districts.length && errorMessage) {
+      return `<p class="weather-districts__empty">${errorMessage}</p>`;
+    }
+    if (!districts.length) {
+      return '<p class="weather-districts__empty">Loading district-level conditions across Rwanda...</p>';
+    }
+    const items = districts.map((district) => {
+      const temp = Number.isFinite(district.temp_c) ? `${Math.round(district.temp_c)}°C` : '—';
+      const condition = district.condition ? `<small>${district.condition}</small>` : '';
+      return `
+        <span class="weather-districts__item">
+          <strong>${district.name || '—'}</strong>
+          <span>${temp}</span>
+          ${condition}
+        </span>
+      `;
+    }).join('');
+    const ghostItems = districts.map((district) => {
+      const temp = Number.isFinite(district.temp_c) ? `${Math.round(district.temp_c)}°C` : '—';
+      const condition = district.condition ? `<small>${district.condition}</small>` : '';
+      return `
+        <span class="weather-districts__item weather-districts__item--ghost">
+          <strong>${district.name || '—'}</strong>
+          <span>${temp}</span>
+          ${condition}
+        </span>
+      `;
+    }).join('');
+    const notice = errorMessage ? `<em>${errorMessage}</em>` : '';
+    return `
+      <div class="weather-districts__meta">
+        <span>Rwanda climate pulse</span>
+        <small>Updated ${updatedAt || '—'}</small>
+        ${notice}
+      </div>
+      <div class="weather-districts__ticker" data-weather-districts-track>
+        ${items}${ghostItems}
+      </div>
+    `;
+  };
+
   const fetchWeather = async (force = false) => {
     if (!force && cache && (Date.now() - cacheTimestamp) < CACHE_WINDOW) {
       return cache;
@@ -160,6 +202,15 @@
     const alertsContainer = widget.querySelector('[data-weather-alerts]');
     if (alertsContainer) {
       alertsContainer.innerHTML = buildAlertsHtml(data.alerts || []);
+    }
+
+    const districtTicker = widget.querySelector('[data-weather-districts]');
+    if (districtTicker) {
+      districtTicker.innerHTML = buildDistrictTickerHtml(
+        data.districts || [],
+        data.districts_error,
+        data.districts_updated_at
+      );
     }
   };
 

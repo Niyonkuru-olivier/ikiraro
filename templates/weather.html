@@ -163,6 +163,9 @@
     {% set forecast_list = weather.get('forecast', []) if weather else [] %}
     {% set next_forecast = forecast_list[0] if forecast_list else {} %}
     {% set weather_error = weather.get('error') if weather else None %}
+    {% set district_feed = weather.get('districts', []) if weather else [] %}
+    {% set district_error = weather.get('districts_error') if weather else None %}
+    {% set district_updated = weather.get('districts_updated_at') if weather else None %}
 
     <section class="weather-hero">
         <div>
@@ -176,6 +179,55 @@
                 <p class="weather-hero__alert">Notice: {{ weather_error }}</p>
             {% endif %}
         </div>
+    </section>
+
+    <section class="climate-marquee">
+        <div class="climate-marquee__header">
+            <div>
+                <h3>District Climate Newsfeed</h3>
+                <p>District-by-district temperature pulse for all 30 districts in Rwanda.</p>
+            </div>
+            <div class="climate-marquee__timestamp">
+                <span>Updated {{ district_updated or '—' }}</span>
+                {% if district_error %}
+                    <em>{{ district_error }}</em>
+                {% endif %}
+            </div>
+        </div>
+        {% if district_feed %}
+            <div class="climate-marquee__track">
+                {% for district in district_feed %}
+                    <span class="climate-marquee__item">
+                        <strong>{{ district.name }}</strong>
+                        <span class="climate-marquee__temp">
+                            {% if district.temp_c is not none %}
+                                {{ district.temp_c|round|int }}°C
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                        <small>{{ district.condition or 'Stable conditions' }}</small>
+                    </span>
+                {% endfor %}
+                {% for district in district_feed %}
+                    <span class="climate-marquee__item climate-marquee__item--ghost">
+                        <strong>{{ district.name }}</strong>
+                        <span class="climate-marquee__temp">
+                            {% if district.temp_c is not none %}
+                                {{ district.temp_c|round|int }}°C
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                        <small>{{ district.condition or 'Stable conditions' }}</small>
+                    </span>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="climate-marquee__empty">
+                {{ district_error or "District-level data is syncing. Please check back shortly." }}
+            </p>
+        {% endif %}
     </section>
 
     <section class="weather-live-grid">

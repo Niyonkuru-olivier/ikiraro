@@ -9,6 +9,9 @@
 {% endif %}
 {% set forecast = weather_data.get('forecast', []) if weather_data else [] %}
 {% set alerts = weather_data.get('alerts', []) if weather_data else [] %}
+{% set districts = weather_data.get('districts', []) if weather_data else [] %}
+{% set districts_error = weather_data.get('districts_error') if weather_data else None %}
+{% set districts_updated_at = weather_data.get('districts_updated_at') if weather_data else None %}
 
 <div class="weather-widget weather-widget--{{ variant }}"
      data-weather-widget
@@ -155,6 +158,55 @@
         {% endif %}
       </div>
     {% endif %}
+
+    <div class="weather-districts" data-weather-districts>
+      <div class="weather-districts__meta">
+        <span>Rwanda climate pulse</span>
+        <small>Updated {{ districts_updated_at or '—' }}</small>
+        {% if districts_error %}
+          <em>{{ districts_error }}</em>
+        {% endif %}
+      </div>
+      {% if districts %}
+        <div class="weather-districts__ticker" data-weather-districts-track>
+          {% for district in districts %}
+            <span class="weather-districts__item">
+              <strong>{{ district.name }}</strong>
+              <span>
+                {% if district.temp_c is not none %}
+                  {{ district.temp_c|round|int }}°C
+                {% else %}
+                  —
+                {% endif %}
+              </span>
+              {% if district.condition %}
+                <small>{{ district.condition }}</small>
+              {% endif %}
+            </span>
+          {% endfor %}
+          {# Duplicate for seamless marquee #}
+          {% for district in districts %}
+            <span class="weather-districts__item weather-districts__item--ghost">
+              <strong>{{ district.name }}</strong>
+              <span>
+                {% if district.temp_c is not none %}
+                  {{ district.temp_c|round|int }}°C
+                {% else %}
+                  —
+                {% endif %}
+              </span>
+              {% if district.condition %}
+                <small>{{ district.condition }}</small>
+              {% endif %}
+            </span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="weather-districts__empty">
+          {{ districts_error or "Loading district-level conditions across Rwanda..." }}
+        </p>
+      {% endif %}
+    </div>
   </div>
 </div>
 
