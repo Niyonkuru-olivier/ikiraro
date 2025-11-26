@@ -1,7 +1,7 @@
 # ---------------- Standard Library ----------------
 from io import BytesIO
 from datetime import datetime
-from flask import send_from_directory, render_template, jsonify
+from flask import send_from_directory, render_template, jsonify, g
 
 from sqlalchemy import desc
 from datetime import date
@@ -33,6 +33,7 @@ import os
 from dotenv import load_dotenv
 
 from services.weather import weather_service
+
 from services.chatbot import (
     generate_response_with_session as generate_chat_response,
     MissingAPIKeyError,
@@ -156,6 +157,12 @@ def before_request():
     """Handle any pre-request setup"""
     # Don't test database here - let routes handle their own errors
     pass
+
+
+@app.context_processor
+def inject_language_helpers():
+    """Legacy language helper (now no-op)."""
+    return {}
 
 # ---------------- Email Config ----------------
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
@@ -291,6 +298,11 @@ def allowed_profile_file(filename: str) -> bool:
         and '.' in filename
         and filename.rsplit('.', 1)[1].lower() in app.config['PROFILE_ALLOWED_EXTENSIONS']
     )
+
+
+def localized_weather_snapshot(force_refresh: bool = False):
+    """Simple wrapper in case we want to adjust weather payload later."""
+    return weather_service.get_weather(force_refresh=force_refresh)
 
 
 # ====================================================
@@ -527,15 +539,17 @@ def dash():
 @app.route('/login', methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form.get("email")
+        identifier = (request.form.get("identifier") or request.form.get("email") or "").strip()
         password = request.form.get("password")
 
-        if not email or not password:
-            flash("Email and password are required.", "error")
+        if not identifier or not password:
+            flash("Email/Phone and password are required.", "error")
             return render_template("login.html")
 
         try:
-            user = User.query.filter_by(email=email).first()
+            user = User.query.filter(
+                (User.email == identifier) | (User.phone == identifier)
+            ).first()
 
             if user and user.role == "promoter":
                 user.role = "dealer"
@@ -553,7 +567,7 @@ def login():
                 else:
                     flash("Invalid password. Please try again.", "error")
             else:
-                flash("No user found with that email address.", "error")
+                flash("No user found with that email or phone number.", "error")
         except Exception as e:
             app.logger.error(f"Login error: {str(e)}")
             import traceback
@@ -567,7 +581,7 @@ def login():
 def logout():
     logout_user()
     flash("You have been logged out.", "success")
-    return redirect(url_for("login"))
+    return redirect(url_for("index"))
 
 @app.route('/create-account', methods=['GET', 'POST'])
 def create_account():
@@ -825,7 +839,7 @@ def upload_profile_photo():
 @login_required
 def dashboard():
     role = current_user.role
-    weather_snapshot = weather_service.get_weather()
+    weather_snapshot = localized_weather_snapshot()
 
     if role == "farmer":
         # ---- Market Prices (from DB) ----
@@ -1123,7 +1137,7 @@ def agro_dealer_dashboard():
         flash("Access denied: dealer-only area.", "error")
         return redirect(url_for('dashboard'))
 
-    weather_snapshot = weather_service.get_weather()
+    weather_snapshot = localized_weather_snapshot()
 
     # Inventory for this dealer
     inventory = Inventory.query.filter_by(dealer_id=current_user.id).order_by(Inventory.product_name).all()
@@ -1619,12 +1633,12 @@ def service():
 @app.route('/api/weather')
 def api_weather():
     refresh = request.args.get('refresh') == '1'
-    data = weather_service.get_weather(force_refresh=refresh)
+    data = localized_weather_snapshot(force_refresh=refresh)
     return jsonify(data)
 
 @app.route('/weather')
 def weather():
-    return render_template('weather.html', weather=weather_service.get_weather())
+    return render_template('weather.html', weather=localized_weather_snapshot())
 
 @app.route('/agrodealer')
 def appreciate_agrodealer():

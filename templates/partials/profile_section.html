@@ -34,6 +34,9 @@
         <button type="submit" class="profile-upload-btn">Upload Photo</button>
         <p class="profile-hint">PNG, JPG, GIF up to {{ config['PROFILE_MAX_FILE_SIZE_MB'] }}MB.</p>
       </form>
+      <form action="{{ url_for('logout') }}" method="get" class="profile-logout-form">
+        <button type="submit" class="profile-upload-btn">Logout</button>
+      </form>
     </div>
   </div>
 </section>
