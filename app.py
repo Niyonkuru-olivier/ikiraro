@@ -849,9 +849,23 @@ def dashboard():
             market_prices = []
             app.logger.error(f"Error fetching market prices: {e}")
 
-        # ---- Available Dealer Inventories (simple list across dealers) ----
+        # ---- Available Dealer Inventories (with dealer details) ----
         try:
-            inventories = Inventory.query.order_by(Inventory.product_name.asc()).all()
+            inv_items = Inventory.query.order_by(Inventory.product_name.asc()).all()
+            inventories = []
+            for inv in inv_items:
+                dealer = User.query.get(inv.dealer_id)
+                inventories.append({
+                    "id": inv.id,
+                    "dealer_id": inv.dealer_id,
+                    "dealer_name": dealer.full_name if dealer else f"Dealer #{inv.dealer_id}",
+                    "dealer_email": dealer.email if dealer else "",
+                    "dealer_phone": dealer.phone if dealer else "",
+                    "product_name": inv.product_name,
+                    "stock": inv.stock,
+                    "unit": inv.unit or 'kg',
+                    "price": float(inv.price) if inv.price is not None else None
+                })
         except Exception as e:
             inventories = []
             app.logger.error(f"Error fetching inventories: {e}")
@@ -881,14 +895,21 @@ def dashboard():
         # Pull processor-facing datasets
         try:
             offers = Crop.query.order_by(desc(Crop.id)).all()
-            crops = [{
-                "farmer_name": (User.query.get(o.farmer_id).full_name if User.query.get(o.farmer_id) else f"Farmer #{o.farmer_id}"),
-                "crop_name": o.crop_name,
-                "quantity": o.quantity,
-                "unit": o.unit or 'kg',
-                "price": float(o.price) if o.price is not None else None,
-                "province": o.province or "-"
-            } for o in offers]
+            crops = []
+            for o in offers:
+                farmer = User.query.get(o.farmer_id)
+                crops.append({
+                    "id": o.id,
+                    "farmer_id": o.farmer_id,
+                    "farmer_name": farmer.full_name if farmer else f"Farmer #{o.farmer_id}",
+                    "farmer_email": farmer.email if farmer else "",
+                    "farmer_phone": farmer.phone if farmer else "",
+                    "crop_name": o.crop_name,
+                    "quantity": o.quantity,
+                    "unit": o.unit or 'kg',
+                    "price": float(o.price) if o.price is not None else None,
+                    "province": o.province or "-"
+                })
         except Exception as e:
             app.logger.error(f"Processor crops fetch error: {e}")
             crops = []
@@ -1635,6 +1656,77 @@ def api_weather():
     refresh = request.args.get('refresh') == '1'
     data = localized_weather_snapshot(force_refresh=refresh)
     return jsonify(data)
+
+@app.route('/api/crop/update-quantity', methods=['POST'])
+@login_required
+def api_update_crop_quantity():
+    """Update crop quantity when an order is approved/rejected by farmer."""
+    try:
+        data = request.get_json()
+        crop_id = data.get('crop_id')
+        quantity_reduction = float(data.get('quantity_reduction', 0))
+        
+        if not crop_id:
+            return jsonify({"error": "crop_id is required"}), 400
+        
+        crop = Crop.query.get(crop_id)
+        if not crop:
+            return jsonify({"error": "Crop not found"}), 404
+        
+        # Only allow the farmer who owns the crop to update it
+        if crop.farmer_id != current_user.id:
+            return jsonify({"error": "Unauthorized"}), 403
+        
+        # Update quantity (can be negative to restore quantity)
+        new_quantity = max(0, crop.quantity - quantity_reduction)
+        crop.quantity = new_quantity
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "new_quantity": new_quantity,
+            "crop_id": crop_id
+        })
+    except Exception as e:
+        app.logger.error(f"Crop quantity update error: {e}")
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/inventory/update-stock', methods=['POST'])
+@login_required
+def api_update_inventory_stock():
+    """Update inventory stock when a farmer order is approved/rejected by dealer."""
+    try:
+        data = request.get_json()
+        inv_id = data.get('inv_id')
+        quantity_reduction = float(data.get('quantity_reduction', 0))
+        
+        if not inv_id:
+            return jsonify({"error": "inv_id is required"}), 400
+        
+        inv = Inventory.query.get(inv_id)
+        if not inv:
+            return jsonify({"error": "Inventory item not found"}), 404
+        
+        # Only allow the dealer who owns the inventory to update it
+        if inv.dealer_id != current_user.id:
+            return jsonify({"error": "Unauthorized"}), 403
+        
+        # Update stock (can be negative to restore stock)
+        new_stock = max(0, inv.stock - quantity_reduction)
+        inv.stock = new_stock
+        inv.last_updated = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "new_stock": new_stock,
+            "inv_id": inv_id
+        })
+    except Exception as e:
+        app.logger.error(f"Inventory stock update error: {e}")
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/weather')
 def weather():

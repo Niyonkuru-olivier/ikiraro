@@ -27,25 +27,29 @@ header {
 
 .container {
   padding: 25px;
-  max-width: 1400px;
+      max-width: 900px;
   margin: auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-  grid-gap: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
 }
 
 /* Accordion Buttons */
+    .accordion-container {
+      width: 100%;
+    }
+
 .accordion {
   background-color: #022b16;
   color: #fff;
   cursor: pointer;
-  padding: 16px;
+      padding: 16px 20px;
   width: 100%;
   text-align: left;
   border: none;
   outline: none;
   transition: all 0.3s ease;
-  border-radius: 8px;
+      border-radius: 10px;
   font-size: 17px;
   font-weight: 500;
   display: flex;
@@ -65,15 +69,22 @@ header {
 
 .accordion.active,
 .accordion:hover {
-  background-color: #022b16;
+      background-color: #034d2e;
 }
 
 .panel {
- display: none; /* Hidden by default */
-  padding: 15px;
+      display: none;
+      padding: 20px;
   background-color: white;
-  border: 1px solid #ccc;
+      border: 1px solid #e0e0e0;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      animation: fadeIn 0.3s ease;
+      margin-top: -5px;
+    }
 
+    .panel.show {
+      display: block;
 }
 
 @keyframes fadeIn {
@@ -107,13 +118,6 @@ td {
 
 tr:nth-child(even) td {
   background: #f0fdfb;
-}
-
-/* Charts */
-.chart-container {
-  width: 100%;
-  height: 320px;
-  margin-top: 10px;
 }
 
 /* Farming Tips */
@@ -155,31 +159,196 @@ form button {
 }
 
 form button:hover {
-  background: #022b16;
+      background: #034d2e;
+    }
+
+    /* Action buttons */
+    .approve-btn, .reject-btn, .change-decision, .delete-decision {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .approve-btn { background: #16a34a; color: white; }
+    .approve-btn:hover { background: #15803d; }
+    .reject-btn { background: #dc2626; color: white; }
+    .reject-btn:hover { background: #b91c1c; }
+    .change-decision { background: #0ea5e9; color: white; }
+    .change-decision:hover { background: #0284c7; }
+    .delete-decision { background: #64748b; color: white; }
+    .delete-decision:hover { background: #475569; }
+
+    /* Status badges */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-approved { background: #d1fae5; color: #065f46; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+    .status-delivered { background: #dbeafe; color: #1e40af; }
+
+    /* Dealer details in status */
+    .dealer-details {
+      margin-top: 6px;
+      padding: 8px;
+      background: #f8fafc;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #475569;
+      border-left: 3px solid #022b16;
+    }
+    .dealer-details strong { color: #0f172a; }
+
+    /* Announcements styling */
+    .announcement-card {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+      border: 1px solid #86efac;
+      border-left: 4px solid #22c55e;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .announcement-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+    }
+    .announcement-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .announcement-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #022b16;
+      margin: 0;
+    }
+    .announcement-badge {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .announcement-description {
+      color: #475569;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .announcement-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 12px;
+    }
+    .announcement-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .announcement-dealer {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 10px 12px;
+      border-left: 3px solid #7c3aed;
+    }
+    .announcement-dealer-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #7c3aed;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .announcement-dealer-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .announcement-dealer-info div {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .announcement-dealer-info strong {
+      color: #022b16;
+    }
+    .no-announcements {
+      text-align: center;
+      padding: 30px;
+      color: #64748b;
+    }
+    .no-announcements svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 10px;
+      opacity: 0.5;
 }
 
 /* Back link */
 .single-view-back {
   margin-bottom: 20px;
+      text-align: center;
 }
 
 .single-view-back a {
   color: #022b16;
   text-decoration: none;
   font-weight: 500;
+      padding: 10px 20px;
+      background: #e8f5e9;
+      border-radius: 6px;
+      display: inline-block;
 }
 
 .single-view-back a:hover {
-  text-decoration: underline;
+      background: #c8e6c9;
+    }
+
+    /* Order form inline */
+    .order-form {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .order-form input {
+      width: 70px;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .order-form button {
+      padding: 6px 12px;
+      font-size: 13px;
 }
 
 /* Mobile tweaks */
 @media (max-width: 768px) {
   .container {
-    grid-template-columns: 1fr;
-  }
-}
-
+        padding: 15px;
+      }
+      .accordion {
+        font-size: 15px;
+        padding: 14px 16px;
+      }
+      .panel {
+        padding: 15px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -196,13 +365,24 @@ form button:hover {
   <div class="container">
   
     <div id="single-view-back" class="single-view-back" style="display:none;">
-      <a href="{{ url_for('farmer_dashboard') if false else '#' }}" onclick="event.preventDefault(); window.location.href = window.location.pathname;">← Back to all sections</a>
+      <a href="#" onclick="event.preventDefault(); window.location.href = window.location.pathname;">← Back to all sections</a>
     </div>
+
+    <!-- Dealer Announcements -->
+    <div class="accordion-container">
+      <button class="accordion" data-view="announcements">📢 Dealer Announcements & Programs</button>
+      <div class="panel">
+        <div id="announcements-container">
+          <!-- Will be filled by JavaScript -->
+        </div>
+      </div>
+    </div>
+
     <!-- Weather Forecast -->
     <div class="accordion-container">
       <button class="accordion" data-view="weather"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;"><path d="M6.76 4.84L4.96 3.05L3.54 4.46L5.34 6.25C4.53 7.25 4 8.55 4 10C4 13.31 6.69 16 10 16C13.31 16 16 13.31 16 10C16 6.69 13.31 4 10 4C8.55 4 7.25 4.53 6.25 5.34L4.46 3.54L3.05 4.96L4.84 6.76C4.03 7.76 3.5 9.06 3.5 10.5C3.5 14.09 6.41 17 10 17C13.59 17 16.5 14.09 16.5 10.5C16.5 6.91 13.59 4 10 4H10.5C10.5 4 10 4 10 4Z" fill="currentColor"/><path d="M12 8V12L15 15L13.5 16.5L10 13V8H12Z" fill="currentColor"/></svg> Weather Forecast</button>
       <div class="panel">
-        {% with weather=weather, variant='compact', refresh_seconds=420 %}
+        {% with weather=weather, variant='compact', theme='light', refresh_seconds=420 %}
           {% include 'partials/weather_widget.html' %}
         {% endwith %}
       </div>
@@ -251,30 +431,27 @@ form button:hover {
           <table>
             <thead>
               <tr>
-                <th>Dealer ID</th>
+                <th>Dealer</th>
                 <th>Product</th>
-                <th>Stock</th>
+                <th>Available Stock</th>
                 <th>Unit</th>
                 <th>Price</th>
                 <th>Order</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="inventory-tbody">
               {% for item in inventories %}
-              <tr>
-                <td>{{ item.dealer_id }}</td>
-                <td>{{ item.product_name }}</td>
-                <td>{{ item.stock }}</td>
-                <td>{{ item.unit }}</td>
+              <tr data-inv-id="{{ item.id }}" data-dealer-id="{{ item.dealer_id }}" data-dealer-name="{{ item.dealer_name }}" data-dealer-email="{{ item.dealer_email }}" data-dealer-phone="{{ item.dealer_phone }}">
+                <td class="dealer-name">{{ item.dealer_name or ('Dealer #' ~ item.dealer_id) }}</td>
+                <td class="product-name">{{ item.product_name }}</td>
+                <td class="stock-qty">{{ item.stock }}</td>
+                <td class="unit">{{ item.unit }}</td>
                 <td>{{ item.price if item.price is not none else '-' }}</td>
                 <td>
-                  <form method="post" action="{{ url_for('farmer_create_order') }}" style="display:flex; gap:6px; align-items:center;">
-                    <input type="hidden" name="dealer_id" value="{{ item.dealer_id }}" />
-                    <input type="hidden" name="product_name" value="{{ item.product_name }}" />
-                    <input type="number" name="quantity" placeholder="Qty" min="1" required style="width:80px; padding:6px;" />
-                    <input type="text" name="unit" value="{{ item.unit }}" style="width:70px; padding:6px;" />
-                    <button type="submit" style="padding:6px 10px; background:#022b16; color:#fff; border:none; border-radius:4px; cursor:pointer;">Order</button>
-                  </form>
+                  <div class="order-form">
+                    <input type="number" class="order-qty" placeholder="Qty" min="1" step="1">
+                    <button type="button" class="dealer-order-btn">Order</button>
+                  </div>
                 </td>
               </tr>
               {% endfor %}
@@ -290,36 +467,31 @@ form button:hover {
     <div class="accordion-container">
       <button class="accordion" data-view="my-orders"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;"><path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20ZM8 15.01L9.41 16.42L11 14.84V18H13V14.84L14.59 16.43L16 15.01L12.01 11L8 15.01Z" fill="currentColor"/></svg> My Orders</button>
       <div class="panel">
-        {% if my_orders %}
           <table>
             <thead>
               <tr>
                 <th>Order ID</th>
-                <th>Dealer ID</th>
+              <th>Dealer</th>
                 <th>Product</th>
                 <th>Qty</th>
                 <th>Status</th>
-                <th>Created</th>
-                <th>Last Update</th>
               </tr>
             </thead>
-            <tbody>
+          <tbody id="my-orders-tbody">
+            {% if my_orders %}
               {% for o in my_orders %}
-              <tr>
+              <tr data-server-order="1">
                 <td>{{ o.id }}</td>
                 <td>{{ o.dealer_id }}</td>
                 <td>{{ o.product_name }}</td>
                 <td>{{ o.quantity }} {{ o.unit }}</td>
                 <td>{{ o.status }}</td>
-                <td>{{ o.created_at.strftime('%Y-%m-%d %H:%M') if o.created_at else '-' }}</td>
-                <td>{{ o.updated_at.strftime('%Y-%m-%d %H:%M') if o.updated_at else '-' }}</td>
               </tr>
               {% endfor %}
+            {% endif %}
             </tbody>
           </table>
-        {% else %}
-          <p class="small">You don't have any orders yet.</p>
-        {% endif %}
+        <p id="no-my-orders" class="small" style="display:none;">You don't have any orders yet.</p>
       </div>
     </div>
 
@@ -335,7 +507,7 @@ form button:hover {
           <input type="text" name="province" placeholder="Province (optional)" style="width:180px; padding:8px;" />
           <button type="submit" style="padding:8px 12px; background:#022b16; color:#fff; border:none; border-radius:4px; cursor:pointer;">Publish</button>
         </form>
-        <p class="small">Once published, your offer appears under "Available Crops" on the Processor dashboard.</p>
+        <p class="small" style="margin-top:10px; color:#666;">Once published, your offer appears under "Available Crops" on the Processor dashboard.</p>
       </div>
     </div>
 
@@ -359,7 +531,6 @@ form button:hover {
         <p id="no-processor-orders" class="small">No processor orders yet.</p>
       </div>
     </div>
-
 
     <!-- Farming Tips -->
     <div class="accordion-container">
@@ -407,7 +578,16 @@ form button:hover {
   </div>
 
   <script>
-    // Accordion: Only one open at a time
+    // Current farmer info for order updates (properly escaped for JS)
+    const FARMER_INFO = {
+      id: {{ user.id|tojson }},
+      name: {{ user.full_name|tojson }},
+      email: {{ (user.email or "")|tojson }},
+      phone: {{ (user.phone or "")|tojson }}
+    };
+    console.log('Farmer Info loaded:', FARMER_INFO);
+
+    // Accordion functionality
     const acc = document.getElementsByClassName("accordion");
     for (let i = 0; i < acc.length; i++) {
       acc[i].addEventListener("click", function(e) {
@@ -443,7 +623,8 @@ form button:hover {
         if (btn && btn.getAttribute('data-view') === view) {
           found = true;
           btn.classList.add('active');
-          const panel = btn.nextElementSibling; if (panel) panel.style.display = 'block';
+          const panel = btn.nextElementSibling;
+          if (panel) panel.style.display = 'block';
           c.style.display = 'block';
         } else {
           c.style.display = 'none';
@@ -458,25 +639,211 @@ form button:hover {
     // --- Toast notifications ---
     function showToast(message) {
       const t = document.createElement('div');
-      t.style.position = 'fixed';
-      t.style.right = '20px';
-      t.style.bottom = '20px';
-      t.style.background = 'rgba(0,0,0,0.85)';
-      t.style.color = '#fff';
-      t.style.padding = '10px 14px';
-      t.style.borderRadius = '6px';
-      t.style.fontSize = '14px';
-      t.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
-      t.style.opacity = '0';
-      t.style.transform = 'translateY(10px)';
-      t.style.transition = 'opacity .25s ease, transform .25s ease';
+      t.style.cssText = 'position:fixed;right:20px;bottom:20px;background:rgba(0,0,0,0.85);color:#fff;padding:12px 18px;border-radius:8px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.2);opacity:0;transform:translateY(10px);transition:opacity .25s ease, transform .25s ease;z-index:9999;';
       t.textContent = message;
       document.body.appendChild(t);
       requestAnimationFrame(()=>{ t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
       setTimeout(()=>{ t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; setTimeout(()=> t.remove(), 250); }, 2500);
     }
 
-    // --- Shared localStorage order store used by processor and farmer ---
+    // ========== DEALER ANNOUNCEMENTS (localStorage) ==========
+    function getDealerAnnouncements() {
+      try { return JSON.parse(localStorage.getItem('dealer_announcements') || '[]'); } catch (e) { return []; }
+    }
+
+    function renderAnnouncements() {
+      const container = document.getElementById('announcements-container');
+      if (!container) return;
+
+      const announcements = getDealerAnnouncements().filter(a => a.active !== false);
+      
+      if (announcements.length === 0) {
+        container.innerHTML = `
+          <div class="no-announcements">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+            </svg>
+            <p>No announcements from dealers yet.</p>
+            <p style="font-size:12px;">Check back later for subsidies and programs!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = announcements.map(a => {
+        const validDates = [];
+        if (a.valid_from) validDates.push(`From: ${a.valid_from}`);
+        if (a.valid_to) validDates.push(`To: ${a.valid_to}`);
+        
+        return `
+          <div class="announcement-card">
+            <div class="announcement-header">
+              <h4 class="announcement-title">${a.title}</h4>
+              <span class="announcement-badge">${a.commodity || 'General'}</span>
+            </div>
+            ${a.description ? `<p class="announcement-description">${a.description}</p>` : ''}
+            <div class="announcement-meta">
+              ${a.discount_percent ? `<span>🏷️ <strong>${a.discount_percent}%</strong> Discount</span>` : ''}
+              ${validDates.length ? `<span>📅 ${validDates.join(' - ')}</span>` : ''}
+            </div>
+            <div class="announcement-dealer">
+              <div class="announcement-dealer-title">📞 Contact Agro-Dealer</div>
+              <div class="announcement-dealer-info">
+                <div><strong>👤 ${a.dealer_name || 'N/A'}</strong></div>
+                <div>📧 ${a.dealer_email || 'N/A'}</div>
+                <div>📱 ${a.dealer_phone || 'N/A'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ========== FARMER-DEALER ORDERS (localStorage) ==========
+    function getFarmerDealerOrders() {
+      try { return JSON.parse(localStorage.getItem('farmer_dealer_orders') || '[]'); } catch (e) { return []; }
+    }
+    function saveFarmerDealerOrders(orders) {
+      localStorage.setItem('farmer_dealer_orders', JSON.stringify(orders));
+    }
+
+    // Render My Orders (from localStorage)
+    function renderMyOrders() {
+      const tbody = document.getElementById('my-orders-tbody');
+      if (!tbody) return;
+      
+      // Clear dynamic rows only
+      tbody.querySelectorAll('[data-local-order="1"]').forEach(r => r.remove());
+      
+      const orders = getFarmerDealerOrders().filter(o => o.farmer_id === FARMER_INFO.id || o.farmer_name === FARMER_INFO.name);
+      
+      orders.forEach(o => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-local-order', '1');
+        
+        let statusHtml = '';
+        const statusLower = (o.status || '').toLowerCase();
+        
+        if (statusLower.includes('approved')) {
+          statusHtml = `
+            <span class="status-badge status-approved">✓ Approved</span>
+            <div class="dealer-details">
+              <strong>Dealer:</strong> ${o.dealer_name || 'N/A'}<br>
+              <strong>Email:</strong> ${o.dealer_email || 'N/A'}<br>
+              <strong>Phone:</strong> ${o.dealer_phone || 'N/A'}
+            </div>
+          `;
+        } else if (statusLower.includes('rejected')) {
+          statusHtml = `
+            <span class="status-badge status-rejected">✗ Rejected</span>
+            <div class="dealer-details">
+              <strong>Dealer:</strong> ${o.dealer_name || 'N/A'}<br>
+              <strong>Email:</strong> ${o.dealer_email || 'N/A'}<br>
+              <strong>Phone:</strong> ${o.dealer_phone || 'N/A'}
+            </div>
+          `;
+        } else if (statusLower.includes('delivered')) {
+          statusHtml = `<span class="status-badge status-delivered">📦 Delivered</span>`;
+        } else {
+          statusHtml = `<span class="status-badge status-pending">${o.status || 'Pending'}</span>`;
+        }
+        
+        tr.innerHTML = `
+          <td>${o.id || '-'}</td>
+          <td>${o.dealer_name || o.dealer_id || '-'}</td>
+          <td>${o.product_name || '-'}</td>
+          <td>${o.quantity || '-'} ${o.unit || ''}</td>
+          <td>${statusHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      const serverRows = tbody.querySelectorAll('[data-server-order="1"]').length;
+      const emptyMsg = document.getElementById('no-my-orders');
+      if (emptyMsg) {
+        emptyMsg.style.display = (orders.length === 0 && serverRows === 0) ? 'block' : 'none';
+      }
+    }
+
+    // Update stock quantity in UI
+    function updateStockUI(invId, reduction) {
+      const row = document.querySelector(`tr[data-inv-id="${invId}"]`);
+      if (row) {
+        const stockCell = row.querySelector('.stock-qty');
+        if (stockCell) {
+          const currentStock = parseFloat(stockCell.textContent) || 0;
+          const newStock = Math.max(0, currentStock - reduction);
+          stockCell.textContent = newStock;
+          if (newStock <= 0) {
+            row.style.opacity = '0.5';
+            const btn = row.querySelector('.dealer-order-btn');
+            if (btn) btn.disabled = true;
+          }
+        }
+      }
+    }
+
+    // Attach order buttons for dealer inventory
+    function attachDealerOrderButtons() {
+      const buttons = document.querySelectorAll('.dealer-order-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const row = this.closest('tr');
+          const qtyInput = row.querySelector('.order-qty');
+          const qty = qtyInput ? qtyInput.value.trim() : '';
+          
+          if (!qty || parseFloat(qty) <= 0) {
+            alert('Please enter a valid quantity');
+            return;
+          }
+          
+          const availableStock = parseFloat(row.querySelector('.stock-qty')?.textContent) || 0;
+          if (parseFloat(qty) > availableStock) {
+            alert(`Cannot order more than available stock (${availableStock})`);
+            return;
+          }
+          
+          const invId = row.getAttribute('data-inv-id');
+          const dealerId = row.getAttribute('data-dealer-id');
+          const dealerName = row.getAttribute('data-dealer-name') || row.querySelector('.dealer-name')?.textContent?.trim() || '';
+          const dealerEmail = row.getAttribute('data-dealer-email') || '';
+          const dealerPhone = row.getAttribute('data-dealer-phone') || '';
+          const productName = row.querySelector('.product-name')?.textContent?.trim() || '';
+          const unit = row.querySelector('.unit')?.textContent?.trim() || '';
+
+          const orders = getFarmerDealerOrders();
+          const newOrder = {
+            id: Date.now(),
+            inv_id: invId,
+            dealer_id: dealerId,
+            dealer_name: dealerName,
+            dealer_email: dealerEmail,
+            dealer_phone: dealerPhone,
+            farmer_id: FARMER_INFO.id,
+            farmer_name: FARMER_INFO.name,
+            farmer_email: FARMER_INFO.email,
+            farmer_phone: FARMER_INFO.phone,
+            product_name: productName,
+            quantity: qty,
+            unit: unit,
+            status: 'Pending Dealer Approval',
+            created_at: new Date().toISOString(),
+            updated_at: null
+          };
+          orders.push(newOrder);
+          saveFarmerDealerOrders(orders);
+          
+          // Clear input
+          if (qtyInput) qtyInput.value = '';
+          
+          renderMyOrders();
+          showToast('Order sent to dealer for approval.');
+        });
+      });
+    }
+
+    // ========== PROCESSOR-FARMER ORDERS (localStorage) ==========
     function getStoredOrders() {
       try { return JSON.parse(localStorage.getItem('processor_customer_orders') || '[]'); } catch (e) { return []; }
     }
@@ -484,146 +851,216 @@ form button:hover {
       localStorage.setItem('processor_customer_orders', JSON.stringify(orders));
     }
 
+    // Update crop quantity via API
+    async function updateCropQuantity(cropId, quantityReduction) {
+      try {
+        const response = await fetch('/api/crop/update-quantity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ crop_id: cropId, quantity_reduction: quantityReduction })
+        });
+        return response.ok;
+      } catch (e) {
+        console.error('Failed to update crop quantity:', e);
+        return false;
+      }
+    }
+
     function renderFarmerOrders() {
       const tbody = document.getElementById('processor-orders-tbody');
       if (!tbody) return;
       const orders = getStoredOrders();
       tbody.innerHTML = '';
-      let shown = 0;
+      let pendingCount = 0;
+      let processedCount = 0;
+
+      // First, show pending orders that need action
       orders.forEach(o => {
-        // Show only orders that need farmer action and were created by processor
         if ((o.status || '').toLowerCase() !== 'pending farmer approval') return;
-        if (!o.customer_name || o.customer_name === '{{ user.full_name }}') return;
+        if (!o.customer_name || o.customer_name === FARMER_INFO.name) return;
+        
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${o.customer_name || ''}</td>
           <td>${o.product_name || ''}</td>
           <td>${o.quantity || ''}</td>
           <td>${o.unit || ''}</td>
-          <td class="status">${o.status || ''}</td>
+          <td><span class="status-badge status-pending">${o.status || ''}</span></td>
           <td>
-            <button class="approve-btn" data-id="${o.id}">Approve</button>
-            <button class="reject-btn" data-id="${o.id}" style="margin-left:6px;">Reject</button>
+            <button class="approve-btn" data-id="${o.id}" data-crop-id="${o.crop_id || ''}" data-qty="${o.quantity || 0}">✓ Approve</button>
+            <button class="reject-btn" data-id="${o.id}" style="margin-left:6px;">✗ Reject</button>
           </td>
         `;
         tbody.appendChild(tr);
-        shown++;
+        pendingCount++;
       });
-      const empty = document.getElementById('no-processor-orders');
-      if (empty) empty.style.display = shown === 0 ? 'block' : 'none';
 
-      // Attach handlers
-      tbody.querySelectorAll('.approve-btn').forEach(btn => btn.addEventListener('click', function() {
+      // Then show processed orders (approved/rejected)
+      orders.forEach(o => {
+        const statusLower = (o.status || '').toLowerCase();
+        if (statusLower !== 'approved by farmer' && statusLower !== 'rejected by farmer') return;
+        if (o.customer_name === FARMER_INFO.name) return;
+        
+        const isApproved = statusLower.includes('approved');
+        const statusClass = isApproved ? 'status-approved' : 'status-rejected';
+        const statusText = isApproved ? '✓ Approved' : '✗ Rejected';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${o.customer_name || ''}</td>
+          <td>${o.product_name || ''}</td>
+          <td>${o.quantity || ''}</td>
+          <td>${o.unit || ''}</td>
+          <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+          <td>
+            <button class="change-decision" data-id="${o.id}" data-crop-id="${o.crop_id || ''}" data-qty="${o.quantity || 0}">Change</button>
+            <button class="delete-decision" data-id="${o.id}" style="margin-left:6px;">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+        processedCount++;
+      });
+
+      const empty = document.getElementById('no-processor-orders');
+      if (empty) empty.style.display = (pendingCount === 0 && processedCount === 0) ? 'block' : 'none';
+
+      // Attach handlers for approve buttons
+      tbody.querySelectorAll('.approve-btn').forEach(btn => btn.addEventListener('click', async function() {
         const id = Number(this.getAttribute('data-id'));
+        const cropId = this.getAttribute('data-crop-id');
+        const qty = parseFloat(this.getAttribute('data-qty')) || 0;
         const orders = getStoredOrders();
         const idx = orders.findIndex(o => o.id === id);
         if (idx >= 0) {
           orders[idx].status = 'Approved by Farmer';
+          orders[idx].farmer_name = FARMER_INFO.name;
+          orders[idx].farmer_email = FARMER_INFO.email;
+          orders[idx].farmer_phone = FARMER_INFO.phone;
+          orders[idx].approver_name = FARMER_INFO.name;
+          orders[idx].approver_email = FARMER_INFO.email;
+          orders[idx].approver_phone = FARMER_INFO.phone;
+          orders[idx].decision_by = FARMER_INFO.name;
           orders[idx].updated_at = new Date().toISOString();
+          orders[idx].quantity_updated = true;
+          
           saveStoredOrders(orders);
+          
+          if (cropId && qty > 0) {
+            await updateCropQuantity(cropId, qty);
+          }
+          
           renderFarmerOrders();
-          showToast('Order approved.');
+          showToast('Order approved. Crop quantity updated.');
         }
       }));
+
+      // Attach handlers for reject buttons
       tbody.querySelectorAll('.reject-btn').forEach(btn => btn.addEventListener('click', function() {
         const id = Number(this.getAttribute('data-id'));
         const orders = getStoredOrders();
         const idx = orders.findIndex(o => o.id === id);
         if (idx >= 0) {
           orders[idx].status = 'Rejected by Farmer';
+          orders[idx].farmer_name = FARMER_INFO.name;
+          orders[idx].farmer_email = FARMER_INFO.email;
+          orders[idx].farmer_phone = FARMER_INFO.phone;
+          orders[idx].approver_name = FARMER_INFO.name;
+          orders[idx].approver_email = FARMER_INFO.email;
+          orders[idx].approver_phone = FARMER_INFO.phone;
+          orders[idx].decision_by = FARMER_INFO.name;
           orders[idx].updated_at = new Date().toISOString();
+          
           saveStoredOrders(orders);
           renderFarmerOrders();
           showToast('Order rejected.');
         }
       }));
 
-      // Add ability to change decision later and delete
-      // Keep approved/rejected orders visible with actions
-      const fullTbody = document.getElementById('processor-orders-tbody');
-      const allOrders = getStoredOrders();
-      allOrders.forEach(o => {
-        if ((o.status || '').toLowerCase() === 'approved by farmer' || (o.status || '').toLowerCase() === 'rejected by farmer') {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${o.customer_name || ''}</td>
-            <td>${o.product_name || ''}</td>
-            <td>${o.quantity || ''}</td>
-            <td>${o.unit || ''}</td>
-            <td class="status">${o.status || ''}</td>
-            <td>
-              <button class="change-decision" data-id="${o.id}">Change decision</button>
-              <button class="delete-decision" data-id="${o.id}" style="margin-left:6px;">Delete</button>
-            </td>
-          `;
-          fullTbody.appendChild(tr);
-        }
-      });
-
-      fullTbody.querySelectorAll('.change-decision').forEach(btn => btn.addEventListener('click', function() {
+      // Attach handlers for change decision
+      tbody.querySelectorAll('.change-decision').forEach(btn => btn.addEventListener('click', async function() {
         const id = Number(this.getAttribute('data-id'));
+        const cropId = this.getAttribute('data-crop-id');
+        const qty = parseFloat(this.getAttribute('data-qty')) || 0;
         const orders = getStoredOrders();
         const idx = orders.findIndex(o => o.id === id);
         if (idx >= 0) {
           const current = (orders[idx].status || '').toLowerCase();
-          const next = current.includes('approved') ? 'Rejected by Farmer' : 'Approved by Farmer';
+          const wasApproved = current.includes('approved');
+          const next = wasApproved ? 'Rejected by Farmer' : 'Approved by Farmer';
+          
           orders[idx].status = next;
+          orders[idx].farmer_name = FARMER_INFO.name;
+          orders[idx].farmer_email = FARMER_INFO.email;
+          orders[idx].farmer_phone = FARMER_INFO.phone;
+          orders[idx].approver_name = FARMER_INFO.name;
+          orders[idx].approver_email = FARMER_INFO.email;
+          orders[idx].approver_phone = FARMER_INFO.phone;
+          orders[idx].decision_by = FARMER_INFO.name;
           orders[idx].updated_at = new Date().toISOString();
+          
+          if (cropId && qty > 0) {
+            if (wasApproved) {
+              await updateCropQuantity(cropId, -qty);
+            } else {
+              await updateCropQuantity(cropId, qty);
+              orders[idx].quantity_updated = true;
+            }
+          }
+          
           saveStoredOrders(orders);
           renderFarmerOrders();
           showToast('Decision updated.');
         }
       }));
-      fullTbody.querySelectorAll('.delete-decision').forEach(btn => btn.addEventListener('click', function() {
+
+      // Attach handlers for delete
+      tbody.querySelectorAll('.delete-decision').forEach(btn => btn.addEventListener('click', async function() {
         const id = Number(this.getAttribute('data-id'));
         const orders = getStoredOrders();
         const idx = orders.findIndex(o => o.id === id);
         if (idx >= 0) {
+          const order = orders[idx];
+          const wasApproved = (order.status || '').toLowerCase().includes('approved');
+          const cropId = order.crop_id;
+          const qty = parseFloat(order.quantity) || 0;
+          
+          if (wasApproved && cropId && qty > 0) {
+            await updateCropQuantity(cropId, -qty);
+          }
+          
           orders.splice(idx, 1);
           saveStoredOrders(orders);
           renderFarmerOrders();
-          showToast('Decision and order removed.');
+          showToast('Order removed.');
         }
       }));
     }
 
-    // Initial render and sync if other tabs update
+    // Initial render
+    attachDealerOrderButtons();
+    renderMyOrders();
     renderFarmerOrders();
+    renderAnnouncements();
+
+    // Sync across tabs
     window.addEventListener('storage', (e) => {
       if (e.key === 'processor_customer_orders') {
         renderFarmerOrders();
       }
-    });
-
-    // Farmer creates an order for processor
-    const farmerOrderForm = document.getElementById('farmer-create-processor-order');
-    if (farmerOrderForm) {
-      farmerOrderForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const product = document.getElementById('fpo-product').value.trim();
-        const qty = document.getElementById('fpo-qty').value.trim();
-        const unit = document.getElementById('fpo-unit').value.trim();
-        if (!product || !qty) return;
-        const orders = getStoredOrders();
-        orders.push({
-          id: Date.now(),
-          customer_name: '{{ user.full_name }}',
-          farmer_name: '{{ user.full_name }}',
-          product_name: product,
-          quantity: qty,
-          unit: unit || 'kg',
-          status: 'Pending Processor Review',
-          created_at: new Date().toISOString(),
-          updated_at: null
+      if (e.key === 'farmer_dealer_orders') {
+        renderMyOrders();
+        // Check for approved orders to update stock UI
+        const orders = getFarmerDealerOrders();
+        orders.forEach(o => {
+          if ((o.status || '').toLowerCase().includes('approved') && o.inv_id && o.farmer_id === FARMER_INFO.id) {
+            updateStockUI(o.inv_id, parseFloat(o.quantity) || 0);
+          }
         });
-        saveStoredOrders(orders);
-        // Clear form
-        document.getElementById('fpo-product').value = '';
-        document.getElementById('fpo-qty').value = '';
-        // Notify
-        alert('Order submitted and visible to the processor.');
-      });
-    }
+      }
+      if (e.key === 'dealer_announcements') {
+        renderAnnouncements();
+      }
+    });
   </script>
   <script src="{{ url_for('static', filename='weather.js') }}"></script>
 </body>

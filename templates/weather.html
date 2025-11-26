@@ -13,7 +13,7 @@
         body {
             margin-right: 100px;
             margin-left: 100px;
-            padding-top: 150px; /* Add padding to account for fixed header */
+            padding-top: 150px;
         }
         header {
             background: black;
@@ -110,13 +110,26 @@
             background-color: rgb(18, 46, 43);
             color: white;
         }
+        @media (max-width: 768px) {
+            body {
+                margin-left: 15px;
+                margin-right: 15px;
+                padding-top: 180px;
+            }
+            .header-content img.logo {
+                width: 80px;
+                margin-right: 20px;
+            }
+            header h1 {
+                font-size: 1.8em;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Header Section -->
     <header>
         <div class="header-content">
-            <!-- Insert your image here -->
             <img src="{{ url_for('static', filename='ikiraro.png') }}" alt="Ikiraro logo" class="logo">
             <div>
                 <h1 style="text-align:center;">UMUHUZA</h1>
@@ -157,115 +170,46 @@
         <p style="color: #fff; font-size: 1.2em;">Leveraging weather data to improve agricultural practices in Rwanda</p>
     </div>
 
-    {% set location = weather.get('location', {}) if weather else {} %}
     {% set current = weather.get('current', {}) if weather else {} %}
     {% set condition = current.get('condition') if current else None %}
     {% set forecast_list = weather.get('forecast', []) if weather else [] %}
     {% set next_forecast = forecast_list[0] if forecast_list else {} %}
-    {% set weather_error = weather.get('error') if weather else None %}
-    {% set district_feed = weather.get('districts', []) if weather else [] %}
-    {% set district_error = weather.get('districts_error') if weather else None %}
-    {% set district_updated = weather.get('districts_updated_at') if weather else None %}
 
-    <section class="weather-hero">
-        <div>
-            <h2>Real-time Rwanda Weather Intelligence</h2>
-            <p>Live pipeline for Kigali and surrounding provinces, refreshed automatically for every dashboard.</p>
-            <div class="hero-meta">
-                <span>Location: {{ location.get('name', 'Kigali') }}, {{ location.get('country', 'Rwanda') }}</span>
-                <span>Last sync: {{ weather.get('updated_at', '—') }}</span>
-            </div>
-            {% if weather_error %}
-                <p class="weather-hero__alert">Notice: {{ weather_error }}</p>
-            {% endif %}
-        </div>
+    <!-- Weather Widget - District Cards Marquee -->
+    <section class="weather-section">
+        {% with weather=weather, variant='extended', refresh_seconds=300 %}
+            {% include 'partials/weather_widget.html' %}
+        {% endwith %}
     </section>
 
-    <section class="climate-marquee">
-        <div class="climate-marquee__header">
-            <div>
-                <h3>District Climate Newsfeed</h3>
-                <p>District-by-district temperature pulse for all 30 districts in Rwanda.</p>
-            </div>
-            <div class="climate-marquee__timestamp">
-                <span>Updated {{ district_updated or '—' }}</span>
-                {% if district_error %}
-                    <em>{{ district_error }}</em>
-                {% endif %}
-            </div>
-        </div>
-        {% if district_feed %}
-            <div class="climate-marquee__track">
-                {% for district in district_feed %}
-                    <span class="climate-marquee__item">
-                        <strong>{{ district.name }}</strong>
-                        <span class="climate-marquee__temp">
-                            {% if district.temp_c is not none %}
-                                {{ district.temp_c|round|int }}°C
-                            {% else %}
-                                —
-                            {% endif %}
-                        </span>
-                        <small>{{ district.condition or 'Stable conditions' }}</small>
-                    </span>
-                {% endfor %}
-                {% for district in district_feed %}
-                    <span class="climate-marquee__item climate-marquee__item--ghost">
-                        <strong>{{ district.name }}</strong>
-                        <span class="climate-marquee__temp">
-                            {% if district.temp_c is not none %}
-                                {{ district.temp_c|round|int }}°C
-                            {% else %}
-                                —
-                            {% endif %}
-                        </span>
-                        <small>{{ district.condition or 'Stable conditions' }}</small>
-                    </span>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="climate-marquee__empty">
-                {{ district_error or "District-level data is syncing. Please check back shortly." }}
-            </p>
-        {% endif %}
-    </section>
-
-    <section class="weather-live-grid">
-        <div class="weather-widget-wrapper">
-            {% with weather=weather, variant='extended', refresh_seconds=300 %}
-                {% include 'partials/weather_widget.html' %}
-            {% endwith %}
-        </div>
-        <div class="weather-insights">
-            <article>
-                <h3>Field Conditions</h3>
+    <!-- Current Conditions Summary -->
+    <section class="weather-summary">
+        <div class="weather-summary__grid">
+            <article class="weather-summary__card">
+                <h3>🌡️ Current Conditions</h3>
                 <p>
                     {% if condition %}
-                        Currently {{ condition|lower }} with average temperature around
-                        {{ current.get('temp_c') }}°C and humidity at {{ current.get('humidity') }}%.
+                        Currently {{ condition|lower }} with temperature around
+                        <strong>{{ current.get('temp_c') }}°C</strong> and humidity at <strong>{{ current.get('humidity') }}%</strong>.
                     {% else %}
-                        We are syncing the latest conditions for Kigali.
+                        Syncing the latest conditions for Rwanda...
                     {% endif %}
                 </p>
                 <ul>
                     <li>Wind: {{ current.get('wind_kph') or '—' }} km/h {{ current.get('wind_dir') or '' }}</li>
-                    <li>Rainfall (prev hour): {{ current.get('precip_mm') or 0 }} mm</li>
+                    <li>Rainfall: {{ current.get('precip_mm') or 0 }} mm</li>
                     <li>UV Index: {{ current.get('uv') or '—' }}</li>
                 </ul>
             </article>
-            <article>
-                <h3>48h Outlook</h3>
+            <article class="weather-summary__card">
+                <h3>📅 48h Outlook</h3>
                 {% if next_forecast %}
                     <p>Expect {{ next_forecast.get('condition', 'stable conditions')|lower }} with temperature ranging between
-                        {{ next_forecast.get('min_temp_c') }}°C and {{ next_forecast.get('max_temp_c') }}°C.
-                        Chance of rain stands at {{ next_forecast.get('daily_chance_of_rain', 0) }}%.</p>
+                        <strong>{{ next_forecast.get('min_temp_c') }}°C</strong> and <strong>{{ next_forecast.get('max_temp_c') }}°C</strong>.
+                        Chance of rain: <strong>{{ next_forecast.get('daily_chance_of_rain', 0) }}%</strong>.</p>
                 {% else %}
                     <p>Forecast data is being prepared.</p>
                 {% endif %}
-                <p>
-                    Weather alerts and advisories automatically propagate to researcher, policy, and agro-dealer dashboards,
-                    ensuring every stakeholder gets the same trusted feed in real-time.
-                </p>
             </article>
         </div>
     </section>
@@ -290,7 +234,7 @@
         <h2>Optimizing Irrigation Scheduling</h2>
         <div class="video-container">
             <video controls width="600">
-                <source src="videos/irrigation-techniques.mp4" type="video/mp4"> <!-- Replace with actual video -->
+                <source src="videos/irrigation-techniques.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
         </div>
@@ -317,7 +261,7 @@
     </section>
     <div>
         <center>
-            <a href="{{url_for('index')}}"><button type="submit" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">Back</button></a>
+            <a href="{{url_for('index')}}"><button type="submit" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 6px;">Back</button></a>
         </center>
     </div>
     <!-- Social Media Section -->
@@ -339,6 +283,6 @@
         </div>
     </section>
     <center><h3 style="color:#fff">© 2025 UMUHUZA. All rights reserved.</h3></center>
-   <script src="{{url_for('static', filename='weather.js')}}"></script> <!-- JavaScript for charts -->
+   <script src="{{url_for('static', filename='weather.js')}}"></script>
 </body>
 </html>

@@ -11,21 +11,93 @@
     body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
     header { background: #022b16; color: white; padding: 20px; text-align: left; }
     .wrap { max-width: 1100px; margin: 20px auto; padding: 10px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; 
-      gap: 16px; align-items: start; }
-    .card { background: white; padding: 16px; 
-      border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
     h2 { margin: 0 0 12px; color: #022b16; }
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 8px 6px; border: 1px solid #e0e0e0; text-align: left; font-size: 14px; }
     th { background: #e8f5e9; color: #022b16; }
-    .btn { padding: 8px 10px; border: none; background: #022b16; 
-      color: white; border-radius: 4px; cursor: pointer; }
-    .btn.secondary { background: #777; }
+    .btn { padding: 8px 10px; border: none; background: #022b16; color: white; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .btn:hover { background: #034d2e; }
+    .btn.secondary { background: #dc2626; }
+    .btn.secondary:hover { background: #b91c1c; }
+    .btn.info { background: #0ea5e9; }
+    .btn.info:hover { background: #0284c7; }
+    .btn.publish { background: #7c3aed; }
+    .btn.publish:hover { background: #6d28d9; }
     .small-form input { width: 70px; padding: 6px; margin-right: 6px; }
-    .subsidy { margin-top: 8px; padding: 10px; background:#f1f8e9; border-radius:6px; }
+    .subsidy { margin-top: 8px; padding: 12px; background:#f1f8e9; border-radius:8px; border-left: 4px solid #4CAF50; }
+    .subsidy.published { border-left-color: #7c3aed; background: #f5f3ff; }
     .muted { color:#666; font-size: 13px; }
     .actions form { display:inline-block; margin-right:6px; }
+    
+    /* Status badges */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-approved { background: #d1fae5; color: #065f46; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+    .status-delivered { background: #dbeafe; color: #1e40af; }
+    .status-published { background: #ede9fe; color: #6d28d9; }
+
+    /* Farmer details */
+    .farmer-details {
+      margin-top: 6px;
+      padding: 8px;
+      background: #f8fafc;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #475569;
+      border-left: 3px solid #022b16;
+    }
+    .farmer-details strong { color: #0f172a; }
+
+    /* Published subsidies list */
+    .published-list {
+      margin-top: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .published-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #f5f3ff;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      border-left: 3px solid #7c3aed;
+    }
+    .published-item .info { flex: 1; }
+    .published-item .title { font-weight: 600; color: #022b16; }
+    .published-item .meta { font-size: 12px; color: #666; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 9999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -41,9 +113,10 @@
 
   <div class="wrap">
     
-    {% with weather=weather, variant='compact', refresh_seconds=600 %}
+    {% with weather=weather, variant='compact', theme='light', refresh_seconds=600 %}
       {% include 'partials/weather_widget.html' %}
     {% endwith %}
+
     <div class="grid">
       <!-- Inventory -->
       <div class="card">
@@ -60,12 +133,12 @@
             <thead>
               <tr><th>ID</th><th>Product</th><th>Stock</th><th>Unit</th><th>Price</th><th>Last Updated</th><th>Action</th></tr>
             </thead>
-            <tbody>
+            <tbody id="inventory-tbody">
               {% for item in inventory %}
-              <tr>
+              <tr data-inv-id="{{ item.id }}">
                 <td>{{ item.id }}</td>
                 <td>{{ item.product_name }}</td>
-                <td>{{ item.stock }}</td>
+                <td class="stock-cell">{{ item.stock }}</td>
                 <td>{{ item.unit }}</td>
                 <td>{{ item.price if item.price is not none else '-' }}</td>
                 <td>{{ item.last_updated.strftime('%Y-%m-%d %H:%M') if item.last_updated else '-' }}</td>
@@ -85,37 +158,35 @@
         {% endif %}
       </div>
 
-      <!-- Orders -->
+      <!-- Farmer Orders -->
       <div class="card">
-        <h2>🛒 New Orders</h2>
-        {% if orders %}
-          <table>
-            <thead>
-              <tr><th>ID</th><th>Farmer ID</th><th>Product</th><th>Qty</th><th>Status</th><th>Created</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
+        <h2>🛒 Farmer Orders</h2>
+        <table>
+          <thead>
+            <tr><th>Farmer</th><th>Product</th><th>Qty</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="farmer-orders-tbody">
+            {% if orders %}
               {% for o in orders %}
-              <tr>
-                <td>{{ o.id }}</td>
+              <tr data-server-order="1">
                 <td>{{ o.farmer_id }}</td>
                 <td>{{ o.product_name }}</td>
                 <td>{{ o.quantity }} {{ o.unit }}</td>
                 <td>{{ o.status }}</td>
-                <td>{{ o.created_at.strftime('%Y-%m-%d %H:%M') if o.created_at else '-' }}</td>
                 <td>
                   {% if o.status == 'pending' %}
-                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}">
+                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}" style="display:inline;">
                       <input type="hidden" name="action" value="approve" />
                       <button class="btn" type="submit">Approve</button>
                     </form>
-                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}">
+                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}" style="display:inline;">
                       <input type="hidden" name="action" value="reject" />
                       <button class="btn secondary" type="submit">Reject</button>
                     </form>
                   {% elif o.status == 'approved' %}
-                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}">
+                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}" style="display:inline;">
                       <input type="hidden" name="action" value="deliver" />
-                      <button class="btn" type="submit">Mark Delivered</button>
+                      <button class="btn info" type="submit">Mark Delivered</button>
                     </form>
                   {% else %}
                     <span class="muted">{{ o.status }}</span>
@@ -123,18 +194,18 @@
                 </td>
               </tr>
               {% endfor %}
-            </tbody>
-          </table>
-        {% else %}
-          <p class="muted">No orders found.</p>
-        {% endif %}
+            {% endif %}
+          </tbody>
+        </table>
+        <p id="no-orders-msg" class="muted" style="display:none;">No orders found.</p>
       </div>
-
-      <!-- Subsidies (full width row below grid) -->
     </div>
 
+    <!-- Subsidies & Programs -->
     <div class="card" style="margin-top:16px;">
       <h2>📢 Subsidies & Programs</h2>
+      
+      <!-- Existing server-side subsidies -->
       {% if subsidies %}
         {% for s in subsidies %}
           <div class="subsidy">
@@ -146,44 +217,332 @@
           </div>
         {% endfor %}
       {% else %}
-        <p class="muted">No active subsidies.</p>
+        <p class="muted" id="no-subsidies-msg">No active subsidies.</p>
       {% endif %}
 
-      <hr style="margin:12px 0"/>
+      <hr style="margin:16px 0"/>
 
-      <h3>Propose Subsidy (optional)</h3>
-      <form method="post" action="{{ url_for('dealer_create_subsidy') }}">
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <input type="text" name="title" placeholder="Title" required style="flex:2; padding:8px" />
-          <input type="text" name="commodity" placeholder="Commodity (optional)" style="flex:1; padding:8px" />
-          <input type="number" name="discount_percent" placeholder="Discount (%)" min="0" max="100" style="width:120px; padding:8px" />
+      <h3>📣 Publish Announcement to Farmers</h3>
+      <p class="muted" style="margin-bottom:12px;">Create a subsidy or program announcement that will be visible to all farmers.</p>
+      
+      <form id="publish-subsidy-form" style="margin-bottom:16px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+          <input type="text" id="subsidy-title" placeholder="Title *" required style="flex:2; padding:10px; border-radius:6px; border:1px solid #ddd;" />
+          <input type="text" id="subsidy-commodity" placeholder="Commodity (optional)" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd;" />
         </div>
-        <div style="margin-top:8px; display:flex; gap:8px;">
-          <input type="date" name="valid_from" />
-          <input type="date" name="valid_to" />
-          <button class="btn" type="submit">Create Proposal</button>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+          <input type="text" id="subsidy-description" placeholder="Description (optional)" style="flex:2; padding:10px; border-radius:6px; border:1px solid #ddd;" />
+          <input type="number" id="subsidy-discount" placeholder="Discount %" min="0" max="100" style="width:100px; padding:10px; border-radius:6px; border:1px solid #ddd;" />
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <label style="font-size:13px; color:#666;">Valid From:</label>
+          <input type="date" id="subsidy-valid-from" style="padding:8px; border-radius:6px; border:1px solid #ddd;" />
+          <label style="font-size:13px; color:#666;">To:</label>
+          <input type="date" id="subsidy-valid-to" style="padding:8px; border-radius:6px; border:1px solid #ddd;" />
+          <button type="submit" class="btn publish" style="margin-left:auto;">📣 Publish to Farmers</button>
         </div>
       </form>
-    </div>
 
+      <!-- Published announcements list -->
+      <div id="published-subsidies">
+        <h4 style="color:#7c3aed; margin-bottom:8px;">📋 Your Published Announcements</h4>
+        <div id="published-list" class="published-list">
+          <!-- Will be filled by JS -->
+        </div>
+        <p id="no-published-msg" class="muted" style="display:none;">No announcements published yet.</p>
+      </div>
+    </div>
   </div>
+
   <script>
-    function showToast(msg){
-      var t=document.createElement('div');
-      t.style.position='fixed';t.style.right='20px';t.style.bottom='20px';t.style.background='rgba(0,0,0,0.85)';
-      t.style.color='#fff';t.style.padding='10px 14px';t.style.borderRadius='6px';t.style.fontSize='14px';
-      t.style.boxShadow='0 2px 6px rgba(0,0,0,0.2)';t.style.opacity='0';t.style.transform='translateY(10px)';
-      t.style.transition='opacity .25s ease, transform .25s ease';t.textContent=msg;document.body.appendChild(t);
-      requestAnimationFrame(function(){t.style.opacity='1';t.style.transform='translateY(0)';});
-      setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(10px)'; setTimeout(function(){t.remove();},250);},2500);
+    // Dealer info
+    const DEALER_INFO = {
+      id: {{ user.id|tojson }},
+      name: {{ user.full_name|tojson }},
+      email: {{ (user.email or "")|tojson }},
+      phone: {{ (user.phone or "")|tojson }}
+    };
+    console.log('Dealer Info:', DEALER_INFO);
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('show'));
+      setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, 2500);
     }
-    // Hook simple form submits to show a toast (client-only)
-    document.querySelectorAll('form').forEach(function(f){
-      f.addEventListener('submit', function(){
-        var btn = f.querySelector('button[type="submit"]');
-        var txt = btn ? (btn.textContent || 'Submitted') : 'Submitted';
-        showToast('Action: ' + txt);
+
+    // ========== DEALER ANNOUNCEMENTS/SUBSIDIES (localStorage) ==========
+    function getDealerAnnouncements() {
+      try { return JSON.parse(localStorage.getItem('dealer_announcements') || '[]'); } catch (e) { return []; }
+    }
+    function saveDealerAnnouncements(announcements) {
+      localStorage.setItem('dealer_announcements', JSON.stringify(announcements));
+    }
+
+    function renderPublishedAnnouncements() {
+      const container = document.getElementById('published-list');
+      const noMsg = document.getElementById('no-published-msg');
+      if (!container) return;
+
+      const announcements = getDealerAnnouncements().filter(a => a.dealer_id === DEALER_INFO.id);
+      container.innerHTML = '';
+
+      if (announcements.length === 0) {
+        if (noMsg) noMsg.style.display = 'block';
+        return;
+      }
+      if (noMsg) noMsg.style.display = 'none';
+
+      announcements.forEach(a => {
+        const div = document.createElement('div');
+        div.className = 'published-item';
+        div.innerHTML = `
+          <div class="info">
+            <div class="title">${a.title}</div>
+            <div class="meta">
+              ${a.commodity ? a.commodity + ' • ' : ''}
+              ${a.discount_percent ? a.discount_percent + '% discount • ' : ''}
+              ${a.valid_from ? 'From ' + a.valid_from : ''} ${a.valid_to ? ' to ' + a.valid_to : ''}
+            </div>
+          </div>
+          <button class="btn secondary" onclick="deleteAnnouncement(${a.id})" style="padding:4px 8px; font-size:12px;">Remove</button>
+        `;
+        container.appendChild(div);
       });
+    }
+
+    function deleteAnnouncement(id) {
+      let announcements = getDealerAnnouncements();
+      announcements = announcements.filter(a => a.id !== id);
+      saveDealerAnnouncements(announcements);
+      renderPublishedAnnouncements();
+      showToast('Announcement removed.');
+    }
+
+    // Handle publish form
+    document.getElementById('publish-subsidy-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const title = document.getElementById('subsidy-title').value.trim();
+      if (!title) {
+        alert('Title is required');
+        return;
+      }
+
+      const announcement = {
+        id: Date.now(),
+        dealer_id: DEALER_INFO.id,
+        dealer_name: DEALER_INFO.name,
+        dealer_email: DEALER_INFO.email,
+        dealer_phone: DEALER_INFO.phone,
+        title: title,
+        description: document.getElementById('subsidy-description').value.trim(),
+        commodity: document.getElementById('subsidy-commodity').value.trim(),
+        discount_percent: document.getElementById('subsidy-discount').value || 0,
+        valid_from: document.getElementById('subsidy-valid-from').value,
+        valid_to: document.getElementById('subsidy-valid-to').value,
+        created_at: new Date().toISOString(),
+        active: true
+      };
+
+      const announcements = getDealerAnnouncements();
+      announcements.push(announcement);
+      saveDealerAnnouncements(announcements);
+
+      // Clear form
+      document.getElementById('subsidy-title').value = '';
+      document.getElementById('subsidy-description').value = '';
+      document.getElementById('subsidy-commodity').value = '';
+      document.getElementById('subsidy-discount').value = '';
+      document.getElementById('subsidy-valid-from').value = '';
+      document.getElementById('subsidy-valid-to').value = '';
+
+      renderPublishedAnnouncements();
+      showToast('Announcement published to all farmers!');
+    });
+
+    // ========== FARMER-DEALER ORDERS (localStorage) ==========
+    function getFarmerDealerOrders() {
+      try { return JSON.parse(localStorage.getItem('farmer_dealer_orders') || '[]'); } catch (e) { return []; }
+    }
+    function saveFarmerDealerOrders(orders) {
+      localStorage.setItem('farmer_dealer_orders', JSON.stringify(orders));
+    }
+
+    // Update inventory stock via API
+    async function updateInventoryStock(invId, quantityReduction) {
+      try {
+        const response = await fetch('/api/inventory/update-stock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ inv_id: invId, quantity_reduction: quantityReduction })
+        });
+        return response.ok;
+      } catch (e) {
+        console.error('Failed to update inventory stock:', e);
+        return false;
+      }
+    }
+
+    // Update stock in UI
+    function updateStockUI(invId, reduction) {
+      const row = document.querySelector(`tr[data-inv-id="${invId}"]`);
+      if (row) {
+        const stockCell = row.querySelector('.stock-cell');
+        if (stockCell) {
+          const currentStock = parseFloat(stockCell.textContent) || 0;
+          const newStock = Math.max(0, currentStock - reduction);
+          stockCell.textContent = newStock;
+        }
+      }
+    }
+
+    // Render farmer orders from localStorage
+    function renderFarmerOrders() {
+      const tbody = document.getElementById('farmer-orders-tbody');
+      if (!tbody) return;
+      
+      // Clear dynamic rows only
+      tbody.querySelectorAll('[data-local-order="1"]').forEach(r => r.remove());
+      
+      const orders = getFarmerDealerOrders().filter(o => 
+        o.dealer_id == DEALER_INFO.id || o.dealer_name === DEALER_INFO.name
+      );
+      
+      let hasOrders = orders.length > 0;
+      
+      orders.forEach(o => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-local-order', '1');
+        
+        const statusLower = (o.status || '').toLowerCase();
+        let statusHtml = '';
+        let actionsHtml = '';
+        
+        if (statusLower.includes('pending')) {
+          statusHtml = `<span class="status-badge status-pending">${o.status}</span>`;
+          actionsHtml = `
+            <button class="btn approve-btn" data-id="${o.id}" data-inv-id="${o.inv_id}" data-qty="${o.quantity}">Approve</button>
+            <button class="btn secondary reject-btn" data-id="${o.id}" style="margin-left:4px;">Reject</button>
+          `;
+        } else if (statusLower.includes('approved') && !statusLower.includes('delivered')) {
+          statusHtml = `
+            <span class="status-badge status-approved">✓ Approved</span>
+            <div class="farmer-details">
+              <strong>Farmer:</strong> ${o.farmer_name || 'N/A'}<br>
+              <strong>Email:</strong> ${o.farmer_email || 'N/A'}<br>
+              <strong>Phone:</strong> ${o.farmer_phone || 'N/A'}
+            </div>
+          `;
+          actionsHtml = `<button class="btn info deliver-btn" data-id="${o.id}">Mark Delivered</button>`;
+        } else if (statusLower.includes('delivered')) {
+          statusHtml = `<span class="status-badge status-delivered">📦 Delivered</span>`;
+          actionsHtml = `<span class="muted">Completed</span>`;
+        } else if (statusLower.includes('rejected')) {
+          statusHtml = `<span class="status-badge status-rejected">✗ Rejected</span>`;
+          actionsHtml = `<span class="muted">Rejected</span>`;
+        }
+        
+        tr.innerHTML = `
+          <td>${o.farmer_name || o.farmer_id || '-'}</td>
+          <td>${o.product_name || '-'}</td>
+          <td>${o.quantity || '-'} ${o.unit || ''}</td>
+          <td>${statusHtml}</td>
+          <td>${actionsHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      // Check for server-side orders too
+      const serverRows = tbody.querySelectorAll('[data-server-order="1"]').length;
+      const noOrdersMsg = document.getElementById('no-orders-msg');
+      if (noOrdersMsg) {
+        noOrdersMsg.style.display = (!hasOrders && serverRows === 0) ? 'block' : 'none';
+      }
+
+      // Attach event handlers
+      tbody.querySelectorAll('.approve-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          const id = Number(this.getAttribute('data-id'));
+          const invId = this.getAttribute('data-inv-id');
+          const qty = parseFloat(this.getAttribute('data-qty')) || 0;
+          
+          const orders = getFarmerDealerOrders();
+          const idx = orders.findIndex(o => o.id === id);
+          if (idx >= 0) {
+            orders[idx].status = 'Approved by Dealer';
+            orders[idx].dealer_name = DEALER_INFO.name;
+            orders[idx].dealer_email = DEALER_INFO.email;
+            orders[idx].dealer_phone = DEALER_INFO.phone;
+            orders[idx].updated_at = new Date().toISOString();
+            orders[idx].quantity_updated = true;
+            
+            saveFarmerDealerOrders(orders);
+            
+            // Update inventory stock
+            if (invId && qty > 0) {
+              await updateInventoryStock(invId, qty);
+              updateStockUI(invId, qty);
+            }
+            
+            renderFarmerOrders();
+            showToast('Order approved. Stock updated.');
+          }
+        });
+      });
+
+      tbody.querySelectorAll('.reject-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = Number(this.getAttribute('data-id'));
+          
+          const orders = getFarmerDealerOrders();
+          const idx = orders.findIndex(o => o.id === id);
+          if (idx >= 0) {
+            orders[idx].status = 'Rejected by Dealer';
+            orders[idx].dealer_name = DEALER_INFO.name;
+            orders[idx].dealer_email = DEALER_INFO.email;
+            orders[idx].dealer_phone = DEALER_INFO.phone;
+            orders[idx].updated_at = new Date().toISOString();
+            
+            saveFarmerDealerOrders(orders);
+            renderFarmerOrders();
+            showToast('Order rejected.');
+          }
+        });
+      });
+
+      tbody.querySelectorAll('.deliver-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = Number(this.getAttribute('data-id'));
+          
+          const orders = getFarmerDealerOrders();
+          const idx = orders.findIndex(o => o.id === id);
+          if (idx >= 0) {
+            orders[idx].status = 'Delivered';
+            orders[idx].updated_at = new Date().toISOString();
+            
+            saveFarmerDealerOrders(orders);
+            renderFarmerOrders();
+            showToast('Order marked as delivered.');
+          }
+        });
+      });
+    }
+
+    // Initial render
+    renderFarmerOrders();
+    renderPublishedAnnouncements();
+
+    // Sync across tabs
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'farmer_dealer_orders') {
+        renderFarmerOrders();
+      }
+      if (e.key === 'dealer_announcements') {
+        renderPublishedAnnouncements();
+      }
     });
   </script>
   <script src="{{ url_for('static', filename='weather.js') }}"></script>

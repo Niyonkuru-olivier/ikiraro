@@ -53,7 +53,7 @@
 
   <div class="container">
     
-    {% with weather=weather, variant='compact', refresh_seconds=480 %}
+    {% with weather=weather, variant='compact', theme='light', refresh_seconds=480 %}
       {% include 'partials/weather_widget.html' %}
     {% endwith %}
 

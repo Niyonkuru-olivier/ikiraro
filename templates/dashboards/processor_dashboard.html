@@ -39,23 +39,51 @@
     }
 
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
     th { background: #022b16; color: white; }
-    a.action-btn {
+    
+    a.action-btn, button.action-btn {
       display: inline-block;
-      margin-top: 10px;
-      padding: 10px 15px;
+      margin-top: 5px;
+      padding: 8px 14px;
       background: #022b16;
       color: white;
       text-decoration: none;
       border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
     }
-    a.action-btn:hover { background: #022b16; }
+    a.action-btn:hover, button.action-btn:hover { background: #034d2e; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* Status badges */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-approved { background: #d1fae5; color: #065f46; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+
+    /* Farmer details in status */
+    .farmer-details {
+      margin-top: 6px;
+      padding: 8px;
+      background: #f8fafc;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #475569;
+      border-left: 3px solid #022b16;
+    }
+    .farmer-details strong { color: #0f172a; }
 
     /* Toast notifications */
     .toast {
@@ -76,6 +104,21 @@
       z-index: 9999;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Order form inline */
+    .order-form {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .order-form input {
+      width: 80px;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -90,7 +133,7 @@
   </header>
 
   <div class="container">
-    {% with weather=weather, variant='compact', refresh_seconds=600 %}
+    {% with weather=weather, variant='compact', theme='light', refresh_seconds=600 %}
       {% include 'partials/weather_widget.html' %}
     {% endwith %}
     
@@ -104,25 +147,27 @@
             <tr>
               <th>Farmer</th>
               <th>Crop</th>
-              <th>Quantity</th>
+              <th>Available Qty</th>
               <th>Unit</th>
               <th>Price</th>
               <th>Province</th>
               <th>Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="crops-tbody">
             {% for crop in crops %}
-            <tr>
+            <tr data-crop-id="{{ crop.id }}" data-farmer-id="{{ crop.farmer_id }}" data-farmer-name="{{ crop.farmer_name }}" data-farmer-email="{{ crop.farmer_email }}" data-farmer-phone="{{ crop.farmer_phone }}">
               <td class="farmer-name">{{ crop.farmer_name }}</td>
               <td class="crop-name">{{ crop.crop_name }}</td>
               <td class="crop-qty">{{ crop.quantity }}</td>
               <td class="crop-unit">{{ crop.unit }}</td>
-              <td>{{ crop.price }}</td>
+              <td>{{ crop.price if crop.price else '-' }}</td>
               <td>{{ crop.province }}</td>
               <td>
-                <a href="#" class="action-btn" style="margin-right:8px;">Buy</a>
-                <a href="#" class="action-btn order-btn">Order</a>
+                <div class="order-form">
+                  <input type="number" class="order-qty" placeholder="Qty" min="1" step="0.01">
+                  <button type="button" class="action-btn order-btn">Order</button>
+                </div>
               </td>
             </tr>
             {% endfor %}
@@ -184,18 +229,18 @@
     <button class="accordion">🛒 Customer Orders</button>
     <div class="panel">
       <h2>Customer Orders</h2>
-      {% if orders %}
-        <table>
-          <thead>
-            <tr>
-              <th>Customer</th>
-              <th>Product</th>
-              <th>Quantity</th>
-              <th>Unit</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="customer-orders-tbody">
+      <table>
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Unit</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="customer-orders-tbody">
+          {% if orders %}
             {% for order in orders %}
             <tr>
               <td>{{ order.customer_name }}</td>
@@ -205,23 +250,10 @@
               <td>{{ order.status }}</td>
             </tr>
             {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <table>
-          <thead>
-            <tr>
-              <th>Customer</th>
-              <th>Product</th>
-              <th>Quantity</th>
-              <th>Unit</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="customer-orders-tbody"></tbody>
-        </table>
-        <p id="no-orders-msg">No orders placed yet.</p>
-      {% endif %}
+          {% endif %}
+        </tbody>
+      </table>
+      <p id="no-orders-msg" style="display: none;">No orders placed yet.</p>
     </div>
   </div>
 
@@ -241,7 +273,7 @@
       });
     }
 
-    // --- Simple localStorage order handling between Processor and Farmer ---
+    // --- Toast notifications ---
     function showToast(message) {
       const t = document.createElement('div');
       t.className = 'toast';
@@ -251,56 +283,136 @@
       setTimeout(() => { t.classList.remove('show'); setTimeout(()=> t.remove(), 250); }, 2500);
     }
 
+    // --- Shared localStorage order store ---
     function getStoredOrders() {
       try { return JSON.parse(localStorage.getItem('processor_customer_orders') || '[]'); } catch (e) { return []; }
     }
     function saveStoredOrders(orders) {
       localStorage.setItem('processor_customer_orders', JSON.stringify(orders));
     }
+
+    // --- Render orders with farmer details for approved/rejected ---
     function renderProcessorOrders() {
       const tbody = document.getElementById('customer-orders-tbody');
       if (!tbody) return;
       const orders = getStoredOrders();
-      // Clear dynamic rows (only keep possible server-side rows by wiping and re-rendering all client rows)
+      
+      console.log('Rendering orders:', orders);
+      
+      // Clear only dynamic rows
       tbody.querySelectorAll('[data-local-order="1"]').forEach(r => r.remove());
+      
       let added = 0;
       orders.forEach(o => {
-        // Show all orders, including those created by farmer for processor and those awaiting farmer approval
+        console.log('Order data:', o);
+        
         const tr = document.createElement('tr');
         tr.setAttribute('data-local-order', '1');
+        
+        // Determine status class and content
+        let statusHtml = '';
+        const statusLower = (o.status || '').toLowerCase();
+        
+        // Get farmer details - these are updated by the farmer when they approve/reject
+        const farmerName = o.farmer_name || o.approver_name || 'N/A';
+        const farmerEmail = o.farmer_email || o.approver_email || 'N/A';
+        const farmerPhone = o.farmer_phone || o.approver_phone || 'N/A';
+        
+        if (statusLower.includes('approved')) {
+          statusHtml = `
+            <span class="status-badge status-approved">✓ Approved</span>
+            <div class="farmer-details">
+              <strong>Farmer:</strong> ${farmerName}<br>
+              <strong>Email:</strong> ${farmerEmail}<br>
+              <strong>Phone:</strong> ${farmerPhone}
+            </div>
+          `;
+        } else if (statusLower.includes('rejected')) {
+          statusHtml = `
+            <span class="status-badge status-rejected">✗ Rejected</span>
+            <div class="farmer-details">
+              <strong>Farmer:</strong> ${farmerName}<br>
+              <strong>Email:</strong> ${farmerEmail}<br>
+              <strong>Phone:</strong> ${farmerPhone}
+            </div>
+          `;
+        } else {
+          statusHtml = `<span class="status-badge status-pending">${o.status || 'Pending'}</span>`;
+        }
+        
         tr.innerHTML = `
           <td>${o.customer_name || ''}</td>
           <td>${o.product_name || ''}</td>
           <td>${o.quantity || ''}</td>
           <td>${o.unit || ''}</td>
-          <td>${o.status || ''}</td>
+          <td>${statusHtml}</td>
         `;
         tbody.appendChild(tr);
         added++;
       });
+      
       const emptyMsg = document.getElementById('no-orders-msg');
-      if (emptyMsg) emptyMsg.style.display = (orders.length === 0 && added === 0) ? 'block' : 'none';
+      if (emptyMsg) {
+        const serverRows = tbody.querySelectorAll('tr:not([data-local-order="1"])').length;
+        emptyMsg.style.display = (orders.length === 0 && serverRows === 0) ? 'block' : 'none';
+      }
     }
 
+    // --- Update crop quantity in UI when approved ---
+    function updateCropQuantityUI(cropId, quantityReduction) {
+      const row = document.querySelector(`tr[data-crop-id="${cropId}"]`);
+      if (row) {
+        const qtyCell = row.querySelector('.crop-qty');
+        if (qtyCell) {
+          const currentQty = parseFloat(qtyCell.textContent) || 0;
+          const newQty = Math.max(0, currentQty - quantityReduction);
+          qtyCell.textContent = newQty.toFixed(2).replace(/\.00$/, '');
+          if (newQty <= 0) {
+            row.style.opacity = '0.5';
+            row.querySelector('.order-btn')?.setAttribute('disabled', 'true');
+          }
+        }
+      }
+    }
+
+    // --- Attach order buttons ---
     function attachOrderButtons() {
       const buttons = document.querySelectorAll('.order-btn');
       buttons.forEach(btn => {
         btn.addEventListener('click', function(e) {
           e.preventDefault();
           const row = this.closest('tr');
-          const farmerName = row.querySelector('.farmer-name')?.textContent?.trim() || '';
+          const qtyInput = row.querySelector('.order-qty');
+          const qty = qtyInput ? qtyInput.value.trim() : '';
+          
+          if (!qty || parseFloat(qty) <= 0) {
+            alert('Please enter a valid quantity');
+            return;
+          }
+          
+          const availableQty = parseFloat(row.querySelector('.crop-qty')?.textContent) || 0;
+          if (parseFloat(qty) > availableQty) {
+            alert(`Cannot order more than available quantity (${availableQty})`);
+            return;
+          }
+          
+          const cropId = row.getAttribute('data-crop-id');
+          const farmerId = row.getAttribute('data-farmer-id');
+          const farmerName = row.getAttribute('data-farmer-name') || row.querySelector('.farmer-name')?.textContent?.trim() || '';
+          const farmerEmail = row.getAttribute('data-farmer-email') || '';
+          const farmerPhone = row.getAttribute('data-farmer-phone') || '';
           const cropName = row.querySelector('.crop-name')?.textContent?.trim() || '';
           const unit = row.querySelector('.crop-unit')?.textContent?.trim() || '';
-          let qty = prompt('Enter quantity to order:');
-          if (qty === null) return; // cancelled
-          qty = String(qty).trim();
-          if (!qty) { alert('Quantity is required'); return; }
 
           const orders = getStoredOrders();
           const newOrder = {
             id: Date.now(),
+            crop_id: cropId,
+            farmer_id: farmerId,
             customer_name: '{{ user.full_name }}',
             farmer_name: farmerName,
+            farmer_email: farmerEmail,
+            farmer_phone: farmerPhone,
             product_name: cropName,
             quantity: qty,
             unit: unit,
@@ -310,6 +422,10 @@
           };
           orders.push(newOrder);
           saveStoredOrders(orders);
+          
+          // Clear input
+          if (qtyInput) qtyInput.value = '';
+          
           renderProcessorOrders();
           showToast('Order sent to farmer for approval.');
         });
@@ -320,10 +436,19 @@
     attachOrderButtons();
     renderProcessorOrders();
 
-    // Update if another tab modifies storage
+    // Listen for storage changes (cross-tab sync)
     window.addEventListener('storage', (e) => {
       if (e.key === 'processor_customer_orders') {
         renderProcessorOrders();
+        
+        // Check for approved orders to update crop quantities
+        const orders = getStoredOrders();
+        orders.forEach(o => {
+          if ((o.status || '').toLowerCase().includes('approved') && o.crop_id && !o.quantity_updated) {
+            updateCropQuantityUI(o.crop_id, parseFloat(o.quantity) || 0);
+          }
+        });
+        
         showToast('Orders updated.');
       }
     });
