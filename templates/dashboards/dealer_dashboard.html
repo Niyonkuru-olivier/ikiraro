@@ -8,28 +8,139 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='weather-widget.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='mobile-responsive.css') }}">
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
-    header { background: #022b16; color: white; padding: 20px; text-align: left; }
-    .wrap { max-width: 1100px; margin: 20px auto; padding: 10px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
-    .card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-    h2 { margin: 0 0 12px; color: #022b16; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 8px 6px; border: 1px solid #e0e0e0; text-align: left; font-size: 14px; }
-    th { background: #e8f5e9; color: #022b16; }
-    .btn { padding: 8px 10px; border: none; background: #022b16; color: white; border-radius: 4px; cursor: pointer; font-size: 13px; }
-    .btn:hover { background: #034d2e; }
-    .btn.secondary { background: #dc2626; }
-    .btn.secondary:hover { background: #b91c1c; }
-    .btn.info { background: #0ea5e9; }
-    .btn.info:hover { background: #0284c7; }
-    .btn.publish { background: #7c3aed; }
-    .btn.publish:hover { background: #6d28d9; }
-    .small-form input { width: 70px; padding: 6px; margin-right: 6px; }
-    .subsidy { margin-top: 8px; padding: 12px; background:#f1f8e9; border-radius:8px; border-left: 4px solid #4CAF50; }
-    .subsidy.published { border-left-color: #7c3aed; background: #f5f3ff; }
-    .muted { color:#666; font-size: 13px; }
-    .actions form { display:inline-block; margin-right:6px; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background: linear-gradient(135deg, #022b16, #022b16);
+      color: white;
+      padding: 24px;
+      text-align: left;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .container {
+      padding: 25px;
+      max-width: 950px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Accordion Buttons */
+    .accordion-container {
+      width: 100%;
+    }
+
+    .accordion {
+      background-color: #022b16;
+      color: #fff;
+      cursor: pointer;
+      padding: 16px 20px;
+      width: 100%;
+      text-align: left;
+      border: none;
+      outline: none;
+      transition: all 0.3s ease;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .accordion::after {
+      content: '\25BC';
+      font-size: 14px;
+      transition: transform 0.3s;
+    }
+
+    .accordion.active::after {
+      transform: rotate(-180deg);
+    }
+
+    .accordion.active,
+    .accordion:hover {
+      background-color: #034d2e;
+    }
+
+    .panel {
+      display: none;
+      padding: 20px;
+      background-color: white;
+      border: 1px solid #e0e0e0;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      animation: fadeIn 0.3s ease;
+      margin-top: -5px;
+    }
+
+    .panel.show {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    th {
+      background: #022b16;
+      color: white;
+      font-weight: 500;
+    }
+
+    td {
+      background: #fafafa;
+    }
+
+    tr:nth-child(even) td {
+      background: #f0fdfb;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #022b16; color: white; }
+    .btn-primary:hover { background: #034d2e; }
+    .btn-success { background: #16a34a; color: white; }
+    .btn-success:hover { background: #15803d; }
+    .btn-danger { background: #dc2626; color: white; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-info { background: #0ea5e9; color: white; }
+    .btn-info:hover { background: #0284c7; }
+    .btn-warning { background: #f59e0b; color: white; }
+    .btn-warning:hover { background: #d97706; }
+    .btn-purple { background: #7c3aed; color: white; }
+    .btn-purple:hover { background: #6d28d9; }
     
     /* Status badges */
     .status-badge {
@@ -43,7 +154,6 @@
     .status-approved { background: #d1fae5; color: #065f46; }
     .status-rejected { background: #fee2e2; color: #991b1b; }
     .status-delivered { background: #dbeafe; color: #1e40af; }
-    .status-published { background: #ede9fe; color: #6d28d9; }
 
     /* Farmer details */
     .farmer-details {
@@ -57,25 +167,77 @@
     }
     .farmer-details strong { color: #0f172a; }
 
-    /* Published subsidies list */
+    /* Forms */
+    .form-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .form-row input, .form-row textarea {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .form-row input:focus, .form-row textarea:focus {
+      outline: none;
+      border-color: #022b16;
+      box-shadow: 0 0 0 3px rgba(2, 43, 22, 0.1);
+    }
+
+    /* Inline form for table */
+    .inline-form {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .inline-form input {
+      width: 70px;
+      padding: 6px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    /* Published announcements */
     .published-list {
       margin-top: 12px;
-      max-height: 200px;
+      max-height: 400px;
       overflow-y: auto;
     }
     .published-item {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      background: #f5f3ff;
-      border-radius: 6px;
-      margin-bottom: 6px;
-      border-left: 3px solid #7c3aed;
+      align-items: flex-start;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-left: 4px solid #7c3aed;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-    .published-item .info { flex: 1; }
-    .published-item .title { font-weight: 600; color: #022b16; }
-    .published-item .meta { font-size: 12px; color: #666; }
+    .published-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+    }
+    .published-item.expired {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border-left-color: #dc2626;
+      opacity: 0.7;
+    }
+    .published-item .info { flex: 1; margin-right: 12px; }
+    .published-item .title { font-weight: 600; color: #022b16; font-size: 15px; margin-bottom: 4px; }
+    .published-item .meta { font-size: 12px; color: #666; line-height: 1.5; }
+
+    /* Announcement form */
+    .announcement-form {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #86efac;
+    }
 
     /* Toast */
     .toast {
@@ -95,8 +257,15 @@
     }
     .toast.show { opacity: 1; transform: translateY(0); }
 
+    .muted { color: #666; font-size: 13px; }
+    .section-desc { color: #666; font-size: 13px; margin-bottom: 12px; }
+
     @media (max-width: 768px) {
-      .grid { grid-template-columns: 1fr; }
+      .container { padding: 15px; }
+      .accordion { font-size: 15px; padding: 14px 16px; }
+      .panel { padding: 15px; }
+      .form-row { flex-direction: column; }
+      .form-row input, .form-row textarea { width: 100%; }
     }
   </style>
 </head>
@@ -111,27 +280,38 @@
     </div>
   </header>
 
-  <div class="wrap">
-    
+  <div class="container">
+    <!-- Weather Widget (unchanged position) -->
     {% with weather=weather, variant='compact', theme='light', refresh_seconds=600 %}
       {% include 'partials/weather_widget.html' %}
     {% endwith %}
 
-    <div class="grid">
-      <!-- Inventory -->
-      <div class="card">
-        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;"><path d="M20 6H16L14 4H10L8 6H4C2.9 6 2 6.9 2 8V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V8C22 6.9 21.1 6 20 6ZM20 19H4V8H6.83L8.83 6H15.17L17.17 8H20V19ZM12 9C9.24 9 7 11.24 7 14C7 16.76 9.24 19 12 19C14.76 19 17 16.76 17 14C17 11.24 14.76 9 12 9ZM12 17C10.35 17 9 15.65 9 14C9 12.35 10.35 11 12 11C13.65 11 15 12.35 15 14C15 15.65 13.65 17 12 17Z" fill="currentColor"/></svg> Inventory</h2>
-        <form method="post" action="{{ url_for('dealer_inventory_create') }}" style="margin:0 0 12px 0; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <input type="text" name="product_name" placeholder="Product name" required style="flex:2; padding:8px;" />
-          <input type="number" name="stock" placeholder="Stock" min="0" value="0" style="width:110px; padding:8px;" />
-          <input type="text" name="unit" placeholder="Unit (e.g., kg)" value="kg" style="width:120px; padding:8px;" />
-          <input type="text" name="price" placeholder="Price (optional)" style="width:140px; padding:8px;" />
-          <button class="btn" type="submit">Add Item</button>
+    <!-- Inventory Section -->
+    <div class="accordion-container">
+      <button class="accordion">📦 Inventory Management</button>
+      <div class="panel">
+        <p class="section-desc">Manage your product inventory. Farmers can see and order from your available stock.</p>
+        
+        <form method="post" action="{{ url_for('dealer_inventory_create') }}" class="form-row" style="background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:16px;">
+          <input type="text" name="product_name" placeholder="Product name *" required style="flex:2;" />
+          <input type="number" name="stock" placeholder="Stock" min="0" value="0" style="width:100px;" />
+          <input type="text" name="unit" placeholder="Unit (kg)" value="kg" style="width:100px;" />
+          <input type="text" name="price" placeholder="Price" style="width:120px;" />
+          <button class="btn btn-primary" type="submit">➕ Add Item</button>
         </form>
+
         {% if inventory %}
           <table>
             <thead>
-              <tr><th>ID</th><th>Product</th><th>Stock</th><th>Unit</th><th>Price</th><th>Last Updated</th><th>Action</th></tr>
+              <tr>
+                <th>ID</th>
+                <th>Product</th>
+                <th>Stock</th>
+                <th>Unit</th>
+                <th>Price</th>
+                <th>Last Updated</th>
+                <th>Action</th>
+              </tr>
             </thead>
             <tbody id="inventory-tbody">
               {% for item in inventory %}
@@ -142,11 +322,11 @@
                 <td>{{ item.unit }}</td>
                 <td>{{ item.price if item.price is not none else '-' }}</td>
                 <td>{{ item.last_updated.strftime('%Y-%m-%d %H:%M') if item.last_updated else '-' }}</td>
-                <td class="actions">
-                  <form class="small-form" method="post" action="{{ url_for('dealer_inventory_update', inv_id=item.id) }}">
+                <td>
+                  <form class="inline-form" method="post" action="{{ url_for('dealer_inventory_update', inv_id=item.id) }}">
                     <input type="number" name="stock" value="{{ item.stock }}" min="0" />
-                    <input type="text" name="price" placeholder="price" value="{{ item.price if item.price is not none else '' }}" />
-                    <button class="btn" type="submit">Update</button>
+                    <input type="text" name="price" placeholder="price" value="{{ item.price if item.price is not none else '' }}" style="width:60px;" />
+                    <button class="btn btn-primary" type="submit" style="padding:6px 10px;">Update</button>
                   </form>
                 </td>
               </tr>
@@ -154,102 +334,71 @@
             </tbody>
           </table>
         {% else %}
-          <p class="muted">No inventory items yet.</p>
+          <p class="muted">No inventory items yet. Add your first product above!</p>
         {% endif %}
       </div>
+      </div>
 
-      <!-- Farmer Orders -->
-      <div class="card">
-        <h2>🛒 Farmer Orders</h2>
+    <!-- Farmer Orders Section -->
+    <div class="accordion-container">
+      <button class="accordion">🛒 Farmer Orders</button>
+      <div class="panel">
+        <p class="section-desc">Orders from farmers for your products. Approve, reject, or change decisions on orders.</p>
+        
         <table>
           <thead>
-            <tr><th>Farmer</th><th>Product</th><th>Qty</th><th>Status</th><th>Actions</th></tr>
+            <tr>
+              <th>Farmer</th>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
           </thead>
           <tbody id="farmer-orders-tbody">
-            {% if orders %}
-              {% for o in orders %}
-              <tr data-server-order="1">
-                <td>{{ o.farmer_id }}</td>
-                <td>{{ o.product_name }}</td>
-                <td>{{ o.quantity }} {{ o.unit }}</td>
-                <td>{{ o.status }}</td>
-                <td>
-                  {% if o.status == 'pending' %}
-                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}" style="display:inline;">
-                      <input type="hidden" name="action" value="approve" />
-                      <button class="btn" type="submit">Approve</button>
-                    </form>
-                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}" style="display:inline;">
-                      <input type="hidden" name="action" value="reject" />
-                      <button class="btn secondary" type="submit">Reject</button>
-                    </form>
-                  {% elif o.status == 'approved' %}
-                    <form method="post" action="{{ url_for('dealer_order_action', order_id=o.id) }}" style="display:inline;">
-                      <input type="hidden" name="action" value="deliver" />
-                      <button class="btn info" type="submit">Mark Delivered</button>
-                    </form>
-                  {% else %}
-                    <span class="muted">{{ o.status }}</span>
-                  {% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            {% endif %}
+            <!-- Will be filled by JS -->
           </tbody>
         </table>
-        <p id="no-orders-msg" class="muted" style="display:none;">No orders found.</p>
+        <p id="no-orders-msg" class="muted" style="margin-top:12px;">No orders from farmers yet.</p>
       </div>
     </div>
 
-    <!-- Subsidies & Programs -->
-    <div class="card" style="margin-top:16px;">
-      <h2>📢 Subsidies & Programs</h2>
-      
-      <!-- Existing server-side subsidies -->
-      {% if subsidies %}
-        {% for s in subsidies %}
-          <div class="subsidy">
-            <strong>{{ s.title }}</strong> — <span class="muted">{{ s.commodity or 'All' }}</span><br/>
-            <small>{{ s.description or '' }}</small><br/>
-            <small>Discount: {{ s.discount_percent }}% |
-              Valid: {{ s.valid_from if s.valid_from else 'N/A'}} to {{ s.valid_to if s.valid_to else 'N/A' }} |
-              Active: {{ 'Yes' if s.active else 'No' }}</small>
+    <!-- Subsidies & Programs Section -->
+    <div class="accordion-container">
+      <button class="accordion">📢 Subsidies & Programs for Farmers</button>
+      <div class="panel">
+        <p class="section-desc">Create announcements that will be visible to all farmers. They will see your contact details.</p>
+        
+        <form id="publish-subsidy-form" class="announcement-form">
+          <div class="form-row">
+            <input type="text" id="subsidy-title" placeholder="Title (e.g., Fertilizer Discount Program) *" required style="flex:2;" />
+            <input type="text" id="subsidy-commodity" placeholder="Commodity (e.g., Maize)" style="flex:1;" />
           </div>
-        {% endfor %}
-      {% else %}
-        <p class="muted" id="no-subsidies-msg">No active subsidies.</p>
-      {% endif %}
-
-      <hr style="margin:16px 0"/>
-
-      <h3>📣 Publish Announcement to Farmers</h3>
-      <p class="muted" style="margin-bottom:12px;">Create a subsidy or program announcement that will be visible to all farmers.</p>
-      
-      <form id="publish-subsidy-form" style="margin-bottom:16px;">
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-          <input type="text" id="subsidy-title" placeholder="Title *" required style="flex:2; padding:10px; border-radius:6px; border:1px solid #ddd;" />
-          <input type="text" id="subsidy-commodity" placeholder="Commodity (optional)" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd;" />
+          <div class="form-row">
+            <textarea id="subsidy-description" placeholder="Description - explain the program details, eligibility, etc." style="flex:1; min-height:60px; resize:vertical;"></textarea>
         </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-          <input type="text" id="subsidy-description" placeholder="Description (optional)" style="flex:2; padding:10px; border-radius:6px; border:1px solid #ddd;" />
-          <input type="number" id="subsidy-discount" placeholder="Discount %" min="0" max="100" style="width:100px; padding:10px; border-radius:6px; border:1px solid #ddd;" />
-        </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <div class="form-row">
+            <input type="number" id="subsidy-discount" placeholder="Discount %" min="0" max="100" style="width:100px;" />
           <label style="font-size:13px; color:#666;">Valid From:</label>
-          <input type="date" id="subsidy-valid-from" style="padding:8px; border-radius:6px; border:1px solid #ddd;" />
+            <input type="date" id="subsidy-valid-from" />
           <label style="font-size:13px; color:#666;">To:</label>
-          <input type="date" id="subsidy-valid-to" style="padding:8px; border-radius:6px; border:1px solid #ddd;" />
-          <button type="submit" class="btn publish" style="margin-left:auto;">📣 Publish to Farmers</button>
+            <input type="date" id="subsidy-valid-to" />
+            <button type="submit" class="btn btn-purple" id="publish-btn" style="margin-left:auto;">📣 Publish to All Farmers</button>
         </div>
       </form>
+      </div>
+    </div>
 
-      <!-- Published announcements list -->
-      <div id="published-subsidies">
-        <h4 style="color:#7c3aed; margin-bottom:8px;">📋 Your Published Announcements</h4>
+    <!-- Published Announcements Section -->
+    <div class="accordion-container">
+      <button class="accordion">📋 Your Published Announcements</button>
+      <div class="panel">
+        <p class="section-desc">These announcements are visible to all farmers. Expired ones are automatically hidden from farmers.</p>
+        
         <div id="published-list" class="published-list">
           <!-- Will be filled by JS -->
         </div>
-        <p id="no-published-msg" class="muted" style="display:none;">No announcements published yet.</p>
+        <p id="no-published-msg" class="muted">No announcements published yet.</p>
       </div>
     </div>
   </div>
@@ -264,6 +413,25 @@
     };
     console.log('Dealer Info:', DEALER_INFO);
 
+    // ========== ACCORDION FUNCTIONALITY ==========
+    const accordions = document.querySelectorAll('.accordion');
+    accordions.forEach(acc => {
+      acc.addEventListener('click', function() {
+        // Close all other panels
+        accordions.forEach(other => {
+          if (other !== this) {
+            other.classList.remove('active');
+            other.nextElementSibling.classList.remove('show');
+          }
+        });
+        // Toggle this panel
+        this.classList.toggle('active');
+        const panel = this.nextElementSibling;
+        panel.classList.toggle('show');
+      });
+    });
+
+    // ========== TOAST ==========
     function showToast(msg) {
       const t = document.createElement('div');
       t.className = 'toast';
@@ -273,161 +441,65 @@
       setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, 2500);
     }
 
-    // ========== DEALER ANNOUNCEMENTS/SUBSIDIES (localStorage) ==========
-    function getDealerAnnouncements() {
-      try { return JSON.parse(localStorage.getItem('dealer_announcements') || '[]'); } catch (e) { return []; }
+    // ========== FARMER ORDERS (Database API) ==========
+    async function fetchFarmerOrders() {
+      try {
+        const response = await fetch('/api/dealer-orders');
+        if (response.ok) {
+          return await response.json();
+        }
+        return [];
+      } catch (e) {
+        console.error('Error fetching farmer orders:', e);
+        return [];
+      }
     }
-    function saveDealerAnnouncements(announcements) {
-      localStorage.setItem('dealer_announcements', JSON.stringify(announcements));
+
+    async function updateOrderAction(orderId, action) {
+      try {
+        const response = await fetch(`/api/dealer-orders/${orderId}/action`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: action })
+        });
+        const data = await response.json();
+        return response.ok ? { success: true } : { success: false, error: data.error };
+      } catch (e) {
+        console.error('Error updating order:', e);
+        return { success: false, error: e.message };
+      }
     }
 
-    function renderPublishedAnnouncements() {
-      const container = document.getElementById('published-list');
-      const noMsg = document.getElementById('no-published-msg');
-      if (!container) return;
+    async function renderFarmerOrders() {
+      const tbody = document.getElementById('farmer-orders-tbody');
+      const noMsg = document.getElementById('no-orders-msg');
+      if (!tbody) return;
+      
+      const orders = await fetchFarmerOrders();
+      console.log('Fetched farmer orders:', orders);
+      
+      tbody.innerHTML = '';
 
-      const announcements = getDealerAnnouncements().filter(a => a.dealer_id === DEALER_INFO.id);
-      container.innerHTML = '';
-
-      if (announcements.length === 0) {
+      if (orders.length === 0) {
         if (noMsg) noMsg.style.display = 'block';
         return;
       }
       if (noMsg) noMsg.style.display = 'none';
-
-      announcements.forEach(a => {
-        const div = document.createElement('div');
-        div.className = 'published-item';
-        div.innerHTML = `
-          <div class="info">
-            <div class="title">${a.title}</div>
-            <div class="meta">
-              ${a.commodity ? a.commodity + ' • ' : ''}
-              ${a.discount_percent ? a.discount_percent + '% discount • ' : ''}
-              ${a.valid_from ? 'From ' + a.valid_from : ''} ${a.valid_to ? ' to ' + a.valid_to : ''}
-            </div>
-          </div>
-          <button class="btn secondary" onclick="deleteAnnouncement(${a.id})" style="padding:4px 8px; font-size:12px;">Remove</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function deleteAnnouncement(id) {
-      let announcements = getDealerAnnouncements();
-      announcements = announcements.filter(a => a.id !== id);
-      saveDealerAnnouncements(announcements);
-      renderPublishedAnnouncements();
-      showToast('Announcement removed.');
-    }
-
-    // Handle publish form
-    document.getElementById('publish-subsidy-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const title = document.getElementById('subsidy-title').value.trim();
-      if (!title) {
-        alert('Title is required');
-        return;
-      }
-
-      const announcement = {
-        id: Date.now(),
-        dealer_id: DEALER_INFO.id,
-        dealer_name: DEALER_INFO.name,
-        dealer_email: DEALER_INFO.email,
-        dealer_phone: DEALER_INFO.phone,
-        title: title,
-        description: document.getElementById('subsidy-description').value.trim(),
-        commodity: document.getElementById('subsidy-commodity').value.trim(),
-        discount_percent: document.getElementById('subsidy-discount').value || 0,
-        valid_from: document.getElementById('subsidy-valid-from').value,
-        valid_to: document.getElementById('subsidy-valid-to').value,
-        created_at: new Date().toISOString(),
-        active: true
-      };
-
-      const announcements = getDealerAnnouncements();
-      announcements.push(announcement);
-      saveDealerAnnouncements(announcements);
-
-      // Clear form
-      document.getElementById('subsidy-title').value = '';
-      document.getElementById('subsidy-description').value = '';
-      document.getElementById('subsidy-commodity').value = '';
-      document.getElementById('subsidy-discount').value = '';
-      document.getElementById('subsidy-valid-from').value = '';
-      document.getElementById('subsidy-valid-to').value = '';
-
-      renderPublishedAnnouncements();
-      showToast('Announcement published to all farmers!');
-    });
-
-    // ========== FARMER-DEALER ORDERS (localStorage) ==========
-    function getFarmerDealerOrders() {
-      try { return JSON.parse(localStorage.getItem('farmer_dealer_orders') || '[]'); } catch (e) { return []; }
-    }
-    function saveFarmerDealerOrders(orders) {
-      localStorage.setItem('farmer_dealer_orders', JSON.stringify(orders));
-    }
-
-    // Update inventory stock via API
-    async function updateInventoryStock(invId, quantityReduction) {
-      try {
-        const response = await fetch('/api/inventory/update-stock', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ inv_id: invId, quantity_reduction: quantityReduction })
-        });
-        return response.ok;
-      } catch (e) {
-        console.error('Failed to update inventory stock:', e);
-        return false;
-      }
-    }
-
-    // Update stock in UI
-    function updateStockUI(invId, reduction) {
-      const row = document.querySelector(`tr[data-inv-id="${invId}"]`);
-      if (row) {
-        const stockCell = row.querySelector('.stock-cell');
-        if (stockCell) {
-          const currentStock = parseFloat(stockCell.textContent) || 0;
-          const newStock = Math.max(0, currentStock - reduction);
-          stockCell.textContent = newStock;
-        }
-      }
-    }
-
-    // Render farmer orders from localStorage
-    function renderFarmerOrders() {
-      const tbody = document.getElementById('farmer-orders-tbody');
-      if (!tbody) return;
-      
-      // Clear dynamic rows only
-      tbody.querySelectorAll('[data-local-order="1"]').forEach(r => r.remove());
-      
-      const orders = getFarmerDealerOrders().filter(o => 
-        o.dealer_id == DEALER_INFO.id || o.dealer_name === DEALER_INFO.name
-      );
-      
-      let hasOrders = orders.length > 0;
       
       orders.forEach(o => {
         const tr = document.createElement('tr');
-        tr.setAttribute('data-local-order', '1');
-        
         const statusLower = (o.status || '').toLowerCase();
+        
         let statusHtml = '';
         let actionsHtml = '';
         
-        if (statusLower.includes('pending')) {
-          statusHtml = `<span class="status-badge status-pending">${o.status}</span>`;
+        if (statusLower === 'pending') {
+          statusHtml = `<span class="status-badge status-pending">Pending</span>`;
           actionsHtml = `
-            <button class="btn approve-btn" data-id="${o.id}" data-inv-id="${o.inv_id}" data-qty="${o.quantity}">Approve</button>
-            <button class="btn secondary reject-btn" data-id="${o.id}" style="margin-left:4px;">Reject</button>
+            <button class="btn btn-success approve-btn" data-id="${o.id}">✓ Approve</button>
+            <button class="btn btn-danger reject-btn" data-id="${o.id}" style="margin-left:4px;">✗ Reject</button>
           `;
-        } else if (statusLower.includes('approved') && !statusLower.includes('delivered')) {
+        } else if (statusLower === 'approved') {
           statusHtml = `
             <span class="status-badge status-approved">✓ Approved</span>
             <div class="farmer-details">
@@ -436,17 +508,29 @@
               <strong>Phone:</strong> ${o.farmer_phone || 'N/A'}
             </div>
           `;
-          actionsHtml = `<button class="btn info deliver-btn" data-id="${o.id}">Mark Delivered</button>`;
-        } else if (statusLower.includes('delivered')) {
+          actionsHtml = `
+            <button class="btn btn-info deliver-btn" data-id="${o.id}">📦 Mark Delivered</button>
+            <button class="btn btn-warning change-btn" data-id="${o.id}" data-action="reject" style="margin-left:4px;">Change to Reject</button>
+          `;
+        } else if (statusLower === 'rejected') {
+          statusHtml = `
+            <span class="status-badge status-rejected">✗ Rejected</span>
+            <div class="farmer-details">
+              <strong>Farmer:</strong> ${o.farmer_name || 'N/A'}<br>
+              <strong>Email:</strong> ${o.farmer_email || 'N/A'}<br>
+              <strong>Phone:</strong> ${o.farmer_phone || 'N/A'}
+            </div>
+          `;
+          actionsHtml = `
+            <button class="btn btn-warning change-btn" data-id="${o.id}" data-action="approve">Change to Approve</button>
+          `;
+        } else if (statusLower === 'delivered') {
           statusHtml = `<span class="status-badge status-delivered">📦 Delivered</span>`;
           actionsHtml = `<span class="muted">Completed</span>`;
-        } else if (statusLower.includes('rejected')) {
-          statusHtml = `<span class="status-badge status-rejected">✗ Rejected</span>`;
-          actionsHtml = `<span class="muted">Rejected</span>`;
         }
         
         tr.innerHTML = `
-          <td>${o.farmer_name || o.farmer_id || '-'}</td>
+          <td>${o.farmer_name || '-'}</td>
           <td>${o.product_name || '-'}</td>
           <td>${o.quantity || '-'} ${o.unit || ''}</td>
           <td>${statusHtml}</td>
@@ -454,96 +538,353 @@
         `;
         tbody.appendChild(tr);
       });
-      
-      // Check for server-side orders too
-      const serverRows = tbody.querySelectorAll('[data-server-order="1"]').length;
-      const noOrdersMsg = document.getElementById('no-orders-msg');
-      if (noOrdersMsg) {
-        noOrdersMsg.style.display = (!hasOrders && serverRows === 0) ? 'block' : 'none';
-      }
 
       // Attach event handlers
+      attachOrderHandlers();
+    }
+
+    function attachOrderHandlers() {
+      const tbody = document.getElementById('farmer-orders-tbody');
+
       tbody.querySelectorAll('.approve-btn').forEach(btn => {
         btn.addEventListener('click', async function() {
-          const id = Number(this.getAttribute('data-id'));
-          const invId = this.getAttribute('data-inv-id');
-          const qty = parseFloat(this.getAttribute('data-qty')) || 0;
+          const id = this.getAttribute('data-id');
+          this.disabled = true;
+          this.textContent = 'Processing...';
           
-          const orders = getFarmerDealerOrders();
-          const idx = orders.findIndex(o => o.id === id);
-          if (idx >= 0) {
-            orders[idx].status = 'Approved by Dealer';
-            orders[idx].dealer_name = DEALER_INFO.name;
-            orders[idx].dealer_email = DEALER_INFO.email;
-            orders[idx].dealer_phone = DEALER_INFO.phone;
-            orders[idx].updated_at = new Date().toISOString();
-            orders[idx].quantity_updated = true;
-            
-            saveFarmerDealerOrders(orders);
-            
-            // Update inventory stock
-            if (invId && qty > 0) {
-              await updateInventoryStock(invId, qty);
-              updateStockUI(invId, qty);
-            }
-            
-            renderFarmerOrders();
-            showToast('Order approved. Stock updated.');
+          const result = await updateOrderAction(id, 'approve');
+          if (result.success) {
+            await renderFarmerOrders();
+            showToast('Order approved! Stock updated.');
+          } else {
+            alert('Error: ' + (result.error || 'Could not approve'));
+            this.disabled = false;
+            this.textContent = '✓ Approve';
           }
         });
       });
 
       tbody.querySelectorAll('.reject-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const id = Number(this.getAttribute('data-id'));
+        btn.addEventListener('click', async function() {
+          const id = this.getAttribute('data-id');
+          this.disabled = true;
+          this.textContent = 'Processing...';
           
-          const orders = getFarmerDealerOrders();
-          const idx = orders.findIndex(o => o.id === id);
-          if (idx >= 0) {
-            orders[idx].status = 'Rejected by Dealer';
-            orders[idx].dealer_name = DEALER_INFO.name;
-            orders[idx].dealer_email = DEALER_INFO.email;
-            orders[idx].dealer_phone = DEALER_INFO.phone;
-            orders[idx].updated_at = new Date().toISOString();
-            
-            saveFarmerDealerOrders(orders);
-            renderFarmerOrders();
+          const result = await updateOrderAction(id, 'reject');
+          if (result.success) {
+            await renderFarmerOrders();
             showToast('Order rejected.');
+          } else {
+            alert('Error: ' + (result.error || 'Could not reject'));
+            this.disabled = false;
+            this.textContent = '✗ Reject';
           }
         });
       });
 
       tbody.querySelectorAll('.deliver-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const id = Number(this.getAttribute('data-id'));
+        btn.addEventListener('click', async function() {
+          const id = this.getAttribute('data-id');
+          this.disabled = true;
+          this.textContent = 'Processing...';
           
-          const orders = getFarmerDealerOrders();
-          const idx = orders.findIndex(o => o.id === id);
-          if (idx >= 0) {
-            orders[idx].status = 'Delivered';
-            orders[idx].updated_at = new Date().toISOString();
-            
-            saveFarmerDealerOrders(orders);
-            renderFarmerOrders();
+          const result = await updateOrderAction(id, 'deliver');
+          if (result.success) {
+            await renderFarmerOrders();
             showToast('Order marked as delivered.');
+          } else {
+            alert('Error: ' + (result.error || 'Could not update'));
+            this.disabled = false;
+            this.textContent = '📦 Mark Delivered';
+          }
+        });
+      });
+
+      tbody.querySelectorAll('.change-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          const id = this.getAttribute('data-id');
+          const action = this.getAttribute('data-action');
+          this.disabled = true;
+          this.textContent = 'Processing...';
+          
+          const result = await updateOrderAction(id, action);
+          if (result.success) {
+            await renderFarmerOrders();
+            showToast('Decision changed successfully!');
+          } else {
+            alert('Error: ' + (result.error || 'Could not change decision'));
+            this.disabled = false;
+            this.textContent = action === 'approve' ? 'Change to Approve' : 'Change to Reject';
           }
         });
       });
     }
 
-    // Initial render
+    // ========== ANNOUNCEMENTS (Database API) ==========
+    async function fetchAnnouncements() {
+      try {
+        const response = await fetch('/api/announcements');
+        if (response.ok) {
+          return await response.json();
+        }
+        return [];
+      } catch (e) {
+        console.error('Error fetching announcements:', e);
+        return [];
+      }
+    }
+
+    async function createAnnouncement(data) {
+      try {
+        const response = await fetch('/api/announcements', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        return response.ok ? { success: true } : { success: false, error: result.error };
+      } catch (e) {
+        return { success: false, error: e.message };
+      }
+    }
+
+    async function deleteAnnouncementAPI(id) {
+      try {
+        const response = await fetch(`/api/announcements/${id}`, { method: 'DELETE' });
+        return response.ok;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function renderPublishedAnnouncements() {
+      const container = document.getElementById('published-list');
+      const noMsg = document.getElementById('no-published-msg');
+      if (!container) return;
+
+      const announcements = await fetchAnnouncements();
+      container.innerHTML = '';
+
+      if (announcements.length === 0) {
+        if (noMsg) noMsg.style.display = 'block';
+        return;
+      }
+      if (noMsg) noMsg.style.display = 'none';
+
+      const today = new Date().toISOString().split('T')[0];
+
+      announcements.forEach(a => {
+        const isExpired = a.valid_to && a.valid_to < today;
+        const div = document.createElement('div');
+        div.className = 'published-item' + (isExpired ? ' expired' : '');
+        div.innerHTML = `
+          <div class="info">
+            <div class="title">${a.title} ${isExpired ? '<span style="color:#dc2626; font-size:11px;">(Expired)</span>' : '<span style="color:#16a34a; font-size:11px;">(Active)</span>'}</div>
+            <div class="meta">
+              ${a.commodity ? '🌾 ' + a.commodity + ' • ' : ''}
+              ${a.discount_percent ? '🏷️ ' + a.discount_percent + '% discount • ' : ''}
+              ${a.valid_from ? '📅 From ' + a.valid_from : ''} ${a.valid_to ? ' to ' + a.valid_to : ''}
+            </div>
+            ${a.description ? '<div class="meta" style="margin-top:4px;">' + a.description.substring(0, 100) + (a.description.length > 100 ? '...' : '') + '</div>' : ''}
+          </div>
+          <div style="display:flex; gap:6px; flex-direction:column;">
+            <button class="btn btn-info edit-announcement-btn" data-id="${a.id}" data-title="${a.title}" data-description="${a.description || ''}" data-commodity="${a.commodity || ''}" data-discount="${a.discount_percent || ''}" data-from="${a.valid_from || ''}" data-to="${a.valid_to || ''}" style="padding:6px 10px; font-size:12px;">✏️ Edit</button>
+            <button class="btn btn-danger delete-announcement-btn" data-id="${a.id}" style="padding:6px 10px; font-size:12px;">🗑️ Remove</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      // Attach edit handlers
+      container.querySelectorAll('.edit-announcement-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          const title = this.getAttribute('data-title');
+          const description = this.getAttribute('data-description');
+          const commodity = this.getAttribute('data-commodity');
+          const discount = this.getAttribute('data-discount');
+          const validFrom = this.getAttribute('data-from');
+          const validTo = this.getAttribute('data-to');
+          
+          openEditModal(id, title, description, commodity, discount, validFrom, validTo);
+        });
+      });
+
+      // Attach delete handlers
+      container.querySelectorAll('.delete-announcement-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          const id = this.getAttribute('data-id');
+          if (!confirm('Delete this announcement? It will be removed from all farmers.')) return;
+          
+          this.disabled = true;
+          this.textContent = 'Removing...';
+          
+          const success = await deleteAnnouncementAPI(id);
+          if (success) {
+            await renderPublishedAnnouncements();
+            showToast('Announcement removed.');
+          } else {
+            alert('Failed to delete');
+            this.disabled = false;
+            this.textContent = '🗑️ Remove';
+          }
+        });
+      });
+    }
+
+    // ========== EDIT MODAL ==========
+    function openEditModal(id, title, description, commodity, discount, validFrom, validTo) {
+      // Remove existing modal if any
+      const existingModal = document.getElementById('edit-modal');
+      if (existingModal) existingModal.remove();
+
+      const modal = document.createElement('div');
+      modal.id = 'edit-modal';
+      modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+      modal.innerHTML = `
+        <div style="background:white;padding:24px;border-radius:12px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;">
+          <h3 style="margin:0 0 16px;color:#022b16;">✏️ Edit Announcement</h3>
+          <form id="edit-announcement-form">
+            <input type="hidden" id="edit-id" value="${id}" />
+            <div style="margin-bottom:12px;">
+              <label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">Title *</label>
+              <input type="text" id="edit-title" value="${title}" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;" />
+            </div>
+            <div style="margin-bottom:12px;">
+              <label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">Description</label>
+              <textarea id="edit-description" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;min-height:80px;resize:vertical;box-sizing:border-box;">${description}</textarea>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:12px;">
+              <div style="flex:1;">
+                <label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">Commodity</label>
+                <input type="text" id="edit-commodity" value="${commodity}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;" />
+              </div>
+              <div style="width:100px;">
+                <label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">Discount %</label>
+                <input type="number" id="edit-discount" value="${discount}" min="0" max="100" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;" />
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:16px;">
+              <div style="flex:1;">
+                <label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">Valid From</label>
+                <input type="date" id="edit-valid-from" value="${validFrom}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;" />
+              </div>
+              <div style="flex:1;">
+                <label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">Valid To</label>
+                <input type="date" id="edit-valid-to" value="${validTo}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;" />
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+              <button type="button" id="cancel-edit-btn" class="btn" style="background:#64748b;">Cancel</button>
+              <button type="submit" id="save-edit-btn" class="btn btn-primary">💾 Save Changes</button>
+            </div>
+          </form>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      // Close on cancel
+      document.getElementById('cancel-edit-btn').addEventListener('click', () => modal.remove());
+
+      // Close on backdrop click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+      });
+
+      // Handle save
+      document.getElementById('edit-announcement-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const saveBtn = document.getElementById('save-edit-btn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        const updateData = {
+          title: document.getElementById('edit-title').value.trim(),
+          description: document.getElementById('edit-description').value.trim(),
+          commodity: document.getElementById('edit-commodity').value.trim(),
+          discount_percent: document.getElementById('edit-discount').value || 0,
+          valid_from: document.getElementById('edit-valid-from').value,
+          valid_to: document.getElementById('edit-valid-to').value
+        };
+
+        const success = await updateAnnouncementAPI(id, updateData);
+        if (success) {
+          modal.remove();
+          await renderPublishedAnnouncements();
+          showToast('Announcement updated successfully!');
+        } else {
+          alert('Failed to update announcement');
+          saveBtn.disabled = false;
+          saveBtn.textContent = '💾 Save Changes';
+        }
+      });
+    }
+
+    async function updateAnnouncementAPI(id, data) {
+      try {
+        const response = await fetch(`/api/announcements/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        return response.ok;
+      } catch (e) {
+        console.error('Error updating announcement:', e);
+        return false;
+      }
+    }
+
+    // Handle publish form
+    document.getElementById('publish-subsidy-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const title = document.getElementById('subsidy-title').value.trim();
+      if (!title) {
+        alert('Title is required');
+        return;
+      }
+
+      const publishBtn = document.getElementById('publish-btn');
+      publishBtn.disabled = true;
+      publishBtn.textContent = 'Publishing...';
+
+      const data = {
+        title: title,
+        description: document.getElementById('subsidy-description').value.trim(),
+        commodity: document.getElementById('subsidy-commodity').value.trim(),
+        discount_percent: document.getElementById('subsidy-discount').value || 0,
+        valid_from: document.getElementById('subsidy-valid-from').value,
+        valid_to: document.getElementById('subsidy-valid-to').value
+      };
+
+      const result = await createAnnouncement(data);
+
+      if (result.success) {
+        document.getElementById('subsidy-title').value = '';
+        document.getElementById('subsidy-description').value = '';
+        document.getElementById('subsidy-commodity').value = '';
+        document.getElementById('subsidy-discount').value = '';
+        document.getElementById('subsidy-valid-from').value = '';
+        document.getElementById('subsidy-valid-to').value = '';
+
+        await renderPublishedAnnouncements();
+        showToast('🎉 Announcement published to all farmers!');
+      } else {
+        alert('Error: ' + (result.error || 'Could not publish'));
+      }
+
+      publishBtn.disabled = false;
+      publishBtn.textContent = '📣 Publish to All Farmers';
+    });
+
+    // ========== INITIAL RENDER ==========
     renderFarmerOrders();
     renderPublishedAnnouncements();
 
-    // Sync across tabs
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'farmer_dealer_orders') {
-        renderFarmerOrders();
-      }
-      if (e.key === 'dealer_announcements') {
-        renderPublishedAnnouncements();
-      }
-    });
+    // Refresh periodically
+    setInterval(renderFarmerOrders, 30000);
+    setInterval(renderPublishedAnnouncements, 60000);
   </script>
   <script src="{{ url_for('static', filename='weather.js') }}"></script>
 </body>

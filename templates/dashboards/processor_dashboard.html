@@ -226,13 +226,13 @@
     </div>
 
     <!-- Orders -->
-    <button class="accordion">🛒 Customer Orders</button>
+    <button class="accordion">🛒 My Orders to Farmers</button>
     <div class="panel">
-      <h2>Customer Orders</h2>
+      <h2>My Orders to Farmers</h2>
       <table>
         <thead>
           <tr>
-            <th>Customer</th>
+            <th>Farmer</th>
             <th>Product</th>
             <th>Quantity</th>
             <th>Unit</th>
@@ -243,7 +243,7 @@
           {% if orders %}
             {% for order in orders %}
             <tr>
-              <td>{{ order.customer_name }}</td>
+              <td>{{ order.farmer_name or '-' }}</td>
               <td>{{ order.product_name }}</td>
               <td>{{ order.quantity }}</td>
               <td>{{ order.unit }}</td>
@@ -283,42 +283,62 @@
       setTimeout(() => { t.classList.remove('show'); setTimeout(()=> t.remove(), 250); }, 2500);
     }
 
-    // --- Shared localStorage order store ---
-    function getStoredOrders() {
-      try { return JSON.parse(localStorage.getItem('processor_customer_orders') || '[]'); } catch (e) { return []; }
-    }
-    function saveStoredOrders(orders) {
-      localStorage.setItem('processor_customer_orders', JSON.stringify(orders));
+    // --- Fetch orders from database API ---
+    async function fetchProcessorOrders() {
+      try {
+        const response = await fetch('/api/processor-orders');
+        if (response.ok) {
+          return await response.json();
+        }
+        return [];
+      } catch (e) {
+        console.error('Error fetching orders:', e);
+        return [];
+      }
     }
 
-    // --- Render orders with farmer details for approved/rejected ---
-    function renderProcessorOrders() {
+    // --- Create order via API ---
+    async function createProcessorOrder(cropId, quantity) {
+      try {
+        const response = await fetch('/api/processor-orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ crop_id: cropId, quantity: quantity })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          return { success: true, order: data.order };
+        }
+        return { success: false, error: data.error };
+      } catch (e) {
+        console.error('Error creating order:', e);
+        return { success: false, error: e.message };
+      }
+    }
+
+    // --- Render orders from database ---
+    async function renderProcessorOrders() {
       const tbody = document.getElementById('customer-orders-tbody');
       if (!tbody) return;
-      const orders = getStoredOrders();
       
-      console.log('Rendering orders:', orders);
+      const orders = await fetchProcessorOrders();
+      console.log('Fetched orders from DB:', orders);
       
-      // Clear only dynamic rows
-      tbody.querySelectorAll('[data-local-order="1"]').forEach(r => r.remove());
+      // Clear dynamic rows
+      tbody.querySelectorAll('[data-db-order="1"]').forEach(r => r.remove());
       
-      let added = 0;
       orders.forEach(o => {
-        console.log('Order data:', o);
-        
         const tr = document.createElement('tr');
-        tr.setAttribute('data-local-order', '1');
+        tr.setAttribute('data-db-order', '1');
         
-        // Determine status class and content
         let statusHtml = '';
         const statusLower = (o.status || '').toLowerCase();
         
-        // Get farmer details - these are updated by the farmer when they approve/reject
-        const farmerName = o.farmer_name || o.approver_name || 'N/A';
-        const farmerEmail = o.farmer_email || o.approver_email || 'N/A';
-        const farmerPhone = o.farmer_phone || o.approver_phone || 'N/A';
+        const farmerName = o.farmer_name || 'N/A';
+        const farmerEmail = o.farmer_email || 'N/A';
+        const farmerPhone = o.farmer_phone || 'N/A';
         
-        if (statusLower.includes('approved')) {
+        if (statusLower === 'approved') {
           statusHtml = `
             <span class="status-badge status-approved">✓ Approved</span>
             <div class="farmer-details">
@@ -327,7 +347,7 @@
               <strong>Phone:</strong> ${farmerPhone}
             </div>
           `;
-        } else if (statusLower.includes('rejected')) {
+        } else if (statusLower === 'rejected') {
           statusHtml = `
             <span class="status-badge status-rejected">✗ Rejected</span>
             <div class="farmer-details">
@@ -337,24 +357,23 @@
             </div>
           `;
         } else {
-          statusHtml = `<span class="status-badge status-pending">${o.status || 'Pending'}</span>`;
+          statusHtml = `<span class="status-badge status-pending">Pending Farmer Approval</span>`;
         }
         
         tr.innerHTML = `
-          <td>${o.customer_name || ''}</td>
+          <td>${o.farmer_name || ''}</td>
           <td>${o.product_name || ''}</td>
           <td>${o.quantity || ''}</td>
           <td>${o.unit || ''}</td>
           <td>${statusHtml}</td>
         `;
         tbody.appendChild(tr);
-        added++;
       });
       
       const emptyMsg = document.getElementById('no-orders-msg');
       if (emptyMsg) {
-        const serverRows = tbody.querySelectorAll('tr:not([data-local-order="1"])').length;
-        emptyMsg.style.display = (orders.length === 0 && serverRows === 0) ? 'block' : 'none';
+        const totalRows = tbody.querySelectorAll('tr').length;
+        emptyMsg.style.display = totalRows === 0 ? 'block' : 'none';
       }
     }
 
@@ -379,7 +398,7 @@
     function attachOrderButtons() {
       const buttons = document.querySelectorAll('.order-btn');
       buttons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', async function(e) {
           e.preventDefault();
           const row = this.closest('tr');
           const qtyInput = row.querySelector('.order-qty');
@@ -397,37 +416,24 @@
           }
           
           const cropId = row.getAttribute('data-crop-id');
-          const farmerId = row.getAttribute('data-farmer-id');
-          const farmerName = row.getAttribute('data-farmer-name') || row.querySelector('.farmer-name')?.textContent?.trim() || '';
-          const farmerEmail = row.getAttribute('data-farmer-email') || '';
-          const farmerPhone = row.getAttribute('data-farmer-phone') || '';
-          const cropName = row.querySelector('.crop-name')?.textContent?.trim() || '';
-          const unit = row.querySelector('.crop-unit')?.textContent?.trim() || '';
-
-          const orders = getStoredOrders();
-          const newOrder = {
-            id: Date.now(),
-            crop_id: cropId,
-            farmer_id: farmerId,
-            customer_name: '{{ user.full_name }}',
-            farmer_name: farmerName,
-            farmer_email: farmerEmail,
-            farmer_phone: farmerPhone,
-            product_name: cropName,
-            quantity: qty,
-            unit: unit,
-            status: 'Pending Farmer Approval',
-            created_at: new Date().toISOString(),
-            updated_at: null
-          };
-          orders.push(newOrder);
-          saveStoredOrders(orders);
           
-          // Clear input
-          if (qtyInput) qtyInput.value = '';
+          // Disable button while processing
+          this.disabled = true;
+          this.textContent = 'Ordering...';
           
-          renderProcessorOrders();
-          showToast('Order sent to farmer for approval.');
+          const result = await createProcessorOrder(cropId, parseFloat(qty));
+          
+          if (result.success) {
+            // Clear input
+            if (qtyInput) qtyInput.value = '';
+            await renderProcessorOrders();
+            showToast('Order sent to farmer for approval.');
+          } else {
+            alert('Error: ' + (result.error || 'Could not create order'));
+          }
+          
+          this.disabled = false;
+          this.textContent = 'Order';
         });
       });
     }
@@ -436,22 +442,8 @@
     attachOrderButtons();
     renderProcessorOrders();
 
-    // Listen for storage changes (cross-tab sync)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'processor_customer_orders') {
-        renderProcessorOrders();
-        
-        // Check for approved orders to update crop quantities
-        const orders = getStoredOrders();
-        orders.forEach(o => {
-          if ((o.status || '').toLowerCase().includes('approved') && o.crop_id && !o.quantity_updated) {
-            updateCropQuantityUI(o.crop_id, parseFloat(o.quantity) || 0);
-          }
-        });
-        
-        showToast('Orders updated.');
-      }
-    });
+    // Refresh orders periodically
+    setInterval(renderProcessorOrders, 30000);
   </script>
   <script src="{{ url_for('static', filename='weather.js') }}"></script>
 </body>

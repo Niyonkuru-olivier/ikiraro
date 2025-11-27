@@ -518,7 +518,7 @@ form button:hover {
         <table>
           <thead>
             <tr>
-              <th>Processor</th>
+              <th>Processor/Customer</th>
               <th>Product</th>
               <th>Quantity</th>
               <th>Unit</th>
@@ -528,7 +528,7 @@ form button:hover {
           </thead>
           <tbody id="processor-orders-tbody"></tbody>
         </table>
-        <p id="no-processor-orders" class="small">No processor orders yet.</p>
+        <p id="no-processor-orders" class="small">No processor orders yet. When a processor orders your crops, they will appear here.</p>
       </div>
     </div>
 
@@ -646,16 +646,27 @@ form button:hover {
       setTimeout(()=>{ t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; setTimeout(()=> t.remove(), 250); }, 2500);
     }
 
-    // ========== DEALER ANNOUNCEMENTS (localStorage) ==========
-    function getDealerAnnouncements() {
-      try { return JSON.parse(localStorage.getItem('dealer_announcements') || '[]'); } catch (e) { return []; }
+    // ========== DEALER ANNOUNCEMENTS (Database API) ==========
+    async function fetchAnnouncements() {
+      try {
+        const response = await fetch('/api/announcements');
+        if (response.ok) {
+          return await response.json();
+        }
+        return [];
+      } catch (e) {
+        console.error('Error fetching announcements:', e);
+        return [];
+      }
     }
 
-    function renderAnnouncements() {
+    async function renderAnnouncements() {
       const container = document.getElementById('announcements-container');
       if (!container) return;
 
-      const announcements = getDealerAnnouncements().filter(a => a.active !== false);
+      container.innerHTML = '<p style="text-align:center; color:#666;">Loading announcements...</p>';
+
+      const announcements = await fetchAnnouncements();
       
       if (announcements.length === 0) {
         container.innerHTML = `
@@ -663,7 +674,7 @@ form button:hover {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
             </svg>
-            <p>No announcements from dealers yet.</p>
+            <p>No announcements from agro-dealers yet.</p>
             <p style="font-size:12px;">Check back later for subsidies and programs!</p>
           </div>
         `;
@@ -699,58 +710,72 @@ form button:hover {
       }).join('');
     }
 
-    // ========== FARMER-DEALER ORDERS (localStorage) ==========
-    function getFarmerDealerOrders() {
-      try { return JSON.parse(localStorage.getItem('farmer_dealer_orders') || '[]'); } catch (e) { return []; }
-    }
-    function saveFarmerDealerOrders(orders) {
-      localStorage.setItem('farmer_dealer_orders', JSON.stringify(orders));
+    // ========== FARMER-DEALER ORDERS (Database API) ==========
+    async function fetchMyDealerOrders() {
+      try {
+        const response = await fetch('/api/farmer-dealer-orders');
+        if (response.ok) {
+          return await response.json();
+        }
+        return [];
+      } catch (e) {
+        console.error('Error fetching my orders:', e);
+        return [];
+      }
     }
 
-    // Render My Orders (from localStorage)
-    function renderMyOrders() {
+    // Render My Orders (from database)
+    async function renderMyOrders() {
       const tbody = document.getElementById('my-orders-tbody');
       if (!tbody) return;
       
-      // Clear dynamic rows only
-      tbody.querySelectorAll('[data-local-order="1"]').forEach(r => r.remove());
+      // Clear dynamic rows
+      tbody.querySelectorAll('[data-db-order="1"]').forEach(r => r.remove());
       
-      const orders = getFarmerDealerOrders().filter(o => o.farmer_id === FARMER_INFO.id || o.farmer_name === FARMER_INFO.name);
+      const orders = await fetchMyDealerOrders();
+      console.log('My dealer orders:', orders);
       
       orders.forEach(o => {
         const tr = document.createElement('tr');
-        tr.setAttribute('data-local-order', '1');
+        tr.setAttribute('data-db-order', '1');
         
         let statusHtml = '';
         const statusLower = (o.status || '').toLowerCase();
         
-        if (statusLower.includes('approved')) {
+        // Always show dealer details
+        const dealerDetails = `
+          <div class="dealer-details">
+            <strong>👤 Dealer:</strong> ${o.dealer_name || 'N/A'}<br>
+            <strong>📧 Email:</strong> ${o.dealer_email || 'N/A'}<br>
+            <strong>📱 Phone:</strong> ${o.dealer_phone || 'N/A'}
+          </div>
+        `;
+        
+        if (statusLower === 'approved') {
           statusHtml = `
             <span class="status-badge status-approved">✓ Approved</span>
-            <div class="dealer-details">
-              <strong>Dealer:</strong> ${o.dealer_name || 'N/A'}<br>
-              <strong>Email:</strong> ${o.dealer_email || 'N/A'}<br>
-              <strong>Phone:</strong> ${o.dealer_phone || 'N/A'}
-            </div>
+            ${dealerDetails}
           `;
-        } else if (statusLower.includes('rejected')) {
+        } else if (statusLower === 'rejected') {
           statusHtml = `
             <span class="status-badge status-rejected">✗ Rejected</span>
-            <div class="dealer-details">
-              <strong>Dealer:</strong> ${o.dealer_name || 'N/A'}<br>
-              <strong>Email:</strong> ${o.dealer_email || 'N/A'}<br>
-              <strong>Phone:</strong> ${o.dealer_phone || 'N/A'}
-            </div>
+            ${dealerDetails}
           `;
-        } else if (statusLower.includes('delivered')) {
-          statusHtml = `<span class="status-badge status-delivered">📦 Delivered</span>`;
+        } else if (statusLower === 'delivered') {
+          statusHtml = `
+            <span class="status-badge status-delivered">📦 Delivered</span>
+            ${dealerDetails}
+          `;
         } else {
-          statusHtml = `<span class="status-badge status-pending">${o.status || 'Pending'}</span>`;
+          statusHtml = `
+            <span class="status-badge status-pending">⏳ Pending Dealer Approval</span>
+            ${dealerDetails}
+          `;
         }
         
         tr.innerHTML = `
           <td>${o.id || '-'}</td>
-          <td>${o.dealer_name || o.dealer_id || '-'}</td>
+          <td>${o.dealer_name || '-'}</td>
           <td>${o.product_name || '-'}</td>
           <td>${o.quantity || '-'} ${o.unit || ''}</td>
           <td>${statusHtml}</td>
@@ -783,11 +808,32 @@ form button:hover {
       }
     }
 
+    // Create order to dealer via API
+    async function createDealerOrder(dealerId, productName, quantity, unit) {
+      try {
+        const response = await fetch('/api/farmer-dealer-orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dealer_id: dealerId,
+            product_name: productName,
+            quantity: quantity,
+            unit: unit
+          })
+        });
+        const data = await response.json();
+        return response.ok ? { success: true } : { success: false, error: data.error };
+      } catch (e) {
+        console.error('Error creating order:', e);
+        return { success: false, error: e.message };
+      }
+    }
+
     // Attach order buttons for dealer inventory
     function attachDealerOrderButtons() {
       const buttons = document.querySelectorAll('.dealer-order-btn');
       buttons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', async function(e) {
           e.preventDefault();
           const row = this.closest('tr');
           const qtyInput = row.querySelector('.order-qty');
@@ -804,80 +850,74 @@ form button:hover {
             return;
           }
           
-          const invId = row.getAttribute('data-inv-id');
           const dealerId = row.getAttribute('data-dealer-id');
-          const dealerName = row.getAttribute('data-dealer-name') || row.querySelector('.dealer-name')?.textContent?.trim() || '';
-          const dealerEmail = row.getAttribute('data-dealer-email') || '';
-          const dealerPhone = row.getAttribute('data-dealer-phone') || '';
           const productName = row.querySelector('.product-name')?.textContent?.trim() || '';
           const unit = row.querySelector('.unit')?.textContent?.trim() || '';
 
-          const orders = getFarmerDealerOrders();
-          const newOrder = {
-            id: Date.now(),
-            inv_id: invId,
-            dealer_id: dealerId,
-            dealer_name: dealerName,
-            dealer_email: dealerEmail,
-            dealer_phone: dealerPhone,
-            farmer_id: FARMER_INFO.id,
-            farmer_name: FARMER_INFO.name,
-            farmer_email: FARMER_INFO.email,
-            farmer_phone: FARMER_INFO.phone,
-            product_name: productName,
-            quantity: qty,
-            unit: unit,
-            status: 'Pending Dealer Approval',
-            created_at: new Date().toISOString(),
-            updated_at: null
-          };
-          orders.push(newOrder);
-          saveFarmerDealerOrders(orders);
+          // Disable button while processing
+          this.disabled = true;
+          this.textContent = 'Ordering...';
+
+          const result = await createDealerOrder(dealerId, productName, parseFloat(qty), unit);
           
-          // Clear input
-          if (qtyInput) qtyInput.value = '';
-          
-          renderMyOrders();
-          showToast('Order sent to dealer for approval.');
+          if (result.success) {
+            // Clear input
+            if (qtyInput) qtyInput.value = '';
+            await renderMyOrders();
+            showToast('Order sent to dealer for approval.');
+          } else {
+            alert('Error: ' + (result.error || 'Could not create order'));
+          }
+
+          this.disabled = false;
+          this.textContent = 'Order';
         });
       });
     }
 
-    // ========== PROCESSOR-FARMER ORDERS (localStorage) ==========
-    function getStoredOrders() {
-      try { return JSON.parse(localStorage.getItem('processor_customer_orders') || '[]'); } catch (e) { return []; }
-    }
-    function saveStoredOrders(orders) {
-      localStorage.setItem('processor_customer_orders', JSON.stringify(orders));
-    }
-
-    // Update crop quantity via API
-    async function updateCropQuantity(cropId, quantityReduction) {
+    // ========== PROCESSOR-FARMER ORDERS (Database API) ==========
+    async function fetchFarmerOrders() {
       try {
-        const response = await fetch('/api/crop/update-quantity', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ crop_id: cropId, quantity_reduction: quantityReduction })
-        });
-        return response.ok;
+        const response = await fetch('/api/processor-orders');
+        if (response.ok) {
+          return await response.json();
+        }
+        return [];
       } catch (e) {
-        console.error('Failed to update crop quantity:', e);
-        return false;
+        console.error('Error fetching orders:', e);
+        return [];
       }
     }
 
-    function renderFarmerOrders() {
+    async function updateOrderStatus(orderId, action) {
+      try {
+        const response = await fetch(`/api/processor-orders/${orderId}/action`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: action })
+        });
+        const data = await response.json();
+        return response.ok ? { success: true, status: data.status } : { success: false, error: data.error };
+      } catch (e) {
+        console.error('Error updating order:', e);
+        return { success: false, error: e.message };
+      }
+    }
+
+    async function renderFarmerOrders() {
       const tbody = document.getElementById('processor-orders-tbody');
       if (!tbody) return;
-      const orders = getStoredOrders();
+      
+      const orders = await fetchFarmerOrders();
       tbody.innerHTML = '';
       let pendingCount = 0;
       let processedCount = 0;
 
-      // First, show pending orders that need action
+      console.log('Fetched orders from DB:', orders);
+
+      // Show pending orders that need action
       orders.forEach(o => {
-        if ((o.status || '').toLowerCase() !== 'pending farmer approval') return;
-        if (!o.customer_name || o.customer_name === FARMER_INFO.name) return;
+        if ((o.status || '').toLowerCase() !== 'pending') return;
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -885,9 +925,9 @@ form button:hover {
           <td>${o.product_name || ''}</td>
           <td>${o.quantity || ''}</td>
           <td>${o.unit || ''}</td>
-          <td><span class="status-badge status-pending">${o.status || ''}</span></td>
+          <td><span class="status-badge status-pending">Pending Approval</span></td>
           <td>
-            <button class="approve-btn" data-id="${o.id}" data-crop-id="${o.crop_id || ''}" data-qty="${o.quantity || 0}">✓ Approve</button>
+            <button class="approve-btn" data-id="${o.id}">✓ Approve</button>
             <button class="reject-btn" data-id="${o.id}" style="margin-left:6px;">✗ Reject</button>
           </td>
         `;
@@ -895,15 +935,16 @@ form button:hover {
         pendingCount++;
       });
 
-      // Then show processed orders (approved/rejected)
+      // Show processed orders (approved/rejected)
       orders.forEach(o => {
         const statusLower = (o.status || '').toLowerCase();
-        if (statusLower !== 'approved by farmer' && statusLower !== 'rejected by farmer') return;
-        if (o.customer_name === FARMER_INFO.name) return;
+        if (statusLower !== 'approved' && statusLower !== 'rejected') return;
         
-        const isApproved = statusLower.includes('approved');
+        const isApproved = statusLower === 'approved';
         const statusClass = isApproved ? 'status-approved' : 'status-rejected';
         const statusText = isApproved ? '✓ Approved' : '✗ Rejected';
+        const changeAction = isApproved ? 'reject' : 'approve';
+        const changeLabel = isApproved ? 'Change to Reject' : 'Change to Approve';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -912,126 +953,66 @@ form button:hover {
           <td>${o.quantity || ''}</td>
           <td>${o.unit || ''}</td>
           <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-          <td>
-            <button class="change-decision" data-id="${o.id}" data-crop-id="${o.crop_id || ''}" data-qty="${o.quantity || 0}">Change</button>
-            <button class="delete-decision" data-id="${o.id}" style="margin-left:6px;">Delete</button>
-          </td>
+          <td><button class="change-decision" data-id="${o.id}" data-action="${changeAction}">${changeLabel}</button></td>
         `;
         tbody.appendChild(tr);
         processedCount++;
       });
+
+      console.log('Pending orders:', pendingCount, 'Processed orders:', processedCount);
 
       const empty = document.getElementById('no-processor-orders');
       if (empty) empty.style.display = (pendingCount === 0 && processedCount === 0) ? 'block' : 'none';
 
       // Attach handlers for approve buttons
       tbody.querySelectorAll('.approve-btn').forEach(btn => btn.addEventListener('click', async function() {
-        const id = Number(this.getAttribute('data-id'));
-        const cropId = this.getAttribute('data-crop-id');
-        const qty = parseFloat(this.getAttribute('data-qty')) || 0;
-        const orders = getStoredOrders();
-        const idx = orders.findIndex(o => o.id === id);
-        if (idx >= 0) {
-          orders[idx].status = 'Approved by Farmer';
-          orders[idx].farmer_name = FARMER_INFO.name;
-          orders[idx].farmer_email = FARMER_INFO.email;
-          orders[idx].farmer_phone = FARMER_INFO.phone;
-          orders[idx].approver_name = FARMER_INFO.name;
-          orders[idx].approver_email = FARMER_INFO.email;
-          orders[idx].approver_phone = FARMER_INFO.phone;
-          orders[idx].decision_by = FARMER_INFO.name;
-          orders[idx].updated_at = new Date().toISOString();
-          orders[idx].quantity_updated = true;
-          
-          saveStoredOrders(orders);
-          
-          if (cropId && qty > 0) {
-            await updateCropQuantity(cropId, qty);
-          }
-          
-          renderFarmerOrders();
-          showToast('Order approved. Crop quantity updated.');
+        const id = this.getAttribute('data-id');
+        this.disabled = true;
+        this.textContent = 'Processing...';
+        
+        const result = await updateOrderStatus(id, 'approve');
+        if (result.success) {
+          await renderFarmerOrders();
+          showToast('Order approved!');
+        } else {
+          alert('Error: ' + (result.error || 'Could not approve order'));
+          this.disabled = false;
+          this.textContent = '✓ Approve';
         }
       }));
 
       // Attach handlers for reject buttons
-      tbody.querySelectorAll('.reject-btn').forEach(btn => btn.addEventListener('click', function() {
-        const id = Number(this.getAttribute('data-id'));
-        const orders = getStoredOrders();
-        const idx = orders.findIndex(o => o.id === id);
-        if (idx >= 0) {
-          orders[idx].status = 'Rejected by Farmer';
-          orders[idx].farmer_name = FARMER_INFO.name;
-          orders[idx].farmer_email = FARMER_INFO.email;
-          orders[idx].farmer_phone = FARMER_INFO.phone;
-          orders[idx].approver_name = FARMER_INFO.name;
-          orders[idx].approver_email = FARMER_INFO.email;
-          orders[idx].approver_phone = FARMER_INFO.phone;
-          orders[idx].decision_by = FARMER_INFO.name;
-          orders[idx].updated_at = new Date().toISOString();
-          
-          saveStoredOrders(orders);
-          renderFarmerOrders();
+      tbody.querySelectorAll('.reject-btn').forEach(btn => btn.addEventListener('click', async function() {
+        const id = this.getAttribute('data-id');
+        this.disabled = true;
+        this.textContent = 'Processing...';
+        
+        const result = await updateOrderStatus(id, 'reject');
+        if (result.success) {
+          await renderFarmerOrders();
           showToast('Order rejected.');
+        } else {
+          alert('Error: ' + (result.error || 'Could not reject order'));
+          this.disabled = false;
+          this.textContent = '✗ Reject';
         }
       }));
 
-      // Attach handlers for change decision
+      // Attach handlers for change decision buttons
       tbody.querySelectorAll('.change-decision').forEach(btn => btn.addEventListener('click', async function() {
-        const id = Number(this.getAttribute('data-id'));
-        const cropId = this.getAttribute('data-crop-id');
-        const qty = parseFloat(this.getAttribute('data-qty')) || 0;
-        const orders = getStoredOrders();
-        const idx = orders.findIndex(o => o.id === id);
-        if (idx >= 0) {
-          const current = (orders[idx].status || '').toLowerCase();
-          const wasApproved = current.includes('approved');
-          const next = wasApproved ? 'Rejected by Farmer' : 'Approved by Farmer';
-          
-          orders[idx].status = next;
-          orders[idx].farmer_name = FARMER_INFO.name;
-          orders[idx].farmer_email = FARMER_INFO.email;
-          orders[idx].farmer_phone = FARMER_INFO.phone;
-          orders[idx].approver_name = FARMER_INFO.name;
-          orders[idx].approver_email = FARMER_INFO.email;
-          orders[idx].approver_phone = FARMER_INFO.phone;
-          orders[idx].decision_by = FARMER_INFO.name;
-          orders[idx].updated_at = new Date().toISOString();
-          
-          if (cropId && qty > 0) {
-            if (wasApproved) {
-              await updateCropQuantity(cropId, -qty);
-            } else {
-              await updateCropQuantity(cropId, qty);
-              orders[idx].quantity_updated = true;
-            }
-          }
-          
-          saveStoredOrders(orders);
-          renderFarmerOrders();
-          showToast('Decision updated.');
-        }
-      }));
-
-      // Attach handlers for delete
-      tbody.querySelectorAll('.delete-decision').forEach(btn => btn.addEventListener('click', async function() {
-        const id = Number(this.getAttribute('data-id'));
-        const orders = getStoredOrders();
-        const idx = orders.findIndex(o => o.id === id);
-        if (idx >= 0) {
-          const order = orders[idx];
-          const wasApproved = (order.status || '').toLowerCase().includes('approved');
-          const cropId = order.crop_id;
-          const qty = parseFloat(order.quantity) || 0;
-          
-          if (wasApproved && cropId && qty > 0) {
-            await updateCropQuantity(cropId, -qty);
-          }
-          
-          orders.splice(idx, 1);
-          saveStoredOrders(orders);
-          renderFarmerOrders();
-          showToast('Order removed.');
+        const id = this.getAttribute('data-id');
+        const action = this.getAttribute('data-action');
+        this.disabled = true;
+        this.textContent = 'Processing...';
+        
+        const result = await updateOrderStatus(id, action);
+        if (result.success) {
+          await renderFarmerOrders();
+          showToast('Decision changed successfully!');
+        } else {
+          alert('Error: ' + (result.error || 'Could not change decision'));
+          this.disabled = false;
+          this.textContent = action === 'approve' ? 'Change to Approve' : 'Change to Reject';
         }
       }));
     }
@@ -1042,25 +1023,10 @@ form button:hover {
     renderFarmerOrders();
     renderAnnouncements();
 
-    // Sync across tabs
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'processor_customer_orders') {
-        renderFarmerOrders();
-      }
-      if (e.key === 'farmer_dealer_orders') {
-        renderMyOrders();
-        // Check for approved orders to update stock UI
-        const orders = getFarmerDealerOrders();
-        orders.forEach(o => {
-          if ((o.status || '').toLowerCase().includes('approved') && o.inv_id && o.farmer_id === FARMER_INFO.id) {
-            updateStockUI(o.inv_id, parseFloat(o.quantity) || 0);
-          }
-        });
-      }
-      if (e.key === 'dealer_announcements') {
-        renderAnnouncements();
-      }
-    });
+    // Refresh data periodically
+    setInterval(renderFarmerOrders, 30000);
+    setInterval(renderMyOrders, 30000);
+    setInterval(renderAnnouncements, 60000);
   </script>
   <script src="{{ url_for('static', filename='weather.js') }}"></script>
 </body>

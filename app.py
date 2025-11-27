@@ -230,6 +230,7 @@ class Order(db.Model):
 class Subsidy(db.Model):
     __tablename__ = 'subsidies'
     id = db.Column(db.Integer, primary_key=True)
+    dealer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
     commodity = db.Column(db.String(150), nullable=True)
@@ -237,6 +238,7 @@ class Subsidy(db.Model):
     valid_from = db.Column(db.Date, nullable=True)
     valid_to = db.Column(db.Date, nullable=True)
     active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
 
 # ---------------- Processor models (aligned to existing DB DDL) ----------------
@@ -1657,6 +1659,175 @@ def api_weather():
     data = localized_weather_snapshot(force_refresh=refresh)
     return jsonify(data)
 
+@app.route('/api/processor-orders', methods=['GET'])
+@login_required
+def api_get_processor_orders():
+    """Get processor orders - for farmers to see orders on their crops."""
+    try:
+        if current_user.role == 'farmer':
+            # Farmer sees orders on their crops
+            orders = Order.query.filter(
+                Order.farmer_id == current_user.id,
+                Order.processor_id.isnot(None)
+            ).order_by(desc(Order.created_at)).all()
+            
+            result = []
+            for o in orders:
+                processor = User.query.get(o.processor_id)
+                result.append({
+                    'id': o.id,
+                    'processor_id': o.processor_id,
+                    'customer_name': processor.full_name if processor else f'Processor #{o.processor_id}',
+                    'farmer_id': o.farmer_id,
+                    'farmer_name': current_user.full_name,
+                    'farmer_email': current_user.email or '',
+                    'farmer_phone': current_user.phone or '',
+                    'product_name': o.product_name,
+                    'quantity': o.quantity,
+                    'unit': o.unit or 'kg',
+                    'status': o.status,
+                    'created_at': o.created_at.isoformat() if o.created_at else None
+                })
+            return jsonify(result)
+        
+        elif current_user.role == 'processor':
+            # Processor sees their own orders
+            orders = Order.query.filter_by(processor_id=current_user.id).order_by(desc(Order.created_at)).all()
+            result = []
+            for o in orders:
+                farmer = User.query.get(o.farmer_id)
+                result.append({
+                    'id': o.id,
+                    'processor_id': o.processor_id,
+                    'customer_name': current_user.full_name,
+                    'farmer_id': o.farmer_id,
+                    'farmer_name': farmer.full_name if farmer else f'Farmer #{o.farmer_id}',
+                    'farmer_email': farmer.email if farmer else '',
+                    'farmer_phone': farmer.phone if farmer else '',
+                    'product_name': o.product_name,
+                    'quantity': o.quantity,
+                    'unit': o.unit or 'kg',
+                    'status': o.status,
+                    'created_at': o.created_at.isoformat() if o.created_at else None
+                })
+            return jsonify(result)
+        
+        return jsonify([])
+    except Exception as e:
+        app.logger.error(f"Error fetching processor orders: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/processor-orders', methods=['POST'])
+@login_required
+def api_create_processor_order():
+    """Processor creates an order for a farmer's crop."""
+    if current_user.role != 'processor':
+        return jsonify({'error': 'Only processors can create these orders'}), 403
+    
+    try:
+        data = request.get_json()
+        crop_id = data.get('crop_id')
+        quantity = float(data.get('quantity', 0))
+        
+        if not crop_id or quantity <= 0:
+            return jsonify({'error': 'crop_id and valid quantity required'}), 400
+        
+        crop = Crop.query.get(crop_id)
+        if not crop:
+            return jsonify({'error': 'Crop not found'}), 404
+        
+        if quantity > crop.quantity:
+            return jsonify({'error': f'Cannot order more than available ({crop.quantity})'}), 400
+        
+        # Create order
+        order = Order(
+            farmer_id=crop.farmer_id,
+            dealer_id=crop.farmer_id,  # Required field, use farmer_id
+            processor_id=current_user.id,
+            product_name=crop.crop_name,
+            quantity=int(quantity),
+            unit=crop.unit or 'kg',
+            status='pending'
+        )
+        db.session.add(order)
+        db.session.commit()
+        
+        farmer = User.query.get(crop.farmer_id)
+        
+        return jsonify({
+            'success': True,
+            'order': {
+                'id': order.id,
+                'processor_id': order.processor_id,
+                'customer_name': current_user.full_name,
+                'farmer_id': order.farmer_id,
+                'farmer_name': farmer.full_name if farmer else '',
+                'product_name': order.product_name,
+                'quantity': order.quantity,
+                'unit': order.unit,
+                'status': order.status
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error creating processor order: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/processor-orders/<int:order_id>/action', methods=['POST'])
+@login_required
+def api_processor_order_action(order_id):
+    """Farmer approves or rejects a processor order."""
+    if current_user.role != 'farmer':
+        return jsonify({'error': 'Only farmers can approve/reject these orders'}), 403
+    
+    try:
+        data = request.get_json()
+        action = data.get('action')  # 'approve' or 'reject'
+        
+        order = Order.query.get(order_id)
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+        
+        if order.farmer_id != current_user.id:
+            return jsonify({'error': 'You can only manage orders for your crops'}), 403
+        
+        previous_status = order.status
+        
+        # Find the crop
+        crop = Crop.query.filter_by(
+            farmer_id=current_user.id,
+            crop_name=order.product_name
+        ).first()
+        
+        if action == 'approve':
+            # If changing from rejected to approved, or new approval
+            if previous_status != 'approved':
+                if crop:
+                    if crop.quantity >= order.quantity:
+                        crop.quantity -= order.quantity
+                    else:
+                        return jsonify({'error': f'Not enough quantity available. Only {crop.quantity} {crop.unit or "kg"} left.'}), 400
+            order.status = 'approved'
+        elif action == 'reject':
+            # If changing from approved to rejected, restore quantity
+            if previous_status == 'approved' and crop:
+                crop.quantity += order.quantity
+            order.status = 'rejected'
+        else:
+            return jsonify({'error': 'Invalid action'}), 400
+        
+        order.updated_at = db.func.now()
+        db.session.commit()
+        
+        return jsonify({'success': True, 'status': order.status})
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error updating processor order: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/crop/update-quantity', methods=['POST'])
 @login_required
 def api_update_crop_quantity():
@@ -1691,6 +1862,344 @@ def api_update_crop_quantity():
         app.logger.error(f"Crop quantity update error: {e}")
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/farmer-dealer-orders', methods=['GET'])
+@login_required
+def api_get_farmer_dealer_orders():
+    """Get orders placed by the farmer to dealers."""
+    if current_user.role != 'farmer':
+        return jsonify({'error': 'Only farmers can access this'}), 403
+    
+    try:
+        orders = Order.query.filter_by(farmer_id=current_user.id).filter(
+            Order.processor_id.is_(None)  # Only dealer orders, not processor orders
+        ).order_by(desc(Order.created_at)).all()
+        
+        result = []
+        for o in orders:
+            dealer = User.query.get(o.dealer_id)
+            result.append({
+                'id': o.id,
+                'dealer_id': o.dealer_id,
+                'dealer_name': dealer.full_name if dealer else f'Dealer #{o.dealer_id}',
+                'dealer_email': dealer.email if dealer else '',
+                'dealer_phone': dealer.phone if dealer else '',
+                'product_name': o.product_name,
+                'quantity': o.quantity,
+                'unit': o.unit or 'kg',
+                'status': o.status,
+                'created_at': o.created_at.isoformat() if o.created_at else None
+            })
+        return jsonify(result)
+    except Exception as e:
+        app.logger.error(f"Error fetching farmer-dealer orders: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/farmer-dealer-orders', methods=['POST'])
+@login_required
+def api_create_farmer_dealer_order():
+    """Farmer creates an order to a dealer."""
+    if current_user.role != 'farmer':
+        return jsonify({'error': 'Only farmers can create these orders'}), 403
+    
+    try:
+        data = request.get_json()
+        dealer_id = data.get('dealer_id')
+        product_name = data.get('product_name', '').strip()
+        quantity = float(data.get('quantity', 0))
+        unit = data.get('unit', 'kg').strip()
+        
+        if not dealer_id or not product_name or quantity <= 0:
+            return jsonify({'error': 'dealer_id, product_name, and valid quantity required'}), 400
+        
+        # Check if dealer exists
+        dealer = User.query.get(dealer_id)
+        if not dealer or dealer.role != 'dealer':
+            return jsonify({'error': 'Invalid dealer'}), 404
+        
+        # Check inventory availability
+        inv = Inventory.query.filter_by(dealer_id=dealer_id, product_name=product_name).first()
+        if inv and quantity > inv.stock:
+            return jsonify({'error': f'Not enough stock available. Only {inv.stock} {inv.unit or "units"} left.'}), 400
+        
+        # Create order
+        order = Order(
+            farmer_id=current_user.id,
+            dealer_id=int(dealer_id),
+            product_name=product_name,
+            quantity=int(quantity),
+            unit=unit,
+            status='pending'
+        )
+        db.session.add(order)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'order': {
+                'id': order.id,
+                'dealer_id': order.dealer_id,
+                'product_name': order.product_name,
+                'quantity': order.quantity,
+                'unit': order.unit,
+                'status': order.status
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error creating farmer-dealer order: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/dealer-orders', methods=['GET'])
+@login_required
+def api_get_dealer_orders():
+    """Get orders for the dealer - farmers ordering from dealer's inventory."""
+    if current_user.role != 'dealer':
+        return jsonify({'error': 'Only dealers can access this'}), 403
+    
+    try:
+        orders = Order.query.filter_by(dealer_id=current_user.id).order_by(desc(Order.created_at)).all()
+        result = []
+        for o in orders:
+            farmer = User.query.get(o.farmer_id)
+            result.append({
+                'id': o.id,
+                'farmer_id': o.farmer_id,
+                'farmer_name': farmer.full_name if farmer else f'Farmer #{o.farmer_id}',
+                'farmer_email': farmer.email if farmer else '',
+                'farmer_phone': farmer.phone if farmer else '',
+                'product_name': o.product_name,
+                'quantity': o.quantity,
+                'unit': o.unit or 'kg',
+                'status': o.status,
+                'created_at': o.created_at.isoformat() if o.created_at else None
+            })
+        return jsonify(result)
+    except Exception as e:
+        app.logger.error(f"Error fetching dealer orders: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/dealer-orders/<int:order_id>/action', methods=['POST'])
+@login_required
+def api_dealer_order_action(order_id):
+    """Dealer approves, rejects, or delivers an order."""
+    if current_user.role != 'dealer':
+        return jsonify({'error': 'Only dealers can manage these orders'}), 403
+    
+    try:
+        data = request.get_json()
+        action = data.get('action')  # 'approve', 'reject', 'deliver'
+        
+        order = Order.query.get(order_id)
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+        
+        if order.dealer_id != current_user.id:
+            return jsonify({'error': 'You can only manage your own orders'}), 403
+        
+        previous_status = order.status
+        
+        # Find inventory item
+        inv = Inventory.query.filter_by(
+            dealer_id=current_user.id,
+            product_name=order.product_name
+        ).first()
+        
+        if action == 'approve':
+            # If changing from rejected to approved, or new approval
+            if previous_status != 'approved':
+                if inv:
+                    if inv.stock >= order.quantity:
+                        inv.stock -= order.quantity
+                    else:
+                        return jsonify({'error': f'Not enough stock. Only {inv.stock} {inv.unit or "units"} available.'}), 400
+            order.status = 'approved'
+        elif action == 'reject':
+            # If changing from approved to rejected, restore stock
+            if previous_status == 'approved' and inv:
+                inv.stock += order.quantity
+            order.status = 'rejected'
+        elif action == 'deliver':
+            order.status = 'delivered'
+        else:
+            return jsonify({'error': 'Invalid action'}), 400
+        
+        order.updated_at = db.func.now()
+        db.session.commit()
+        
+        return jsonify({'success': True, 'status': order.status})
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error updating dealer order: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/announcements', methods=['GET'])
+@login_required
+def api_get_announcements():
+    """Get announcements - dealers see their own, farmers see all active ones."""
+    try:
+        today = date.today()
+        
+        if current_user.role == 'dealer':
+            # Dealer sees their own announcements
+            announcements = Subsidy.query.filter_by(dealer_id=current_user.id).order_by(desc(Subsidy.created_at)).all()
+        else:
+            # Farmers and others see all active announcements that haven't expired
+            announcements = Subsidy.query.filter(
+                Subsidy.active == True,
+                db.or_(Subsidy.valid_to.is_(None), Subsidy.valid_to >= today)
+            ).order_by(desc(Subsidy.created_at)).all()
+        
+        result = []
+        for a in announcements:
+            dealer = User.query.get(a.dealer_id) if a.dealer_id else None
+            result.append({
+                'id': a.id,
+                'dealer_id': a.dealer_id,
+                'dealer_name': dealer.full_name if dealer else 'System',
+                'dealer_email': dealer.email if dealer else '',
+                'dealer_phone': dealer.phone if dealer else '',
+                'title': a.title,
+                'description': a.description or '',
+                'commodity': a.commodity or '',
+                'discount_percent': a.discount_percent or 0,
+                'valid_from': a.valid_from.isoformat() if a.valid_from else None,
+                'valid_to': a.valid_to.isoformat() if a.valid_to else None,
+                'active': a.active,
+                'created_at': a.created_at.isoformat() if a.created_at else None
+            })
+        return jsonify(result)
+    except Exception as e:
+        app.logger.error(f"Error fetching announcements: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/announcements', methods=['POST'])
+@login_required
+def api_create_announcement():
+    """Dealer creates an announcement/subsidy."""
+    if current_user.role != 'dealer':
+        return jsonify({'error': 'Only dealers can create announcements'}), 403
+    
+    try:
+        data = request.get_json()
+        title = data.get('title', '').strip()
+        
+        if not title:
+            return jsonify({'error': 'Title is required'}), 400
+        
+        valid_from = None
+        valid_to = None
+        if data.get('valid_from'):
+            valid_from = date.fromisoformat(data['valid_from'])
+        if data.get('valid_to'):
+            valid_to = date.fromisoformat(data['valid_to'])
+        
+        announcement = Subsidy(
+            dealer_id=current_user.id,
+            title=title,
+            description=data.get('description', '').strip() or None,
+            commodity=data.get('commodity', '').strip() or None,
+            discount_percent=int(data.get('discount_percent', 0) or 0),
+            valid_from=valid_from,
+            valid_to=valid_to,
+            active=True
+        )
+        db.session.add(announcement)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'announcement': {
+                'id': announcement.id,
+                'dealer_id': announcement.dealer_id,
+                'dealer_name': current_user.full_name,
+                'dealer_email': current_user.email or '',
+                'dealer_phone': current_user.phone or '',
+                'title': announcement.title,
+                'description': announcement.description or '',
+                'commodity': announcement.commodity or '',
+                'discount_percent': announcement.discount_percent,
+                'valid_from': announcement.valid_from.isoformat() if announcement.valid_from else None,
+                'valid_to': announcement.valid_to.isoformat() if announcement.valid_to else None,
+                'active': announcement.active
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error creating announcement: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/announcements/<int:announcement_id>', methods=['PUT'])
+@login_required
+def api_update_announcement(announcement_id):
+    """Dealer updates their announcement."""
+    if current_user.role != 'dealer':
+        return jsonify({'error': 'Only dealers can update announcements'}), 403
+    
+    try:
+        announcement = Subsidy.query.get(announcement_id)
+        if not announcement:
+            return jsonify({'error': 'Announcement not found'}), 404
+        
+        if announcement.dealer_id != current_user.id:
+            return jsonify({'error': 'You can only edit your own announcements'}), 403
+        
+        data = request.get_json()
+        
+        if 'title' in data:
+            announcement.title = data['title'].strip()
+        if 'description' in data:
+            announcement.description = data['description'].strip() or None
+        if 'commodity' in data:
+            announcement.commodity = data['commodity'].strip() or None
+        if 'discount_percent' in data:
+            announcement.discount_percent = int(data['discount_percent'] or 0)
+        if 'valid_from' in data:
+            announcement.valid_from = date.fromisoformat(data['valid_from']) if data['valid_from'] else None
+        if 'valid_to' in data:
+            announcement.valid_to = date.fromisoformat(data['valid_to']) if data['valid_to'] else None
+        if 'active' in data:
+            announcement.active = bool(data['active'])
+        
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error updating announcement: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/announcements/<int:announcement_id>', methods=['DELETE'])
+@login_required
+def api_delete_announcement(announcement_id):
+    """Dealer deletes their announcement."""
+    if current_user.role != 'dealer':
+        return jsonify({'error': 'Only dealers can delete announcements'}), 403
+    
+    try:
+        announcement = Subsidy.query.get(announcement_id)
+        if not announcement:
+            return jsonify({'error': 'Announcement not found'}), 404
+        
+        if announcement.dealer_id != current_user.id:
+            return jsonify({'error': 'You can only delete your own announcements'}), 403
+        
+        db.session.delete(announcement)
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error deleting announcement: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/inventory/update-stock', methods=['POST'])
 @login_required
