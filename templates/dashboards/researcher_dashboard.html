@@ -30,8 +30,19 @@
       background: #022b16; color: white; text-decoration: none; border-radius: 5px; }
     a.download-btn:hover { background: #022b16; }
 
-    .chart-container { margin-top: 20px; }
-    canvas { width: 100% !important; height: 350px !important; }
+    .chart-grid { display: grid; gap: 18px; margin-top: 20px; }
+    .chart-grid.two-cols { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .chart-grid.three-cols { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .chart-card {
+      background: linear-gradient(135deg, #f8fafc, #eef4ff);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 10px 25px rgba(19, 35, 58, 0.12);
+      border: 1px solid rgba(2, 43, 22, 0.08);
+    }
+    .chart-card h3 { margin: 0 0 6px; color: #022b16; font-size: 16px; display: flex; align-items: center; gap: 6px; }
+    .chart-subtext { margin: 0 0 12px; color: #4b5563; font-size: 13px; }
+    canvas { width: 100% !important; height: 320px !important; }
 
     .nisr-title { background:#fff3e0; padding:12px; border-radius:6px; 
       color:#6b4226; font-weight:600; }
@@ -68,9 +79,23 @@ commodity of Beans, Maize and Cassava      </p>
       <a href="{{ url_for('download_market_prices') }}" class="download-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;"><path d="M19 9H15V3H9V9H5L12 16L19 9ZM5 18V20H19V18H5Z" fill="currentColor"/></svg> Download Full Dataset (CSV)</a>
 
       {% if chart_data %}
-      <div class="chart-container"><h3><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;"><path d="M3.5 18.49L9.5 12.49L13.5 16.49L22 6.92V20.5C22 21.05 21.55 21.5 21 21.5H3C2.45 21.5 2 21.05 2 20.5V18.49L3.5 18.49ZM21 4.5H3C2.45 4.5 2 4.95 2 5.5V7.51L3.5 7.51L9.5 13.51L13.5 9.51L21 1.92V4.5Z" fill="currentColor"/></svg> Price Trends Over Time</h3><canvas id="lineChart"></canvas></div>
-      <div class="chart-container"><h3><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;"><path d="M22 21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" fill="currentColor"/></svg> Average Price by Commodity</h3><canvas id="barChart"></canvas></div>
-      <div class="chart-container"><h3><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="currentColor"/><path d="M12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18C15.31 18 18 15.31 18 12C18 8.69 15.31 6 12 6Z" fill="currentColor"/></svg> Average Price Share by Commodity</h3><canvas id="dbPieChart"></canvas></div>
+      <div class="chart-grid three-cols">
+        <div class="chart-card">
+          <h3><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.5 18.49L9.5 12.49L13.5 16.49L22 6.92V20.5C22 21.05 21.55 21.5 21 21.5H3C2.45 21.5 2 21.05 2 20.5V18.49L3.5 18.49ZM21 4.5H3C2.45 4.5 2 4.95 2 5.5V7.51L3.5 7.51L9.5 13.51L13.5 9.51L21 1.92V4.5Z" fill="currentColor"/></svg> Price Trends Over Time</h3>
+          <p class="chart-subtext">Multi-commodity line to spot trend reversals quickly.</p>
+          <canvas id="lineChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" fill="currentColor"/></svg> Average Price by Commodity</h3>
+          <p class="chart-subtext">Benchmark commodities side-by-side for 2025.</p>
+          <canvas id="barChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="currentColor"/><path d="M12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18C15.31 18 18 15.31 18 12C18 8.69 15.31 6 12 6Z" fill="currentColor"/></svg> Average Price Share</h3>
+          <p class="chart-subtext">Quick read of each commodity’s contribution.</p>
+          <canvas id="dbPieChart"></canvas>
+        </div>
+      </div>
       {% else %}
       <p>No market price chart data available.</p>
       {% endif %}
@@ -88,8 +113,18 @@ commodity of Beans, Maize and Cassava      </p>
       <a href="{{ url_for('download_nisr_dataset') }}" class="download-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;"><path d="M19 9H15V3H9V9H5L12 16L19 9ZM5 18V20H19V18H5Z" fill="currentColor"/></svg> Download NISR Dataset (XLSX)</a>
 
       {% if nisr_chart_data %}
-        <div class="chart-container"><h3><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;"><path d="M22 21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" fill="currentColor"/></svg> NISR Average Prices by Commodity</h3><canvas id="nisrBarChart"></canvas></div>
-        <div class="chart-container"><h3><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;"><path d="M3.5 18.49L9.5 12.49L13.5 16.49L22 6.92V20.5C22 21.05 21.55 21.5 21 21.5H3C2.45 21.5 2 21.05 2 20.5V18.49L3.5 18.49ZM21 4.5H3C2.45 4.5 2 4.95 2 5.5V7.51L3.5 7.51L9.5 13.51L13.5 9.51L21 1.92V4.5Z" fill="currentColor"/></svg> NISR Price Distribution (Histogram)</h3><canvas id="nisrHistChart"></canvas></div>
+        <div class="chart-grid two-cols">
+          <div class="chart-card">
+            <h3><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" fill="currentColor"/></svg> NISR Average Prices</h3>
+            <p class="chart-subtext">Mean price per crop, ordered from highest to lowest.</p>
+            <canvas id="nisrBarChart"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.5 18.49L9.5 12.49L13.5 16.49L22 6.92V20.5C22 21.05 21.55 21.5 21 21.5H3C2.45 21.5 2 21.05 2 20.5V18.49L3.5 18.49ZM21 4.5H3C2.45 4.5 2 4.95 2 5.5V7.51L3.5 7.51L9.5 13.51L13.5 9.51L21 1.92V4.5Z" fill="currentColor"/></svg> Price Distribution</h3>
+            <p class="chart-subtext">Histogram to see how frequently each price range appears.</p>
+            <canvas id="nisrHistChart"></canvas>
+          </div>
+        </div>
       {% else %}
         <p style="margin-top:12px;">NISR dataset charts are not available (file missing or incorrect format).</p>
       {% endif %}
@@ -148,7 +183,9 @@ commodity of Beans, Maize and Cassava      </p>
     // DB charts (chart_data)
     {% if chart_data %}
     const dbPrices = {{ chart_data|tojson }};
-    new Chart(document.getElementById('lineChart'), {
+    const lineCtx = document.getElementById('lineChart').getContext('2d');
+    const accentPalette = ['#1E88E5','#43A047','#F4511E','#8E24AA','#00ACC1','#FB8C00','#6D4C41','#3949AB','#E53935'];
+    new Chart(lineCtx, {
       type: 'line',
       data: {
         labels: dbPrices.dates,
@@ -158,20 +195,46 @@ commodity of Beans, Maize and Cassava      </p>
             data: dbPrices.commodities[c],
             borderWidth: 2,
             fill: false,
-            tension: 0.1
+            tension: 0.35,
+            borderColor: accentPalette[idx % accentPalette.length],
+            backgroundColor: accentPalette[idx % accentPalette.length] + '33',
+            pointRadius: 3,
+            pointHoverRadius: 4
           };
         })
       },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          y: { beginAtZero: false, grid: { color: 'rgba(2,43,22,0.08)' } },
+          x: { grid: { display: false } }
+        }
+      }
     });
 
-    new Chart(document.getElementById('barChart'), {
+    new Chart(document.getElementById('barChart').getContext('2d'), {
       type: 'bar',
       data: {
         labels: Object.keys(dbPrices.avg_prices),
-        datasets: [{ label: 'Average Price (DB)', data: Object.values(dbPrices.avg_prices), backgroundColor: '#283593' }]
+        datasets: [{
+          label: 'Average Price (DB)',
+          data: Object.values(dbPrices.avg_prices),
+          backgroundColor: '#283593',
+          borderRadius: 8
+        }]
       },
-      options: { responsive: true, plugins: { legend: { display: false } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(2,43,22,0.08)' } },
+          x: { grid: { display: false } }
+        }
+      }
     });
 
     // Pie chart for average prices share by commodity
@@ -179,13 +242,13 @@ commodity of Beans, Maize and Cassava      </p>
       var labels = Object.keys(dbPrices.avg_prices);
       var values = Object.values(dbPrices.avg_prices);
       var colors = ['#1e88e5','#43a047','#f4511e','#8e24aa','#fdd835','#5e35b1','#00acc1','#fb8c00','#6d4c41','#00897b','#3949ab'];
-      new Chart(document.getElementById('dbPieChart'), {
+      new Chart(document.getElementById('dbPieChart').getContext('2d'), {
         type: 'pie',
         data: {
           labels: labels,
           datasets: [{ data: values, backgroundColor: labels.map(function(_, i){ return colors[i % colors.length]; }) }]
         },
-        options: { responsive: true }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
       });
     })();
     {% endif %}
@@ -194,22 +257,48 @@ commodity of Beans, Maize and Cassava      </p>
     {% if nisr_chart_data %}
     const nisr = {{ nisr_chart_data|tojson }};
 
-    new Chart(document.getElementById('nisrBarChart'), {
+    new Chart(document.getElementById('nisrBarChart').getContext('2d'), {
       type: 'bar',
       data: {
         labels: nisr.commodities,
-        datasets: [{ label: 'NISR Avg Price', data: nisr.avg_prices, backgroundColor: '#1a237e' }]
+        datasets: [{
+          label: 'NISR Avg Price',
+          data: nisr.avg_prices,
+          backgroundColor: '#1a237e',
+          borderRadius: 8
+        }]
       },
-      options: { responsive: true, plugins: { legend: { display: false } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(2,43,22,0.08)' } },
+          x: { grid: { display: false } }
+        }
+      }
     });
 
-    new Chart(document.getElementById('nisrHistChart'), {
+    new Chart(document.getElementById('nisrHistChart').getContext('2d'), {
       type: 'bar',
       data: {
         labels: nisr.histogram_bins,
-        datasets: [{ label: 'Count', data: nisr.histogram_counts, backgroundColor: '#4caf50' }]
+        datasets: [{
+          label: 'Record count',
+          data: nisr.histogram_counts,
+          backgroundColor: '#4caf50',
+          borderRadius: 6
+        }]
       },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(2,43,22,0.08)' } },
+          x: { grid: { display: false } }
+        }
+      }
     });
     {% endif %}
 

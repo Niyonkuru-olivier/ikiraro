@@ -1,6 +1,7 @@
 # ---------------- Standard Library ----------------
 from io import BytesIO
 from datetime import datetime
+from pathlib import Path
 from flask import send_from_directory, render_template, jsonify, g
 
 from sqlalchemy import desc
@@ -52,6 +53,9 @@ app.config['PROFILE_UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'upl
 app.config['PROFILE_ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 app.config['PROFILE_MAX_FILE_SIZE_MB'] = int(os.environ.get('PROFILE_MAX_FILE_SIZE_MB', 4))
 os.makedirs(app.config['PROFILE_UPLOAD_FOLDER'], exist_ok=True)
+
+# Centralised datasets directory (works locally and on Vercel)
+DATASETS_DIR = Path(app.root_path) / "datasets"
 
 # ---------------- Database Config ----------------
 # Support both MySQL and PostgreSQL for Vercel deployment
@@ -997,7 +1001,7 @@ def dashboard():
             # -------- Load NISR dataset for charts (robust parsing) --------
             nisr_chart_data = None
             try:
-                df = pd.read_excel("datasets/Tables_2025_Season_A.xlsx")
+                df = pd.read_excel(DATASETS_DIR / "Tables_2025_Season_A.xlsx")
                 # Normalize column names for flexible matching
                 normalized = {c: str(c).strip() for c in df.columns}
                 df.columns = list(normalized.values())
@@ -1055,7 +1059,7 @@ def dashboard():
             # -------- Load Maize production dataset (CSV) --------
             maize_data = None
             try:
-                maize_df = pd.read_csv("datasets/rwanda_maize_production_2025.csv")
+                maize_df = pd.read_csv(DATASETS_DIR / "rwanda_maize_production_2025.csv")
                 # Normalize column names
                 col_prov = "Provinces"
                 col_dist = "Districts"
@@ -1131,7 +1135,7 @@ def dashboard():
 def download_nisr_dataset():
     try:
         return send_from_directory(
-            directory="datasets",
+            directory=str(DATASETS_DIR),
             path="Tables_2025_Season_A.xlsx",
             as_attachment=True
         )
@@ -1145,7 +1149,7 @@ def download_nisr_dataset():
 def download_maize_dataset():
     try:
         return send_from_directory(
-            directory="datasets",
+            directory=str(DATASETS_DIR),
             path="rwanda_maize_production_2025.csv",
             as_attachment=True
         )
@@ -1368,7 +1372,7 @@ def researcher_dashboard():
     # ✅ Load NISR dataset (preview + robust chart data)
     nisr_preview, nisr_chart_data = None, None
     try:
-        df = pd.read_excel("datasets/Tables_2025_Season_A.xlsx")
+        df = pd.read_excel(DATASETS_DIR / "Tables_2025_Season_A.xlsx")
         nisr_preview = df.head(10).to_dict(orient="records")
 
         normalized = {c: str(c).strip() for c in df.columns}
@@ -1423,7 +1427,7 @@ def researcher_dashboard():
     # ✅ Load Maize dataset (preview + chart data)
     maize_data = None
     try:
-        maize_df = pd.read_csv("datasets/rwanda_maize_production_2025.csv")
+        maize_df = pd.read_csv(DATASETS_DIR / "rwanda_maize_production_2025.csv")
         col_prov = "Provinces"
         col_dist = "Districts"
         col_2025 = "2025 Production (MT)"
