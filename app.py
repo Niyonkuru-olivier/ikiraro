@@ -1046,7 +1046,7 @@ def dashboard():
                         if not hist_series.empty:
                             bins = pd.cut(hist_series, bins=10)
                             counts = bins.value_counts(sort=False)
-                            bin_labels = [f"{interval.left:.0f}-{interval.right:.0f}" for interval in counts.index]
+                            bin_labels = [f"{interval.left:.0f}-{interval.right:.0f} RWF/kg" for interval in counts.index]
                             nisr_chart_data.update({
                                 "histogram_bins": bin_labels,
                                 "histogram_counts": counts.tolist()
