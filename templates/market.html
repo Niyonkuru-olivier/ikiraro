@@ -3,121 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maize Market Database - UMUHUZA</title>
+  <title>Price of the Maize in 2020-2024 in Rwanda (Kigali and East Province)- UMUHUZA</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
   <link rel="stylesheet" href="{{url_for('static', filename='market.css')}}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-        body {
-            margin-right: 100px;
-            margin-left: 100px;
-            padding-top: 150px; /* Add padding to account for fixed header */
-        }
-        header {
-            background: black;
-            color: #fff;
-            padding: 10px 0;
-            text-align: center;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            left: 0;
-            right: 0;
-        }
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-        }
-        .header-content img.logo {
-            width: 150px;
-            height: auto;
-            margin-right: 200px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        header h1 {
-            color: #4CAF50;
-            font-size: 3em;
-            margin: 0;
-        }
-        header .tagline {
-            font-size: 1em;
-            color: #fff;
-            margin-top: 5px;
-            font-weight: lighter;
-            text-transform: uppercase;
-            line-height: 0.8;
-        }
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin-top: 10px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-        }
-        nav ul li {
-            display: inline-block;
-            margin: 0 15px;
-        }
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.3s ease;
-            padding: 5px 10px;
-            display: inline-block;
-        }
-        nav ul li a:hover {
-            color: #4CAF50;
-            background-color: rgba(76, 175, 80, 0.1);
-            border-radius: 3px;
-        }
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1001;
-            top: 100%;
-            left: 0;
-        }
-        .dropdown-content a {
-            color: black;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-        .dropdown-content a:hover {
-            background-color: rgb(18, 46, 43);
-            color: white;
-        }
-    </style>
 </head>
-<body>
+<body class="market-page">
   <!-- Header Section -->
-  <header>
+  <header class="market-header">
     <div class="header-content">
         <!-- Insert your image here -->
         <img src="{{ url_for('static', filename='ikiraro.png') }}" alt="Ikiraro logo" class="logo">
         <div>
-            <h1 style="text-align:center;">UMUHUZA</h1>
-            <p style="font-size: 12px; line-height: 0.3em;text-align: center;" class="tagline">
-                REVOLUTIONIliZING AGRICULTURE THROUGH COLLABORATIVE Artificial INTELLIGENCE
+            <h1>UMUHUZA</h1>
+            <p class="tagline">
+                Revolutionizing agriculture through collaborative artificial intelligence
             </p>
             <nav>
                 <ul>
@@ -147,23 +47,102 @@
     </div>
   </header>
 
-  <!-- Page Title Section -->
-  <div style="text-align: center; padding: 20px; margin-top: 20px;">
-    <h1 style="color: #4CAF50; font-size: 2.5em; margin-bottom: 10px;">Market Price</h1>
-    <p style="color: #fff; font-size: 1.2em;">Maize Market Prices Database</p>
-  </div>
+  <main class="market-main">
+    <!-- Hero -->
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Market intelligence brief</p>
+        <h2>Rwanda maize market tracker (2020-2024)</h2>
+        <p class="lede">
+          Live reference data for Kigali City and Eastern Province spot markets. Filter by year or region to stress-test procurement plans and selling strategies.
+        </p>
+      </div>
+      <div class="hero-meta">
+        <p><strong>Data source:</strong> MINAGRI & district market boards</p>
+        <p><strong>Cadence:</strong> Quarterly refresh (latest 2024 Q4)</p>
+      </div>
+    </section>
 
-  <div style="background-color: rgba(18, 46, 43, 0.8); padding: 20px; border-radius: 8px; margin: 20px; border: 1px solid #4CAF50;">
-    <div style="margin-bottom: 20px;">
-      <label for="search" style="color: #fff; margin-right: 10px;">Search for Year(between 2020-2024):</label>
-      <input type="text" id="search" placeholder="Enter region or date" style="padding: 10px; border-radius: 5px; border: 1px solid #4CAF50; background-color: #fff; color: #333; margin-right: 10px;">
-      <button onclick="searchPrices()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">Search</button>
-    </div>
-    <table id="prices-table" style="width: 100%; color: #fff; margin-bottom: 20px;">
-      <!-- Table to display searchable data -->
-    </table>
-    <canvas id="price-chart" style="background-color: #fff; padding: 20px; border-radius: 10px; border: 1px solid #4CAF50;"></canvas>
-  </div>
+    <!-- KPI cards -->
+    <section class="kpi-grid">
+      <article class="kpi-card">
+        <p class="kpi-label">Kigali average price · 2024</p>
+        <p class="kpi-value" id="kigali-latest">–</p>
+        <p class="kpi-trend" id="kigali-trend">Pending update</p>
+      </article>
+      <article class="kpi-card">
+        <p class="kpi-label">Eastern average price · 2024</p>
+        <p class="kpi-value" id="eastern-latest">–</p>
+        <p class="kpi-trend" id="eastern-trend">Pending update</p>
+      </article>
+      <article class="kpi-card">
+        <p class="kpi-label">Price gap (Kigali minus Eastern)</p>
+        <p class="kpi-value" id="price-spread">–</p>
+        <p class="kpi-trend">Positive values mean Kigali markets are higher.</p>
+      </article>
+      <article class="kpi-card">
+        <p class="kpi-label">Most unstable year</p>
+        <p class="kpi-value">2022</p>
+        <p class="kpi-trend">Largest price swings due to rainfall shocks.</p>
+      </article>
+    </section>
+
+    <!-- Search + instructions -->
+    <section class="controls-panel">
+      <div class="panel-copy">
+        <h3>Filter the dataset</h3>
+        <p>Type a year (2020-2024) or region name to narrow both the table and chart. Leave the box empty or press reset to return to the full time-series view.</p>
+      </div>
+      <div class="form-controls">
+        <label for="search">Search period or region</label>
+        <div class="form-row">
+          <input type="text" id="search" placeholder="e.g. Kigali or 2023">
+          <button type="button" onclick="searchPrices()">Apply filter</button>
+        </div>
+        <p class="search-hint" id="search-hint">Showing complete dataset.</p>
+      </div>
+    </section>
+
+    <!-- Data + chart -->
+    <section class="data-panels">
+      <article class="panel table-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Reference table</p>
+            <h3>Spot market prices (RWF / kg)</h3>
+          </div>
+          <p class="panel-note">Rows stay in year order so you can compare progression quickly.</p>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Region</th>
+                <th>Year</th>
+                <th>Average price (RWF)</th>
+              </tr>
+            </thead>
+            <tbody id="prices-body">
+              <!-- rows injected via market.js -->
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Time series</p>
+            <h3>Price evolution</h3>
+          </div>
+          <p class="panel-note">Both provinces shown on the same scale with a gentle smoothing band.</p>
+        </div>
+        <canvas id="price-chart"></canvas>
+        <p class="chart-hint" id="chart-hint">Hover or tap the points to see both regions for the same year.</p>
+      </article>
+    </section>
+  </main>
+
   <script src="{{url_for('static', filename='market.js')}}"></script>
 </body>
 </html>
