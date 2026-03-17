@@ -1,18 +1,38 @@
-Flask==3.0.0
-flask-sqlalchemy==3.1.1
-flask-login==0.6.3
-flask-mail==0.10.0
-werkzeug==3.0.1
-itsdangerous==2.1.2
-pandas==2.2.3
-reportlab==4.0.7
-requests==2.31.0
-PyMySQL==1.1.0
-psycopg==3.2.1
-cryptography==41.0.7
-python-dotenv==1.0.1
-mysql-connector-python==9.0.0
-numpy==2.1.2
-groq==0.8.0
-httpx==0.27.2
+# Web framework
+Flask==3.0.3
 
+# CORS support
+Flask-Cors==4.0.1
+
+# Database ORM
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.36
+
+# Authentication
+Flask-Login==0.6.3
+Werkzeug==3.0.6
+
+# Email
+Flask-Mail==0.10.0
+
+# Token serialization (password reset)
+itsdangerous==2.2.0
+
+# JWT (API tokens)
+PyJWT==2.9.0
+
+# Data processing
+pandas==2.2.3
+openpyxl==3.1.5
+
+# PDF generation
+reportlab==4.2.5
+
+# Environment variables
+python-dotenv==1.0.1
+
+# MySQL driver (for local dev)
+PyMySQL==1.1.1
+
+# PostgreSQL driver (for Vercel / cloud DB)
+psycopg2-binary==2.9.10
