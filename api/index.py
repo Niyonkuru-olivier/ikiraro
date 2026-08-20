@@ -25,6 +25,9 @@ flask_app      = None
 import_error   = None
 error_trace    = None
 
+# Top-level assignment to satisfy Vercel's AST parser
+app = None
+
 try:
     from app import app as flask_app
     app = flask_app  # Vercel looks for `app`
