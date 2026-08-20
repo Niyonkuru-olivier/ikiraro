@@ -80,9 +80,10 @@ if database_url:
             for tok in ["?ssl-mode=REQUIRED", "&ssl-mode=REQUIRED",
                         "?ssl_mode=REQUIRED", "&ssl_mode=REQUIRED"]:
                 database_url = database_url.replace(tok, "")
+        import certifi
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
             "pool_pre_ping": True, "pool_recycle": 300,
-            "connect_args": {"connect_timeout": 10, "ssl": {}},
+            "connect_args": {"connect_timeout": 10, "ssl": {"ca": certifi.where()}},
         }
         app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     elif database_url.startswith(("postgresql://", "postgres://")):
