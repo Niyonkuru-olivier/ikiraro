@@ -81,8 +81,9 @@ if database_url:
                         "?ssl_mode=REQUIRED", "&ssl_mode=REQUIRED"]:
                 database_url = database_url.replace(tok, "")
         import certifi
+        from sqlalchemy.pool import NullPool
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-            "pool_pre_ping": True, "pool_recycle": 300,
+            "poolclass": NullPool,
             "connect_args": {"connect_timeout": 10, "ssl": {"ca": certifi.where()}},
         }
         app.config["SQLALCHEMY_DATABASE_URI"] = database_url
