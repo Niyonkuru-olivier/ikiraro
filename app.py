@@ -84,7 +84,10 @@ if database_url:
         from sqlalchemy.pool import NullPool
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
             "poolclass": NullPool,
-            "connect_args": {"connect_timeout": 10, "ssl": {"ca": certifi.where()}},
+            "connect_args": {
+                "connect_timeout": 10, 
+                "ssl": {"ssl_mode": "VERIFY_IDENTITY", "check_hostname": False}
+            },
         }
         app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     elif database_url.startswith(("postgresql://", "postgres://")):
