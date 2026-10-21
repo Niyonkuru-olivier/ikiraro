@@ -22,7 +22,7 @@ except ModuleNotFoundError:
 import pandas as pd
 from dotenv import load_dotenv
 from flask import (
-    Flask, flash, jsonify, redirect, render_template,
+    Flask, Response, flash, jsonify, redirect, render_template,
     request, send_file, send_from_directory, url_for,
 )
 from flask_cors import CORS
@@ -55,7 +55,10 @@ app.config["PROFILE_UPLOAD_FOLDER"] = os.path.join(
 )
 app.config["PROFILE_ALLOWED_EXTENSIONS"] = {"png", "jpg", "jpeg", "gif", "webp"}
 app.config["PROFILE_MAX_FILE_SIZE_MB"] = int(os.environ.get("PROFILE_MAX_FILE_SIZE_MB", 4))
-os.makedirs(app.config["PROFILE_UPLOAD_FOLDER"], exist_ok=True)
+try:
+    os.makedirs(app.config["PROFILE_UPLOAD_FOLDER"], exist_ok=True)
+except OSError:
+    pass
 
 DATASETS_DIR = Path(app.root_path) / "datasets"
 
@@ -291,6 +294,22 @@ class DeliverySchedule(db.Model):
     delivery_date = db.Column(db.Date, nullable=False)
     status        = db.Column(db.String(50), default="scheduled")
     processor_id  = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+
+class UserPhoto(db.Model):
+    __tablename__ = "user_photo"
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey("user.id"), unique=True, nullable=False)
+    data       = db.Column(db.LargeBinary(length=2**24), nullable=False)
+    mimetype   = db.Column(db.String(50), default="image/jpeg")
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+with app.app_context():
+    try:
+        db.create_all()
+    except Exception as _e:
+        app.logger.warning(f"Initial db.create_all() skipped: {_e}")
 
 
 # ====================================================
@@ -946,6 +965,50 @@ def update_profile():
     return redirect(request.referrer or url_for("dashboard"))
 
 
+@app.route("/user/<int:user_id>/photo")
+def user_photo(user_id):
+    # 1. Fetch photo from database (Vercel serverless + cloud DB)
+    try:
+        photo = UserPhoto.query.filter_by(user_id=user_id).first()
+        if photo and photo.data:
+            return Response(
+                photo.data,
+                mimetype=photo.mimetype or "image/jpeg",
+                headers={
+                    "Cache-Control": "public, max-age=86400",
+                    "Content-Disposition": "inline",
+                },
+            )
+    except Exception as e:
+        app.logger.warning(f"Error querying UserPhoto for user {user_id}: {e}")
+
+    # 2. Fallback to local static disk file if exists (and migrate to DB)
+    try:
+        user = User.query.get(user_id)
+        if user and user.profile_photo:
+            disk_path = user.profile_photo
+            if not disk_path.startswith("uploads/"):
+                disk_path = os.path.join("uploads", "profile_photos", disk_path).replace("\\", "/")
+            full_disk_path = os.path.join(app.static_folder, disk_path.replace("/", os.sep))
+            if os.path.exists(full_disk_path):
+                try:
+                    with open(full_disk_path, "rb") as f:
+                        disk_bytes = f.read()
+                    ext = disk_path.rsplit(".", 1)[-1].lower() if "." in disk_path else "jpeg"
+                    mtype = "image/png" if ext == "png" else ("image/gif" if ext == "gif" else "image/jpeg")
+                    new_p = UserPhoto(user_id=user_id, data=disk_bytes, mimetype=mtype)
+                    db.session.add(new_p)
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                return redirect(url_for("static", filename=disk_path))
+    except Exception:
+        pass
+
+    # 3. Default fallback avatar
+    return redirect(url_for("static", filename="avatar-default.svg"))
+
+
 @app.route("/profile/photo", methods=["POST"])
 @login_required
 def upload_profile_photo():
@@ -961,32 +1024,64 @@ def upload_profile_photo():
             return jsonify({"error": f"Unsupported file type. Allowed: {allowed}"}), 400
         flash(f"Unsupported file type. Allowed: {allowed}", "error")
         return redirect(request.referrer or url_for("dashboard"))
-    file.stream.seek(0, os.SEEK_END)
-    size_bytes = file.stream.tell()
-    file.stream.seek(0)
-    if size_bytes > app.config["PROFILE_MAX_FILE_SIZE_MB"] * 1024 * 1024:
+    file_bytes = file.read()
+    if len(file_bytes) > app.config["PROFILE_MAX_FILE_SIZE_MB"] * 1024 * 1024:
         if wants_json():
             return jsonify({"error": f'File too large. Max {app.config["PROFILE_MAX_FILE_SIZE_MB"]}MB'}), 400
         flash(f'File is too large. Max {app.config["PROFILE_MAX_FILE_SIZE_MB"]}MB.', "error")
         return redirect(request.referrer or url_for("dashboard"))
-    ext       = file.filename.rsplit(".", 1)[1].lower()
+    ext = file.filename.rsplit(".", 1)[1].lower() if "." in file.filename else "jpg"
+    mimetype_map = {
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "png": "image/png",
+        "gif": "image/gif",
+        "webp": "image/webp",
+    }
+    mimetype = mimetype_map.get(ext, file.content_type or "image/jpeg")
     safe_name = secure_filename(f"user_{current_user.id}_{int(datetime.utcnow().timestamp())}.{ext}")
+
     try:
-        file.save(os.path.join(app.config["PROFILE_UPLOAD_FOLDER"], safe_name))
-        if current_user.profile_photo:
-            old = os.path.join(app.static_folder, current_user.profile_photo.replace("/", os.sep))
-            if os.path.exists(old):
-                try:
-                    os.remove(old)
-                except OSError:
-                    pass
-        current_user.profile_photo = os.path.join("uploads", "profile_photos", safe_name).replace("\\", "/")
+        # 1. Save or update in database (persists across Vercel serverless & local)
+        try:
+            photo = UserPhoto.query.filter_by(user_id=current_user.id).first()
+        except Exception:
+            db.session.rollback()
+            db.create_all()
+            photo = UserPhoto.query.filter_by(user_id=current_user.id).first()
+
+        if not photo:
+            photo = UserPhoto(user_id=current_user.id, data=file_bytes, mimetype=mimetype)
+            db.session.add(photo)
+        else:
+            photo.data = file_bytes
+            photo.mimetype = mimetype
+            photo.updated_at = datetime.utcnow()
+
+        # 2. Also save to local disk if folder is writable (local dev compatibility)
+        try:
+            os.makedirs(app.config["PROFILE_UPLOAD_FOLDER"], exist_ok=True)
+            local_save_path = os.path.join(app.config["PROFILE_UPLOAD_FOLDER"], safe_name)
+            with open(local_save_path, "wb") as f:
+                f.write(file_bytes)
+            if current_user.profile_photo and not current_user.profile_photo.startswith(("http", "/user")):
+                old = os.path.join(app.static_folder, current_user.profile_photo.replace("/", os.sep))
+                if os.path.exists(old) and old != local_save_path:
+                    try:
+                        os.remove(old)
+                    except OSError:
+                        pass
+        except OSError:
+            pass  # Read-only filesystem on Vercel/serverless
+
+        current_user.profile_photo = safe_name
         db.session.commit()
         if wants_json():
-            return jsonify({"message": "Photo updated", "profile_photo": current_user.profile_photo}), 200
+            return jsonify({"message": "Photo updated", "profile_photo": url_for("user_photo", user_id=current_user.id, v=safe_name)}), 200
         flash("Profile photo updated.", "success")
     except Exception as e:
         db.session.rollback()
+        app.logger.error(f"Profile photo upload error: {e}")
         if wants_json():
             return jsonify({"error": str(e)}), 500
         flash("Could not upload photo. Please try again.", "error")
@@ -1343,7 +1438,7 @@ def dealer_inventory_create():
             return jsonify({"message": "Inventory item created", "id": inv.id}), 201
         flash("Inventory item created.", "success")
     except Exception as e:
-        app.logger.error(f"Inventory create errors: {e}")
+        app.logger.error(f"Inventory create error: {e}")
         if wants_json():
             return jsonify({"error": str(e)}), 500
         flash("Could not create inventory.", "error")

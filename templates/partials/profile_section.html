@@ -1,7 +1,7 @@
 <section class="profile-strip" data-profile-strip>
  
   <div class="profile-avatar-wrapper">
-    {% set photo_path = url_for('static', filename=user.profile_photo) if user.profile_photo else url_for('static', filename='avatar-default.svg') %}
+    {% set photo_path = url_for('user_photo', user_id=user.id, v=user.profile_photo or 'default') %}
     <button class="profile-avatar-btn" type="button" aria-expanded="false" aria-label="Open profile menu">
       <img src="{{ photo_path }}" alt="{{ user.full_name }} avatar" loading="lazy">
     </button>
