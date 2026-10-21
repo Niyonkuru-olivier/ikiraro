@@ -1343,7 +1343,7 @@ def dealer_inventory_create():
             return jsonify({"message": "Inventory item created", "id": inv.id}), 201
         flash("Inventory item created.", "success")
     except Exception as e:
-        app.logger.error(f"Inventory create error: {e}")
+        app.logger.error(f"Inventory create errors: {e}")
         if wants_json():
             return jsonify({"error": str(e)}), 500
         flash("Could not create inventory.", "error")
