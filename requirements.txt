@@ -12,7 +12,7 @@ SQLAlchemy==2.0.36
 Flask-Login==0.6.3
 Werkzeug==3.0.6
 
-# Email
+# Email (for inform the user of the system)
 Flask-Mail==0.10.0
 
 # Token serialization (password reset)

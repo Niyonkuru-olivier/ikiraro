@@ -8,7 +8,7 @@ $env:PAGER = ''
 
 Write-Host "Step 1: Removing large file from git history..." -ForegroundColor Yellow
 
-# Remove Project Demo.mp4 from all commits
+# Remove Project Demo.mp4 from all commits and others
 git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch "Project Demo.mp4"' --prune-empty --tag-name-filter cat -- --all 2>&1 | Out-Null
 
 Write-Host "Step 2: Cleaning up git references..." -ForegroundColor Yellow

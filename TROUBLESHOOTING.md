@@ -7,7 +7,7 @@ If your app shows nothing or an error at https://ikiraro1.vercel.app/, follow th
 1. Go to your Vercel dashboard
 2. Click on your project
 3. Go to "Deployments" tab
-4. Click on the latest deployment
+4. Click on the latest deployment (info)
 5. Check the "Build Logs" and "Function Logs"
 
 **Look for:**
