@@ -8,7 +8,7 @@ This guide will help you deploy your Flask application to Vercel.
 2. A Vercel account (sign up at [vercel.com](https://vercel.com))
 3. A cloud database (recommended options below)
 
-## 🗄️ Database Setup
+## 🗄️ Database Setup (MySQL)
 
 **⚠️ IMPORTANT:** Vercel serverless functions cannot connect to `localhost` databases. You need a cloud database.
 
