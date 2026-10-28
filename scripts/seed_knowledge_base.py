@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from pathlib import Path
 from typing import List
 
@@ -23,44 +24,31 @@ import mysql.connector
 import numpy as np
 from dotenv import load_dotenv
 
-from services.embeddings import get_embed_dim_from_env, hash_embed
-
 ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from services.embeddings import get_embed_dim_from_env, hash_embed
+from services.chatbot import _extract_rich_knowledge_chunks
+
 KNOWLEDGE_FILE = ROOT_DIR / "chatbot_knowledge_base.json"
-
-
-def extract_chunks(node) -> List[str]:
-    """Flatten nested dict/list structures into plain text chunks."""
-    chunks: List[str] = []
-
-    if isinstance(node, str):
-        cleaned = node.strip()
-        if cleaned and "ikiraro" not in cleaned.lower():
-            chunks.append(cleaned)
-    elif isinstance(node, dict):
-        for value in node.values():
-            chunks.extend(extract_chunks(value))
-    elif isinstance(node, list):
-        for value in node:
-            chunks.extend(extract_chunks(value))
-
-    return chunks
 
 
 def load_chunks() -> List[str]:
     if not KNOWLEDGE_FILE.exists():
         raise FileNotFoundError(f"Knowledge file not found: {KNOWLEDGE_FILE}")
 
-    data = json.loads(KNOWLEDGE_FILE.read_text(encoding="utf-8"))
-    chunks = extract_chunks(data)
+    # Use rich contextual chunks that preserve keys, hierarchy, and meaning
+    chunks = _extract_rich_knowledge_chunks(KNOWLEDGE_FILE)
 
     # Deduplicate while keeping order
     seen = set()
     ordered_chunks: List[str] = []
     for chunk in chunks:
-        if chunk not in seen:
-            ordered_chunks.append(chunk)
-            seen.add(chunk)
+        cleaned = chunk.strip()
+        if cleaned and cleaned not in seen:
+            ordered_chunks.append(cleaned)
+            seen.add(cleaned)
 
     return ordered_chunks
 
@@ -87,7 +75,22 @@ def main():
         print("No knowledge snippets found; aborting.")
         return
 
-    print(f"Seeding {len(chunks)} snippets into knowledge_base...")
+    print("Ensuring knowledge_base table exists...")
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS knowledge_base (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            content TEXT NOT NULL,
+            embedding JSON NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """
+    )
+
+    print("Clearing prior seed data in knowledge_base...")
+    cursor.execute("DELETE FROM knowledge_base")
+
+    print(f"Seeding {len(chunks)} rich contextual snippets into knowledge_base...")
 
     for idx, chunk in enumerate(chunks, start=1):
         vector = hash_embed(chunk, dim)
@@ -107,5 +110,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

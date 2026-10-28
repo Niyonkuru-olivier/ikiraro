@@ -1,4 +1,5 @@
-# Fonts Directory
+# Fonts Directory (1)
+
 
 This directory contains custom fonts for the Blockchain Explorer application.
 
